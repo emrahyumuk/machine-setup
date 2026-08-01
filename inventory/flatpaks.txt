@@ -1,0 +1,10 @@
+com.discordapp.Discord	flathub
+com.github.tchx84.Flatseal	flathub
+com.github.wwmm.easyeffects	flathub
+com.mattjakeman.ExtensionManager	flathub
+com.spotify.Client	flathub
+com.unity.UnityHub	flathub
+io.beekeeperstudio.Studio	flathub
+io.podman_desktop.PodmanDesktop	flathub
+org.gnome.Epiphany	flathub
+org.gnome.Extensions	fedora

@@ -1,0 +1,45 @@
+# PATH — must come first; the inits below look for binaries here
+export PATH="$HOME/.local/bin:$PATH"
+
+export PNPM_HOME="$HOME/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+
+# Prompt & navigation
+eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
+source <(fzf --zsh)
+
+# Suggestions & highlighting
+source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=100000
+SAVEHIST=100000
+setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE
+
+# Aliases
+alias ls='eza --icons'
+alias ll='eza -la --icons --git'
+alias tree='eza --tree --icons'
+alias cat='bat --paging=never'
+alias df='duf'
+alias lg='lazygit'
+alias top='btop'
+alias vim='nvim'
+# the profile group drifts to the last-used profile, hence the absolute path
+alias firefox='firefox --profile "$HOME/.config/mozilla/firefox/t6n89haj.default-release"'
+export EDITOR=nvim VISUAL=nvim
+
+# atuin (Ctrl+R history search) — must come after zsh-syntax-highlighting
+command -v atuin >/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
+
+# NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock

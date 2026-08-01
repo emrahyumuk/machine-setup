@@ -1,0 +1,4 @@
+collected: 2026-08-04
+os: Fedora Linux 44 (Workstation Edition)
+kernel-at-collect: 7.1.5-201.fc44.x86_64   # informational only, rolls constantly
+model: ThinkPad P14s Gen 6 AMD (21QMS1BQ00)

@@ -1,0 +1,7 @@
+# npm -g
+claude-code
+codex
+corepack
+firebase-tools
+npm
+opencode-ai

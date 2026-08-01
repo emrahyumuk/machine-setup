@@ -1,0 +1,145 @@
+# Whitelist only — see privacy rule in collect.sh.
+# GSConnect is EXCLUDED on purpose: its dconf tree is pairing STATE
+# (device certificate, ids, phone name, local IP). On a new machine:
+# install GSConnect, pair the phone manually.
+
+### dconf load /org/gnome/desktop/interface/  <<'EOF'
+[/]
+accent-color='blue'
+clock-format='24h'
+color-scheme='prefer-dark'
+show-battery-percentage=true
+toolkit-accessibility=false
+### EOF
+
+### dconf load /org/gnome/shell/keybindings/  <<'EOF'
+[/]
+show-screenshot-ui=['Print', '<Super><Shift>s']
+### EOF
+
+### dconf load /org/gnome/desktop/wm/keybindings/  <<'EOF'
+### EOF
+
+### dconf load /org/gnome/settings-daemon/plugins/media-keys/  <<'EOF'
+[/]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']
+
+[custom-keybindings/custom0]
+binding='<Control><Alt>q'
+command='/usr/bin/google-chrome-stable --ozone-platform=x11 --user-data-dir=/home/mra/.local/share/qudelix-browser --app=chrome-extension://phaodiidhofhdmfkjiacigibgikhfafn/index.html --class=qudelix-5k'
+name='Qudelix 5K'
+
+[custom-keybindings/custom1]
+binding='<Control><Alt>m'
+command='gtk-launch metal-browser'
+name='Metal Browser'
+### EOF
+
+### dconf load /org/gnome/shell/extensions/dash-to-dock/  <<'EOF'
+[/]
+always-center-icons=false
+apply-custom-theme=false
+background-color='rgb(36,31,49)'
+background-opacity=0.90000000000000002
+click-action='focus-minimize-or-appspread'
+custom-background-color=true
+custom-theme-shrink=true
+dash-max-icon-size=28
+dock-fixed=true
+dock-position='LEFT'
+extend-height=true
+height-fraction=0.90000000000000002
+icon-size-fixed=true
+isolate-monitors=false
+isolate-workspaces=true
+multi-monitor=true
+preferred-monitor=-2
+preferred-monitor-by-connector='DP-2'
+shortcut=['<Super>q']
+shortcut-text='<Super>q'
+show-apps-at-top=false
+transparency-mode='FIXED'
+### EOF
+
+### dconf load /org/gnome/shell/extensions/blur-my-shell/  <<'EOF'
+[/]
+rounded-blur-found=false
+settings-version=2
+
+[appfolder]
+brightness=0.59999999999999998
+sigma=30
+
+[applications]
+pipeline='pipeline_default'
+
+[coverflow-alt-tab]
+pipeline='pipeline_default'
+
+[dash-to-dock]
+blur=true
+brightness=0.59999999999999998
+pipeline='pipeline_default_rounded'
+sigma=30
+static-blur=true
+style-dash-to-dock=0
+
+[lockscreen]
+pipeline='pipeline_default'
+
+[overview]
+pipeline='pipeline_default'
+
+[panel]
+brightness=0.59999999999999998
+corner-radius=0
+pipeline='pipeline_default'
+sigma=30
+
+[screenshot]
+pipeline='pipeline_default'
+
+[window-list]
+brightness=0.59999999999999998
+sigma=30
+### EOF
+
+### dconf load /org/gnome/shell/extensions/Battery-Health-Charging/  <<'EOF'
+[/]
+amend-power-indicator=false
+charging-mode='bal'
+device-type=20
+force-discharge-enabled=false
+icon-style-type=0
+indicator-position-max=3
+polkit-status='installed'
+show-battery-panel2=false
+show-quickmenu-subtitle=true
+show-system-indicator=true
+### EOF
+
+### dconf load /org/gnome/shell/extensions/vitals/  <<'EOF'
+[/]
+hide-icons=false
+hot-sensors=['_system_load_1m_', '_processor_usage_', '__temperature_max__', '_memory_usage_']
+icon-style=0
+menu-centered=false
+show-battery=false
+use-higher-precision=false
+### EOF
+
+### dconf load /org/gnome/shell/extensions/caffeine/  <<'EOF'
+[/]
+cli-toggle=false
+indicator-position-max=3
+user-enabled=true
+### EOF
+
+### dconf load /org/gnome/shell/extensions/clipboard-indicator/  <<'EOF'
+### EOF
+
+### dconf load /org/gnome/shell/extensions/user-theme/  <<'EOF'
+[/]
+name=''
+### EOF
+
