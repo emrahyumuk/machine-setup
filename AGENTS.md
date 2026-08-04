@@ -91,6 +91,12 @@ never applied; system-level ones are re-confirmed individually at apply time
 - Run the item's **VERIFY** line (or its platform equivalent) after applying.
 - No equivalent on this platform? Say so explicitly and suggest the closest
   alternative — don't silently drop items.
+- On Fedora, the items `bootstrap-fedora.sh` covers may be applied by running
+  that script once (with the user's consent) instead of re-implementing them
+  one by one — it is the deterministic form of those exact decisions. Still
+  run the per-item VERIFY lines afterwards. Note it overwrites its config
+  files unconditionally; if the survey found user-customized versions, apply
+  per-item instead.
 
 ## Step 4 — Report and hand off
 
