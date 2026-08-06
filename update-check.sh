@@ -19,6 +19,18 @@ else
   body="dnf: $dnf_n · flatpak: $fp_n · npm -g: $npm_n · firmware: $fw"
 fi
 
+# machine-setup drift nudge: refresh the inventory; if it differs from the
+# last commit, send a (non-blocking) reminder. No-op when the repo isn't at
+# the owner's path — strangers' clones live elsewhere.
+repo="$HOME/Projects/mRA/emrahyumuk/machine-setup"
+if [ -d "$repo/.git" ]; then
+  "$repo/collect.sh" >/dev/null 2>&1 || true
+  if ! git -C "$repo" diff --quiet 2>/dev/null; then
+    notify-send -i software-update-urgent "machine-setup drifted" \
+      "Inventory changed since the last commit — review the diff and commit."
+  fi
+fi
+
 # -A makes notify-send wait and print the clicked action id; bounded so an
 # ignored notification can't leave this process waiting past the week.
 action=$(timeout 12h notify-send -A default="Open upcheck" \
