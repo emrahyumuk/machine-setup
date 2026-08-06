@@ -25,5 +25,7 @@ action=$(timeout 12h notify-send -A default="Open upcheck" \
   -i software-update-available "Sunday update ritual" "$body") || true
 
 if [ "$action" = "default" ]; then
-  ghostty -e zsh -ic 'upcheck; exec zsh -i' &
+  # systemd-run: own transient scope — a plain `&` child dies with the
+  # service cgroup the moment this script exits (verified the hard way)
+  systemd-run --user --collect -- ghostty -e zsh -ic 'upcheck; exec zsh -i'
 fi
