@@ -57,13 +57,13 @@ vm.watermark_scale_factor = 125
 EOF
 sudo sysctl --system >/dev/null
 
-echo "== PipeWire: content-following sample rates (see SETUP.md) =="
-sudo mkdir -p /etc/pipewire/pipewire.conf.d
-sudo tee /etc/pipewire/pipewire.conf.d/10-rates.conf >/dev/null <<'EOF'
-context.properties = {
-    default.clock.allowed-rates = [ 44100 48000 88200 96000 ]
-}
-EOF
+echo "== disk overflow swap tier (see SETUP.md — zram stays primary) =="
+if [ ! -f /swapfile ]; then
+  sudo btrfs filesystem mkswapfile --size 16g /swapfile
+  sudo swapon --priority 10 /swapfile
+  grep -q '^/swapfile' /etc/fstab \
+    || echo '/swapfile none swap defaults,pri=10 0 0' | sudo tee -a /etc/fstab >/dev/null
+fi
 
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 update-check.sh ~/.local/bin/update-check.sh

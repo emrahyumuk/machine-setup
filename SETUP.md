@@ -107,14 +107,42 @@ Layers:
   (DISKSIZE is a cap, not a reservation; measured lzo-rle ratio 2.75:1).
   Field result: fan stays off in normal use; full-core rustc build with mem PSI
   and swap traffic both zero.
-  ASSUMES: zram-only swap AND no hibernation (hibernate needs disk swap and is
-  impossible with zram-only anyway). Do NOT port swappiness=150 to a machine
-  without zram — it would thrash disk swap.
+  ASSUMES: zram as the PRIMARY swap tier (since 2026-08-06 a low-priority
+  disk overflow file sits beneath it — see the next entry; swappiness=150
+  still steers reclaim into zram first). Do NOT port swappiness=150 to a
+  machine whose primary swap is disk — it would thrash it. Hibernation
+  remains unconfigured (a btrfs swapfile would need resume-offset plumbing;
+  not wanted).
   VERIFY: `swapon --show` shows the new size; under load
   `/proc/pressure/memory` stays ~0 and swap-in rate stays low. Judge by
   pressure/traffic, NEVER by swap fullness (full-but-quiet zram is healthy).
   NOTE: `systemctl restart systemd-zram-setup@zram0` flushes zram back to RAM —
   transient pressure spike, save work first (or just reboot later).
+
+### Disk overflow swap tier (the wall remover)
+- 16 GB btrfs swapfile at priority 10 under zram's 100:
+  ```
+  btrfs filesystem mkswapfile --size 16g /swapfile
+  swapon --priority 10 /swapfile
+  # /etc/fstab: /swapfile none swap defaults,pri=10 0 0
+  ```
+  WHY (and the honest history — REJECTED TWICE before being added
+  2026-08-06): rejected 07-31 as a thrashing fix (the sysctl tuning was the
+  real fix) and 08-04 as a freeze fix (panic-time eviction through LUKS =
+  the kcryptd storm). What changed: with calm watermarks + earlyoom in
+  place, a LOW-PRIORITY overflow tier only ever receives cold pages as a
+  background trickle — a different mechanism from panic eviction, and
+  AES-NI absorbs the trickle invisibly. New evidence forced the revisit:
+  24 earlyoom kills in ~15h and one hard freeze showed the recurring
+  problem was the WALL itself (zram's hard ceiling). Windows and macOS
+  never hit this failure class because both ship auto-growing swap; this
+  tier gives Fedora the same "degrade, never die" behavior. The BIOS UMA
+  reclaim (+4-6 GB) was considered and DECLINED — the 8 GB iGPU reserve
+  stays for local-LLM plans; the swapfile alone removes the wall.
+  ASSUMES: btrfs (mkswapfile handles NOCOW/compression); LUKS cost is
+  per-page AES-NI, negligible at trickle rates.
+  VERIFY: `swapon --show` → two rows, zram pri 100, /swapfile pri 10,
+  swapfile USED stays ~0 except under genuine overflow.
 
 ### OOM defense — earlyoom (the anti-freeze layer)
 
@@ -152,7 +180,9 @@ Layers:
   "to process" part matters: startup lines also say "sending SIGTERM when…"
   and would false-fire on every boot. Works because the user is in wheel
   (system journal readable).
-  ASSUMES: zram-only swap (the `-s` thresholds are sized for it).
+  ASSUMES: zram-primary swap (the `-s` thresholds now span zram + the disk
+  overflow tier — total swap must ALSO drain below 10% before a kill, which
+  makes earlyoom a true last resort rather than a frequent visitor).
   VERIFY: `journalctl -u earlyoom -b | grep "sending SIGTERM"` shows the
   10%/10% thresholds; `systemctl --user is-active earlyoom-notify` → active;
   `oomctl` still shows only /system.slice (expected).
@@ -207,23 +237,21 @@ Layers:
   desktop; weekly + reboot picks up kernels/mesa at a humane failure rate.
   VERIFY: `systemctl --user list-timers update-check.timer` shows next Sun.
 
-### PipeWire: content-following sample rates
-- `/etc/pipewire/pipewire.conf.d/10-rates.conf`:
-  ```
-  context.properties = {
-      default.clock.allowed-rates = [ 44100 48000 88200 96000 ]
-  }
-  ```
-  WHY: PipeWire defaults to a fixed 48 kHz graph. Music streaming is 44.1 kHz
-  → resampled to 48, then converted again for a 96 kHz DAC. With allowed-rates
-  set, the graph follows the content and a 44.1 stream reaches the DAC
-  untouched. Marginal audibility on its own — found 2026-08-06 alongside two
-  real level cuts (see the Qudelix entry in §3) that together made this
-  machine audibly worse than the MacBook it replaced.
-  TRAP: restarting pipewire kills the user's EasyEffects service — restart it
-  after (`flatpak run com.github.wwmm.easyeffects --service-mode --hide-window`).
-  ASSUMES: PipeWire (any modern Linux).
-  VERIFY: `pw-metadata -n settings | grep allowed-rates` shows the list.
+### PipeWire sample rates — REVERTED same day, keep the default fixed 48 kHz
+- `allowed-rates = [44100 48000 88200 96000]` was tried 2026-08-06 (let the
+  graph follow content so 44.1 material reaches the DAC without a double
+  resample) and REVERTED within hours: with EasyEffects in the chain, every
+  graph rate switch (a 48 kHz notification joining while Spotify holds 44.1)
+  produced audible crackling. Confirmed by A/B: runtime
+  `pw-metadata -n settings 0 clock.force-rate 48000` stopped it instantly.
+  Verdict: the double-resample cost is inaudible, the rate-switch glitches
+  are not — PipeWire's fixed-48k default is correct FOR THIS MACHINE (an
+  EE-free machine may judge differently).
+  TRAP (still true, kept for the record): restarting pipewire kills the
+  user's EasyEffects service AND can break EE's stream capture — a clean
+  EasyEffects restart is required after any pipewire disruption, or output
+  bypasses the DSP chain entirely ("sounds like bypass").
+  VERIFY: `pw-metadata -n settings | grep allowed-rates` → no match.
 
 ### Already-default safety layers (verify present, don't install)
 - systemd-oomd active, uresourced active, fstrim.timer enabled. These are
