@@ -354,6 +354,7 @@ simple-scan
 smartmontools
 snapper
 snapshot
+solaar
 sos
 speech-dispatcher
 spice-vdagent

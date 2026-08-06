@@ -47,6 +47,7 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | Podman Desktop | Flathub | Container GUI. Optional — CLI covers it; the GUI costs ~500+ MB RAM when open. |
 | Unity Hub | Flathub | Game engine experiments. |
 | GNOME Tweaks | Fedora | Occasional knobs. |
+| Solaar | Fedora | Logitech MX Master 3S config over Bluetooth (HID++ — no receiver needed). Package ships a system-wide autostart; device-stored settings (DPI, SmartShift) persist on their own, Solaar-side rules need it running. |
 
 ## CLI stack
 
