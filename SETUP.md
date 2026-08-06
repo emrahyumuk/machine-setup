@@ -118,8 +118,7 @@ Layers:
 
 ### OOM defense — earlyoom (the anti-freeze layer)
 
-- Install `earlyoom` + `systembus-notify` (the latter is what makes `-n`
-  desktop notifications actually reach the session), enable the service, and
+- Install `earlyoom`, enable the service, and
   replace `/etc/default/earlyoom` with: Fedora's stock `--avoid` list KEPT
   WHOLE and extended with the terminal (`ghostty`), `--prefer` extended with
   `java|chrome|code` (restartable heavyweights die first), thresholds
@@ -145,9 +144,18 @@ Layers:
   a disk swap tier (reintroduces the LUKS kcryptd storm the zram tuning
   eliminated). Note `node` is deliberately NOT in `--prefer` — agent
   sessions shouldn't be first victims (they resume, but still).
+  KILL NOTIFICATIONS: earlyoom's own `-n` is inert here — `systembus-notify`
+  is retired from Fedora repos (F44) AND earlyoom's `DynamicUser=true`
+  sandbox couldn't reach the session anyway. Instead `earlyoom-notify.sh`
+  (user service, ships in this repo) tails the journal for
+  `sending SIG(TERM|KILL) to process` and notify-sends each kill. The
+  "to process" part matters: startup lines also say "sending SIGTERM when…"
+  and would false-fire on every boot. Works because the user is in wheel
+  (system journal readable).
   ASSUMES: zram-only swap (the `-s` thresholds are sized for it).
   VERIFY: `journalctl -u earlyoom -b | grep "sending SIGTERM"` shows the
-  10%/10% thresholds; `oomctl` still shows only /system.slice (expected).
+  10%/10% thresholds; `systemctl --user is-active earlyoom-notify` → active;
+  `oomctl` still shows only /system.slice (expected).
 
 ### Theming discipline (GNOME 50 traps, hard-won)
 - Stock shell theme, stock GTK, `accent-color` only. WHY: a stale shell theme
@@ -186,6 +194,11 @@ Layers:
   `update-check.sh` → one desktop notification summarizing pending counts
   across all four channels; doubles as the ritual reminder. Files ship in
   this repo (script at root, units in assets/), installed by bootstrap.
+- TRAP: `npm update -g` can update claude-code while SKIPPING its
+  postinstall — the CLI then dies with "native binary not installed" on
+  every invocation. `upall` self-heals (checks `claude --version` after the
+  npm step and runs the package's `install.cjs` if broken). Field-hit
+  2026-08-06.
 - Fedora RELEASE upgrades (44→45) are a separate twice-yearly event: wait
   ~2-3 weeks after release, then `dnf system-upgrade`; afterwards walk the
   VERIFY lines in this manifest.

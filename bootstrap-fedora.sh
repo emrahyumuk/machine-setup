@@ -23,8 +23,7 @@ sudo dnf install -y \
   libva-utils \
   mold \
   zsh \
-  earlyoom \
-  systembus-notify
+  earlyoom
 
 echo "== earlyoom (anti-freeze OOM layer — see SETUP.md for the full story) =="
 # Stock Fedora avoid-list kept whole + ghostty; prefer extended with
@@ -34,6 +33,14 @@ EARLYOOM_ARGS="-r 3600 -m 10,5 -s 10,5 -n --prefer '^(Web Content|Isolated Web C
 EOF
 sudo systemctl enable --now earlyoom
 sudo systemctl restart earlyoom
+
+echo "== earlyoom kill notifications (journal watcher) =="
+# systembus-notify is retired from Fedora repos and earlyoom's DynamicUser
+# sandbox can't reach the session anyway — a user-side journal tail can.
+install -Dm755 earlyoom-notify.sh ~/.local/bin/earlyoom-notify.sh
+install -Dm644 assets/earlyoom-notify.service ~/.config/systemd/user/earlyoom-notify.service
+systemctl --user daemon-reload
+systemctl --user enable --now earlyoom-notify.service
 
 echo "== zram config =="
 sudo tee /etc/systemd/zram-generator.conf >/dev/null <<'EOF'

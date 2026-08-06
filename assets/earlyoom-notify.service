@@ -1,0 +1,10 @@
+[Unit]
+Description=Desktop notifications for earlyoom kills (machine-setup)
+
+[Service]
+ExecStart=%h/.local/bin/earlyoom-notify.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

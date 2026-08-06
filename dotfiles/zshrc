@@ -63,6 +63,11 @@ upall() {
   fwupdmgr refresh --force 2>/dev/null; fwupdmgr update
   echo "$sep"; echo "▶ npm -g — agent CLIs"
   npm update -g
+  # npm sometimes skips claude-code's postinstall -> native binary missing
+  claude --version >/dev/null 2>&1 || {
+    echo ">> repairing claude-code native binary"
+    node "$(npm root -g)/@anthropic-ai/claude-code/install.cjs"
+  }
   echo "$sep"
   if [ "$(rpm -q --last kernel | head -1 | awk '{print $1}' | sed 's/kernel-//')" != "$(uname -r)" ]; then
     echo ">> done — NEW KERNEL installed, reboot to activate"
