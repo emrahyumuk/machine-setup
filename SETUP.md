@@ -173,6 +173,26 @@ Layers:
 - GNOME extension schemas are invisible to plain `gsettings list-schemas` —
   keybinding conflicts hide in extension schemas (`--schemadir` needed).
 
+### Update cadence — one weekly ritual, four channels
+
+- Updates arrive via dnf (system + vendor repos), flatpak, fwupd (firmware)
+  and npm -g (agent CLIs). GNOME Software is a FRONTEND over the first
+  three, not a fifth channel — its notifications are informational only.
+- The ritual, Sunday evening, then the (already planned) weekly reboot —
+  shipped as two zshrc functions (see `dotfiles/zshrc`): **`upcheck`**
+  (what's pending, all four channels, one screen) and **`upall`**
+  (apply everything).
+- A user timer (`update-check.timer`, Sun 18:00, Persistent=true) runs
+  `update-check.sh` → one desktop notification summarizing pending counts
+  across all four channels; doubles as the ritual reminder. Files ship in
+  this repo (script at root, units in assets/), installed by bootstrap.
+- Fedora RELEASE upgrades (44→45) are a separate twice-yearly event: wait
+  ~2-3 weeks after release, then `dnf system-upgrade`; afterwards walk the
+  VERIFY lines in this manifest.
+  WHY weekly not daily: no measurable benefit to chasing updates daily on a
+  desktop; weekly + reboot picks up kernels/mesa at a humane failure rate.
+  VERIFY: `systemctl --user list-timers update-check.timer` shows next Sun.
+
 ### Already-default safety layers (verify present, don't install)
 - systemd-oomd active, uresourced active, fstrim.timer enabled. These are
   Fedora Workstation defaults — just confirm after install.

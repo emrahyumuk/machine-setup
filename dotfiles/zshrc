@@ -38,6 +38,20 @@ export EDITOR=nvim VISUAL=nvim
 # atuin (Ctrl+R history search) — must come after zsh-syntax-highlighting
 command -v atuin >/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 
+# Update ritual (see machine-setup SETUP.md "Update cadence")
+upcheck() {
+  echo "== dnf ==";      dnf -q check-update || true
+  echo "== flatpak ==";  flatpak remote-ls --updates --app
+  echo "== npm -g ==";   npm outdated -g || true
+  echo "== firmware =="; fwupdmgr get-updates 2>/dev/null || echo "none"
+}
+upall() {
+  sudo dnf upgrade --refresh && flatpak update
+  fwupdmgr refresh --force 2>/dev/null; fwupdmgr update
+  npm update -g
+  echo ">> done — weekly reboot still recommended"
+}
+
 # NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

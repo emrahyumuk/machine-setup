@@ -4,6 +4,7 @@
 # SETUP.md and is applied by reading it, not by this script.
 # Idempotent: safe to re-run.
 set -euo pipefail
+cd "$(dirname "$0")"
 
 echo "== RPM Fusion (free + nonfree) =="
 if ! dnf repolist 2>/dev/null | grep -q rpmfusion-free; then
@@ -48,6 +49,13 @@ vm.watermark_boost_factor = 0
 vm.watermark_scale_factor = 125
 EOF
 sudo sysctl --system >/dev/null
+
+echo "== weekly update summary notifier (Sun 18:00) =="
+install -Dm755 update-check.sh ~/.local/bin/update-check.sh
+install -Dm644 assets/update-check.service ~/.config/systemd/user/update-check.service
+install -Dm644 assets/update-check.timer ~/.config/systemd/user/update-check.timer
+systemctl --user daemon-reload
+systemctl --user enable --now update-check.timer
 
 echo "== cargo: mold as linker =="
 mkdir -p ~/.cargo

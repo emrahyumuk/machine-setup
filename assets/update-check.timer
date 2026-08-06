@@ -1,0 +1,9 @@
+[Unit]
+Description=Weekly update summary, Sunday 18:00 (machine-setup)
+
+[Timer]
+OnCalendar=Sun 18:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

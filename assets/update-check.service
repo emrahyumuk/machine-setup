@@ -1,0 +1,6 @@
+[Unit]
+Description=Pending-updates summary notification (machine-setup)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/update-check.sh
