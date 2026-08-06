@@ -57,6 +57,14 @@ vm.watermark_scale_factor = 125
 EOF
 sudo sysctl --system >/dev/null
 
+echo "== PipeWire: content-following sample rates (see SETUP.md) =="
+sudo mkdir -p /etc/pipewire/pipewire.conf.d
+sudo tee /etc/pipewire/pipewire.conf.d/10-rates.conf >/dev/null <<'EOF'
+context.properties = {
+    default.clock.allowed-rates = [ 44100 48000 88200 96000 ]
+}
+EOF
+
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 update-check.sh ~/.local/bin/update-check.sh
 install -Dm644 assets/update-check.service ~/.config/systemd/user/update-check.service

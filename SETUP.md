@@ -207,6 +207,24 @@ Layers:
   desktop; weekly + reboot picks up kernels/mesa at a humane failure rate.
   VERIFY: `systemctl --user list-timers update-check.timer` shows next Sun.
 
+### PipeWire: content-following sample rates
+- `/etc/pipewire/pipewire.conf.d/10-rates.conf`:
+  ```
+  context.properties = {
+      default.clock.allowed-rates = [ 44100 48000 88200 96000 ]
+  }
+  ```
+  WHY: PipeWire defaults to a fixed 48 kHz graph. Music streaming is 44.1 kHz
+  → resampled to 48, then converted again for a 96 kHz DAC. With allowed-rates
+  set, the graph follows the content and a 44.1 stream reaches the DAC
+  untouched. Marginal audibility on its own — found 2026-08-06 alongside two
+  real level cuts (see the Qudelix entry in §3) that together made this
+  machine audibly worse than the MacBook it replaced.
+  TRAP: restarting pipewire kills the user's EasyEffects service — restart it
+  after (`flatpak run com.github.wwmm.easyeffects --service-mode --hide-window`).
+  ASSUMES: PipeWire (any modern Linux).
+  VERIFY: `pw-metadata -n settings | grep allowed-rates` shows the list.
+
 ### Already-default safety layers (verify present, don't install)
 - systemd-oomd active, uresourced active, fstrim.timer enabled. These are
   Fedora Workstation defaults — just confirm after install.
@@ -222,7 +240,22 @@ Layers:
   GTT gives ~11.6 GB more dynamically → ~19.6 GB addressable). If local LLM
   plans die, lowering it in BIOS returns ~6 GB to the system.
 - **Qudelix 5K DAC**: WebHID over USB (not Bluetooth) for the config app;
-  needs a udev rule; pipewire profile analog-stereo.
+  needs a udev rule; pipewire profile analog-stereo. Listening-chain rules
+  (all three found violated 2026-08-06, together = "sounds worse than the
+  Mac did"):
+  - Keep the PipeWire sink pinned at **100%** — it had drifted to 91%
+    (−2.37 dB digital attenuation). Do volume on the Qudelix's own
+    buttons/app, never in software. DRIFT VECTOR: the keyboard volume keys
+    write to the default sink, so one habitual key-press reintroduces the
+    attenuation — that is how it drifts, not a bug.
+    VERIFY (Qudelix connected as default):
+    `wpctl get-volume @DEFAULT_AUDIO_SINK@` → 1.00.
+  - EasyEffects must autoload a `bypass` preset for this device (both
+    analog and S/PDIF profiles) so the speaker EQ never reaches headphones.
+  - Streaming apps' settings are LOCAL per machine: after any machine move,
+    re-check Spotify's "Normalize volume" (off for critical listening) and
+    streaming quality (Very High) — they do not sync with the account.
+  The EQ itself lives in the Qudelix's own flash — nothing to migrate.
 - **EasyEffects speaker boost**: load-bearing for the quiet built-in speakers
   (ALC257, no smart amp — DSP is the only volume headroom). Keep the app
   running but its WINDOW CLOSED (open window costs CPU).
