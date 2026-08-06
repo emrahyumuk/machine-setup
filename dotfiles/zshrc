@@ -43,7 +43,8 @@ upcheck() {
   echo "== dnf ==";      dnf -q check-update || true
   echo "== flatpak ==";  flatpak remote-ls --updates --app
   echo "== npm -g ==";   npm outdated -g || true
-  echo "== firmware =="; fwupdmgr get-updates 2>/dev/null || echo "none"
+  echo "== firmware =="
+  fwupdmgr get-updates >/dev/null 2>&1 && echo "updates available (fwupdmgr update)" || echo "none"
   echo
   echo "-- apply --------------------------------"
   echo "  everything : upall"
