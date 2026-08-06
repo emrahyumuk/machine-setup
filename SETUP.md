@@ -246,9 +246,9 @@ Layers:
   `pw-metadata -n settings 0 clock.force-rate 48000` stopped it instantly.
   Verdict: the double-resample cost is inaudible, the rate-switch glitches
   are not — PipeWire's fixed-48k default is correct FOR THIS MACHINE (an
-  EE-free machine may judge differently).
+  EasyEffects-free machine may judge differently).
   TRAP (still true, kept for the record): restarting pipewire kills the
-  user's EasyEffects service AND can break EE's stream capture — a clean
+  user's EasyEffects service AND can break EasyEffects' stream capture — a clean
   EasyEffects restart is required after any pipewire disruption, or output
   bypasses the DSP chain entirely ("sounds like bypass").
   VERIFY: `pw-metadata -n settings | grep allowed-rates` → no match.
@@ -279,7 +279,7 @@ Layers:
     VERIFY (Qudelix connected as default):
     `wpctl get-volume @DEFAULT_AUDIO_SINK@` → 1.00.
   - (historical: while EasyEffects existed, a `bypass` autoload per device
-    profile kept speaker EQ off the headphones — moot since EE's removal,
+    profile kept speaker EQ off the headphones — moot since EasyEffects' removal,
     kept as the pattern for any future system-wide DSP tool)
   - Streaming apps' settings are LOCAL per machine: after any machine move,
     re-check Spotify's "Normalize volume" (off for critical listening) and
@@ -295,7 +295,7 @@ Layers:
   release of 5 ms grinds bass wavelengths into audible crackle (60 ms+ if
   a limiter ever returns); manual knob turns are NOT saved into presets —
   persistence lives in the preset file; keep the sink at exactly 100%
-  (no EE limiter to catch over-unity clipping anymore).
+  (no EasyEffects limiter to catch over-unity clipping anymore).
 - **Battery charging: the Battery-Health-Charging extension OWNS the
   thresholds — never touch GNOME Settings → Power → "Battery Charging".**
   Both write the same firmware knobs (`charge_control_{start,stop}_threshold`);
