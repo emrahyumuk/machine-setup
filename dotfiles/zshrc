@@ -44,6 +44,14 @@ upcheck() {
   echo "== flatpak ==";  flatpak remote-ls --updates --app
   echo "== npm -g ==";   npm outdated -g || true
   echo "== firmware =="; fwupdmgr get-updates 2>/dev/null || echo "none"
+  echo
+  echo "-- apply --------------------------------"
+  echo "  everything : upall"
+  echo "  dnf only   : sudo dnf upgrade --refresh"
+  echo "  flatpak    : flatpak update"
+  echo "  npm -g     : npm update -g"
+  echo "  firmware   : fwupdmgr update"
+  echo "  (then: weekly reboot)"
 }
 upall() {
   sudo dnf upgrade --refresh && flatpak update

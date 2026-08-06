@@ -1,10 +1,10 @@
 #!/bin/bash
 # Weekly pending-updates summary -> one desktop notification.
-# Covers the four channels of the Sunday ritual (SETUP.md "Update cadence"):
-# dnf, flatpak, fwupd, npm -g. Installed to ~/.local/bin by bootstrap;
-# triggered by update-check.timer (Sun 18:00, catches up after suspend).
-# ponytail: counts are crude line counts, not exact package lists — the
-# ritual itself shows the details; this only answers "is there anything".
+# Clicking the notification opens a terminal running `upcheck` (details +
+# what-to-do notes). Covers the four channels of the Sunday ritual
+# (SETUP.md "Update cadence"): dnf, flatpak, fwupd, npm -g.
+# Installed to ~/.local/bin by bootstrap; triggered by update-check.timer.
+# ponytail: counts are crude line counts — upcheck shows the details.
 set -o pipefail
 
 dnf_n=$(dnf -q check-update 2>/dev/null | grep -Ec '^[[:alnum:]]') || true
@@ -19,5 +19,11 @@ else
   body="dnf: $dnf_n · flatpak: $fp_n · npm -g: $npm_n · firmware: $fw"
 fi
 
-notify-send -i software-update-available \
-  "Sunday update ritual" "$body"
+# -A makes notify-send wait and print the clicked action id; bounded so an
+# ignored notification can't leave this process waiting past the week.
+action=$(timeout 12h notify-send -A default="Open upcheck" \
+  -i software-update-available "Sunday update ritual" "$body") || true
+
+if [ "$action" = "default" ]; then
+  ghostty -e zsh -ic 'upcheck; exec zsh -i' &
+fi

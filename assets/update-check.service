@@ -2,5 +2,7 @@
 Description=Pending-updates summary notification (machine-setup)
 
 [Service]
-Type=oneshot
+# exec, not oneshot: the script stays alive waiting for a notification
+# click (bounded at 12h) — oneshot would sit in "activating" all that time
+Type=exec
 ExecStart=%h/.local/bin/update-check.sh
