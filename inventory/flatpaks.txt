@@ -1,6 +1,5 @@
 com.discordapp.Discord	flathub
 com.github.tchx84.Flatseal	flathub
-com.github.wwmm.easyeffects	flathub
 com.mattjakeman.ExtensionManager	flathub
 com.spotify.Client	flathub
 com.unity.UnityHub	flathub

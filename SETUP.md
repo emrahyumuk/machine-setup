@@ -278,15 +278,24 @@ Layers:
     attenuation — that is how it drifts, not a bug.
     VERIFY (Qudelix connected as default):
     `wpctl get-volume @DEFAULT_AUDIO_SINK@` → 1.00.
-  - EasyEffects must autoload a `bypass` preset for this device (both
-    analog and S/PDIF profiles) so the speaker EQ never reaches headphones.
+  - (historical: while EasyEffects existed, a `bypass` autoload per device
+    profile kept speaker EQ off the headphones — moot since EE's removal,
+    kept as the pattern for any future system-wide DSP tool)
   - Streaming apps' settings are LOCAL per machine: after any machine move,
     re-check Spotify's "Normalize volume" (off for critical listening) and
     streaming quality (Very High) — they do not sync with the account.
   The EQ itself lives in the Qudelix's own flash — nothing to migrate.
-- **EasyEffects speaker boost**: load-bearing for the quiet built-in speakers
-  (ALC257, no smart amp — DSP is the only volume headroom). Keep the app
-  running but its WINDOW CLOSED (open window costs CPU).
+- **Speakers: quiet by hardware, and that is FINAL — the DSP boost was
+  RETIRED 2026-08-06.** ALC257 with no smart amp; ALSA already at 0.00 dB.
+  An EasyEffects chain (loudness + bass_enhancer + limiter) spent two weeks
+  (07-23 → 08-06) trying to buy loudness and lost the A/B: at any crackle-free
+  gain it matched bypass loudness while sounding muddier — cone excursion
+  is the ceiling, DSP only smears past it. EasyEffects was then removed
+  entirely (see APPS.md "Removed on purpose"). Lessons kept: a limiter
+  release of 5 ms grinds bass wavelengths into audible crackle (60 ms+ if
+  a limiter ever returns); manual knob turns are NOT saved into presets —
+  persistence lives in the preset file; keep the sink at exactly 100%
+  (no EE limiter to catch over-unity clipping anymore).
 - **Battery charging: the Battery-Health-Charging extension OWNS the
   thresholds — never touch GNOME Settings → Power → "Battery Charging".**
   Both write the same firmware knobs (`charge_control_{start,stop}_threshold`);

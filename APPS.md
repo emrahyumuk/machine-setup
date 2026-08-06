@@ -22,9 +22,8 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
   instead.) firefoxpwa's native-messaging host also assumes native Firefox.
 - **Terminals/dev tools native**: Ghostty, VS Code, CLI stack need the host
   shell, toolchains and project files without portal friction.
-- **EasyEffects works fine as Flatpak** because audio flows through
-  PipeWire, not the sandbox. Podman Desktop likewise (talks to the host
-  podman socket).
+- **Podman Desktop works fine as Flatpak** (talks to the host podman
+  socket; the sandbox doesn't get in the way).
 
 ## Desktop applications
 
@@ -40,7 +39,6 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | Steam | RPM Fusion | Games. |
 | Spotify | Flathub | Music. |
 | Discord | Flathub | Chat. |
-| EasyEffects | Flathub | **Load-bearing**: DSP boost for the quiet built-in speakers (see SETUP.md hardware). Keep running, window closed. |
 | Flatseal | Flathub | Flatpak permission editor. |
 | Extension Manager | Flathub | GNOME extension install/update UI. |
 | Beekeeper Studio | Flathub | DB client (postgres containers). |
@@ -101,3 +99,10 @@ purpose (stale shell themes silently corrupt GNOME layout — SETUP.md §2).
 
 - **karere** (WhatsApp wrapper flatpak) → replaced by the Firefox PWA
   (2026-07-30). Same content cost, one less app to maintain.
+- **EasyEffects** (2026-08-06) → speaker-boost premise died under a real
+  A/B: at any crackle-free gain the DSP chain matched plain output loudness
+  while sounding muddier — the tiny drivers' physical ceiling IS bypass
+  level. With every output on bypass it was pure overhead (RAM, an
+  autostart, and a silent-DSP-loss failure mode when its stream capture
+  broke). Presets survive in `~/.var/app/...` for any future revisit;
+  full story in SETUP.md §3.
