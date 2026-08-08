@@ -25,5 +25,7 @@ works around) the items below; software notes for each live in SETUP.md.
 | Item | Model | Notes |
 |------|-------|-------|
 | Phone | Motorola Edge 70 | Paired via GSConnect (pairing is per-machine state, re-pair on a new install). Charge limit 80%. |
+| Backpack | Case Logic Jaunt 15.6" Laptop Backpack | Carries the ThinkPad. |
+| Tracker | Xiaomi Smart Tag | In the backpack — Google Find My Device network. |
 
 Not bought yet: desk speakers, chair — rows land here when they do.
