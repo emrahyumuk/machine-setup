@@ -31,7 +31,7 @@ works around) the items below; software notes for each live in SETUP.md.
 Not bought yet:
 
 - **Chair** — decided: IKEA MARKUS.
-- **Mouse pad** — undecided; maybe custom-printed.
+- **Mouse pad** — 40×90 cm desk-mat size; maybe custom-printed.
 - **Small desk speaker** — considering; the ThinkPad speakers are quiet by
   hardware and that verdict is final (the DSP-boost attempt is a tombstone in
   SETUP.md §3), so more loudness means external hardware.
