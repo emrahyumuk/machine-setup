@@ -22,6 +22,7 @@ important — what I decided *against* and why.
 |------|------|
 | `SETUP.md` | The manifest: every decision with WHAT / WHY / VERIFY / ASSUMES, in three layers (personal → OS → hardware) + a deliberately-NOT-done list. Source of truth. |
 | `APPS.md` | Curated, annotated app/tool/extension list — what is installed on purpose and why. The human/agent-facing view. |
+| `HARDWARE.md` | The physical desk: laptop, peripherals, what drives what. |
 | `bootstrap-fedora.sh` | Mechanical base for Fedora: repos, packages, config files that need no judgment. Idempotent. |
 | `collect.sh` | Regenerates `inventory/` + `dotfiles/` from the live machine. Whitelist-based (see its privacy rule). |
 | `inventory/` | Generated state: raw dnf list (appendix), flatpaks, GNOME extensions, whitelisted dconf namespaces, dev globals. Never hand-edited. |
