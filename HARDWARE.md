@@ -7,18 +7,18 @@ works around) the items below; software notes for each live in SETUP.md.
 
 | Item | Model | Notes |
 |------|-------|-------|
-| Laptop | Lenovo ThinkPad P14s Gen 6 AMD (21QMS1BQ00) | Ryzen AI 7 PRO 350 (8c/16t), Radeon 860M iGPU, XDNA2 NPU (58 TOPS), 24 GB RAM (shared with iGPU — the binding constraint for local LLMs), LUKS btrfs. Charge limit capped via Battery Health Charging extension (APPS.md). |
+| Laptop | Lenovo ThinkPad P14s Gen 6 AMD (21QMS1BQ00) | Ryzen AI 7 PRO 350 (8c/16t), Radeon 860M iGPU, XDNA2 NPU (58 TOPS), 32 GB RAM — of which 8 GB is a BIOS UMA carve-out for the iGPU, so the OS sees ~24 GB (reclaiming it was deliberately declined: the dedicated VRAM is kept for local LLMs — see SETUP.md). LUKS btrfs. Charge limit capped via Battery Health Charging extension (APPS.md). |
 
 ## Peripherals
 
 | Item | Model | Connection | Notes |
 |------|-------|------------|-------|
-| Mouse | Logitech MX Master 3S | Bluetooth (HID++, no receiver) | Configured with Solaar (APPS.md); DPI/SmartShift stored on the device itself. |
-| DAC/amp | Qudelix 5K | USB for config, Bluetooth for audio | WebHID config app needs USB, not BT — full story incl. udev rule in SETUP.md §3. |
-| Keyboard | Keychron B6 | Wireless | |
-| Monitor | Dell P2725QE | USB-C | 27" 4K USB-C hub monitor (power delivery + ports over one cable). |
-| Wired headphones | Superlux HD681 | 3.5 mm into the Qudelix 5K | Semi-open — the reason the Qudelix exists in this chain. |
-| Wireless earbuds | Soundcore Liberty 4 Pro | Bluetooth | |
+| Mouse | Logitech MX Master 3S Wireless Mouse | Bluetooth (HID++, no receiver) | Configured with Solaar (APPS.md); DPI/SmartShift stored on the device itself. |
+| DAC/amp | Qudelix-5K Bluetooth USB DAC/AMP | USB for config, Bluetooth for audio | WebHID config app needs USB, not BT — full story incl. udev rule in SETUP.md §3. |
+| Keyboard | Keychron B6 Pro Ultra-Slim Wireless Keyboard | Wireless | |
+| Monitor | Dell Pro 27 Plus 4K USB-C Hub Monitor (P2725QE) | USB-C | Power delivery + ports over one cable. |
+| Wired headphones | Superlux HD681 Semi-Open Headphones | 3.5 mm into the Qudelix-5K | Semi-open — the reason the Qudelix exists in this chain. |
+| Wireless earbuds | Anker Soundcore Liberty 4 Pro | Bluetooth | |
 
 ## Around the desk
 
