@@ -63,10 +63,16 @@ echo "== gnome settings (whitelisted namespaces) =="
 } > inventory/gnome-settings.dconf
 
 echo "== dev tool globals =="
-{
-  echo "# npm -g"
-  npm ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | xargs -rn1 basename || true
-} > inventory/dev-globals.txt
+# npm is nvm-managed — absent in non-interactive contexts (the weekly timer
+# runs this script). Skip rather than overwrite the list with emptiness.
+if command -v npm >/dev/null; then
+  {
+    echo "# npm -g"
+    npm ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | xargs -rn1 basename || true
+  } > inventory/dev-globals.txt
+else
+  echo "  npm not on PATH — keeping the existing inventory list"
+fi
 
 echo "== dotfiles (verbatim copies; secrets-scan before commit) =="
 mkdir -p dotfiles

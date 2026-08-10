@@ -111,7 +111,7 @@ charging-mode='bal'
 device-type=20
 force-discharge-enabled=false
 icon-style-type=0
-indicator-position-max=3
+indicator-position-max=4
 polkit-status='installed'
 show-battery-panel2=false
 show-quickmenu-subtitle=true
@@ -130,9 +130,9 @@ use-higher-precision=false
 
 ### dconf load /org/gnome/shell/extensions/caffeine/  <<'EOF'
 [/]
-cli-toggle=true
-indicator-position-max=6
-user-enabled=true
+cli-toggle=false
+indicator-position-max=4
+user-enabled=false
 ### EOF
 
 ### dconf load /org/gnome/shell/extensions/clipboard-indicator/  <<'EOF'
