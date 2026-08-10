@@ -61,6 +61,20 @@ Layers:
   → wrong dock icon unless forced to XWayland. firefoxpwa generates correct
   desktop entries natively.
 
+### Google Calendar via CalDAV (GNOME Online Accounts / Thunderbird / any client)
+- TRAP: after connecting the Google account, only the default calendar shows
+  up. Google exposes over CalDAV only the calendars ticked on its half-hidden
+  sync page — secondary and shared calendars ship unticked.
+- FIX: https://calendar.google.com/calendar/syncselect → tick everything
+  wanted → save. Then enable them in the client (GNOME Calendar: hamburger →
+  Manage Calendars). Sync may lag a few minutes.
+- This is account-level state at Google, not client config — re-check it on
+  a fresh machine only if calendars are missing again (it usually persists).
+- App verdict (2026-08): GNOME Calendar is enough as the viewer; Evolution
+  shares the same evolution-data-server backend so switching buys no sync
+  gain — only reach for it (or Thunderbird's calendar) for meeting RSVPs or
+  event search.
+
 ### Claude Code
 - Global prefs in `~/.claude/CLAUDE.md` (Turkish responses, human-voice for
   authored text, separator formatting). Memory dir has machine quirks — worth
