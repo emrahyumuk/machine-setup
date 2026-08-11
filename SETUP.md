@@ -157,6 +157,10 @@ Layers:
   per-page AES-NI, negligible at trickle rates.
   VERIFY: `swapon --show` → two rows, zram pri 100, /swapfile pri 10,
   swapfile USED stays ~0 except under genuine overflow.
+  FIELD-PROVEN 2026-08-11: first real overflow day — 18 parallel agent
+  processes, zram full at 10.6/11.6 GB, 3.6 GB spilled to the swapfile,
+  memory PSI 0.00 the whole time, zero UI impact. The exact workload class
+  that froze the machine on 08-04 now degrades silently.
 
 ### OOM defense — earlyoom (the anti-freeze layer)
 
