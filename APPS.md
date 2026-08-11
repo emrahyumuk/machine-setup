@@ -67,6 +67,7 @@ Wired together in `dotfiles/zshrc`:
 | mold | Rust linker — see SETUP.md §1. |
 | podman (+compose, +docker shim) | Containers; `DOCKER_HOST` points to podman socket. |
 | nvme-cli, libva-utils | Diagnostics (`vainfo` is the VA-API verify tool). |
+| gcloud (`google-cloud-cli`) | Google Cloud CLI via Google's official dnf repo (`/etc/yum.repos.d/google-cloud-sdk.repo`, el9 baseurl works on Fedora) — updates ride the dnf channel; extra components (kubectl etc.) are separate dnf packages, `gcloud components` is disabled in rpm installs. |
 
 ## Dev runtimes
 
