@@ -162,6 +162,31 @@ Layers:
   memory PSI 0.00 the whole time, zero UI impact. The exact workload class
   that froze the machine on 08-04 now degrades silently.
 
+### Desktop responsiveness under full CPU load (agents/builds)
+- MECHANISM (understand before touching): systemd user slices arbitrate CPU
+  only under contention. `session.slice` (gnome-shell + Xwayland) vs
+  `app.slice` (every GUI app incl. terminals and whatever agents spawn) vs
+  `background.slice`. Fedora's `uresourced` daemon actively manages these:
+  session.slice CPUWeight=500 vs app default 100, plus a focused-window
+  boost (300) via `[AppBoost]` — it OVERRIDES manual
+  `systemctl --user set-property` at runtime, so tune via
+  `/etc/uresourced.conf` `[SessionSlice] CPUWeight=`, not drop-ins.
+- FIELD STATUS 2026-08-12: the stock 500 is sufficient — 8-core build
+  bursts no longer stutter the desktop. A 2026-08-10 stutter was initially
+  blamed on scheduling but coincided with a rigo main-loop leak eating a
+  core; with that gone, no reproduction. A user drop-in raising it to 1000
+  exists (`~/.config/systemd/user/session.slice.d/50-ui-priority.conf`) but
+  uresourced overrides it — left as documentation of the escalation path.
+- IF stutter under load ever reproduces WITHOUT a leaking process: raise
+  `[SessionSlice] CPUWeight=1000` in /etc/uresourced.conf and restart
+  uresourced; next rung is a sched_ext interactive scheduler
+  (`scx_bpfland`, COPR) — kernel supports it (CONFIG_SCHED_CLASS_EXT=y).
+- Related finding: weights can't help INSIDE one scope — an app that spawns
+  its own heavy children (a terminal's builds, an agent studio's agents)
+  competes with them 1:1 in its own cgroup; the fix belongs in that app
+  (spawn children into their own transient scope).
+  VERIFY: `cat .../session.slice/cpu.weight` → 500 (uresourced's value).
+
 ### OOM defense — earlyoom (the anti-freeze layer)
 
 - Install `earlyoom`, enable the service, and
