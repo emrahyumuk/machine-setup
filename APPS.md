@@ -68,11 +68,12 @@ Wired together in `dotfiles/zshrc`:
 | podman (+compose, +docker shim) | Containers; `DOCKER_HOST` points to podman socket. |
 | nvme-cli, libva-utils | Diagnostics (`vainfo` is the VA-API verify tool). |
 | gcloud (`google-cloud-cli`) | Google Cloud CLI via Google's official dnf repo (`/etc/yum.repos.d/google-cloud-sdk.repo`, el9 baseurl works on Fedora) — updates ride the dnf channel; extra components (kubectl etc.) are separate dnf packages, `gcloud components` is disabled in rpm installs. |
+| claude-code | Claude Code via Anthropic's official dnf repo (`/etc/yum.repos.d/claude-code.repo`, `latest` channel) — moved off npm/nvm 2026-08-17 because GUI apps and non-interactive shells couldn't see the nvm-managed binary and the auto-updater kept finding the wrong npm. `/usr/bin/claude` is visible to every environment; updates ride dnf (no self-update in rpm installs). |
 
 ## Dev runtimes
 
 - Node: nodejs22 (system) + NVM for per-project versions; pnpm via PNPM_HOME.
-- AI agent CLIs: claude-code, codex, opencode-ai (npm) and agy (`~/.local/bin`).
+- AI agent CLIs: codex, opencode-ai (npm), agy (`~/.local/bin`); claude-code is dnf (see CLI stack).
 - Rust: rustup-managed; global cargo config only sets mold.
 
 ## GNOME extensions
