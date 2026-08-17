@@ -36,7 +36,6 @@ bzip2
 chrony
 cifs-utils
 cirrus-audio-firmware
-claude-code
 cmake
 code
 colord

@@ -68,7 +68,7 @@ Wired together in `dotfiles/zshrc`:
 | podman (+compose, +docker shim) | Containers; `DOCKER_HOST` points to podman socket. |
 | nvme-cli, libva-utils | Diagnostics (`vainfo` is the VA-API verify tool). |
 | gcloud (`google-cloud-cli`) | Google Cloud CLI via Google's official dnf repo (`/etc/yum.repos.d/google-cloud-sdk.repo`, el9 baseurl works on Fedora) — updates ride the dnf channel; extra components (kubectl etc.) are separate dnf packages, `gcloud components` is disabled in rpm installs. |
-| claude-code | Claude Code via Anthropic's official dnf repo (`/etc/yum.repos.d/claude-code.repo`, `latest` channel) — moved off npm/nvm 2026-08-17 because GUI apps and non-interactive shells couldn't see the nvm-managed binary and the auto-updater kept finding the wrong npm. `/usr/bin/claude` is visible to every environment; updates ride dnf (no self-update in rpm installs). |
+| claude-code | Claude Code via Anthropic's **native installer** (`curl -fsSL https://claude.ai/install.sh \| bash`) — binary under `~/.local/share/claude/versions/`, launcher symlink `~/.local/bin/claude`, self-updates in the background. Moved off npm/nvm 2026-08-17 (GUI apps and non-interactive shells couldn't see the nvm-managed binary; the updater kept resolving the wrong npm). **Deliberate exception to the rpm-first policy:** the official dnf repo exists but doesn't self-update, and Claude Code ships near-daily releases — the weekly `upall` cadence would lag it. |
 
 ## Dev runtimes
 
