@@ -63,15 +63,18 @@ echo "== gnome settings (whitelisted namespaces) =="
 } > inventory/gnome-settings.dconf
 
 echo "== dev tool globals =="
-# npm is nvm-managed — absent in non-interactive contexts (the weekly timer
-# runs this script). Skip rather than overwrite the list with emptiness.
-if command -v npm >/dev/null; then
+# npm globals live under nvm's node. `command -v npm` is NOT a safe guard:
+# non-interactive shells resolve npm to the system one (/usr/bin/npm, empty
+# /usr/local prefix) and would overwrite the list with emptiness. Address
+# nvm's newest npm explicitly instead.
+nvm_bin=$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | tail -1)
+if [ -n "$nvm_bin" ] && [ -x "$nvm_bin/npm" ]; then
   {
     echo "# npm -g"
-    npm ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | xargs -rn1 basename || true
+    PATH="$nvm_bin:$PATH" "$nvm_bin/npm" ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | xargs -rn1 basename || true
   } > inventory/dev-globals.txt
 else
-  echo "  npm not on PATH — keeping the existing inventory list"
+  echo "  nvm npm not found — keeping the existing inventory list"
 fi
 
 echo "== dotfiles (verbatim copies; secrets-scan before commit) =="

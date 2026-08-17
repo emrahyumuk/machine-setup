@@ -1,5 +1,4 @@
 # npm -g
-claude-code
 codex
 corepack
 firebase-tools

@@ -36,6 +36,7 @@ bzip2
 chrony
 cifs-utils
 cirrus-audio-firmware
+claude-code
 cmake
 code
 colord
@@ -151,6 +152,7 @@ gnome-user-share
 gnome-weather
 gnupg2
 google-chrome-stable
+google-cloud-cli
 grub2-efi-ia32
 grub2-efi-ia32-cdboot
 grub2-efi-ia32-modules
@@ -327,6 +329,7 @@ pylix
 python3-dnf-plugin-snapper
 qcom-wwan-firmware
 qemu-guest-agent
+qemu-user-static
 qt6-qtbase
 qt6-qtbase-gui
 qt6-qtdeclarative

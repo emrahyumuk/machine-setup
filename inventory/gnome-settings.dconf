@@ -111,7 +111,7 @@ charging-mode='bal'
 device-type=20
 force-discharge-enabled=false
 icon-style-type=0
-indicator-position-max=4
+indicator-position-max=5
 polkit-status='installed'
 show-battery-panel2=false
 show-quickmenu-subtitle=true
@@ -131,7 +131,7 @@ use-higher-precision=false
 ### dconf load /org/gnome/shell/extensions/caffeine/  <<'EOF'
 [/]
 cli-toggle=false
-indicator-position-max=4
+indicator-position-max=5
 user-enabled=false
 ### EOF
 
