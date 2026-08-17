@@ -254,6 +254,20 @@ Layers:
 - GNOME extension schemas are invisible to plain `gsettings list-schemas` —
   keybinding conflicts hide in extension schemas (`--schemadir` needed).
 
+### Static hostname — Chrome singleton-lock trap
+
+Fedora leaves the static hostname unset by default; the transient hostname
+then follows the network (DHCP hands out the IP as the name), so the machine
+flip-flops between e.g. `fedora` and `192.168.1.5`. Consequence: Chrome
+writes `~/.config/google-chrome/SingletonLock` as `<hostname>-<pid>`. After
+an unclean exit, Chrome only reclaims a stale lock when the hostname
+matches — a changed hostname makes it assume the profile is open on another
+machine and it exits SILENTLY (icon click does nothing). Bit twice in one
+week; any app using hostname-tagged lockfiles can hit this.
+
+Fix once: `sudo hostnamectl set-hostname mra-fedora` (any stable name).
+One-off recovery if it ever recurs: `rm ~/.config/google-chrome/Singleton*`.
+
 ### Update cadence — one weekly ritual, four channels
 
 - Updates arrive via dnf (system + vendor repos), flatpak, fwupd (firmware)
