@@ -30,7 +30,7 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | App | Source | Why / notes |
 |-----|--------|-------------|
 | Firefox | Fedora | Main browser. Separate "Music" profile launched as its own app; default profile pinned via alias (profile group drifts to last-used otherwise — see `dotfiles/zshrc`). |
-| firefoxpwa (PWAsForFirefox) | rpm + extension | PWAs as real apps: WhatsApp, mra-agent, mRA Notes. See SETUP.md §1 for icon + link-handling config. |
+| firefoxpwa (PWAsForFirefox) | rpm + extension | PWAs as real apps: mra-agent, mRA Notes. (WhatsApp moved to a Chrome PWA 2026-08-18 — messages intermittently stalled in the Firefox PWA; WhatsApp Web treats Chromium as first-class.) See SETUP.md §1 for icon + link-handling config. |
 | Google Chrome | Google repo | Secondary; also hosts the Qudelix 5K WebHID app (`--app` window, XWayland — see SETUP.md hardware notes). |
 | Ghostty | COPR | Terminal. Config in `dotfiles/ghostty.config` (Catppuccin Mocha, JetBrainsMono Nerd Font). |
 | VS Code (`code`) | Microsoft repo | Editor. |
