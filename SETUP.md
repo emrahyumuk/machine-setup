@@ -254,19 +254,38 @@ Layers:
 - GNOME extension schemas are invisible to plain `gsettings list-schemas` —
   keybinding conflicts hide in extension schemas (`--schemadir` needed).
 
-### Static hostname — Chrome singleton-lock trap
+### Static hostname — the Chromium singleton-lock trap
 
-Fedora leaves the static hostname unset by default; the transient hostname
-then follows the network (DHCP hands out the IP as the name), so the machine
-flip-flops between e.g. `fedora` and `192.168.1.5`. Consequence: Chrome
-writes `~/.config/google-chrome/SingletonLock` as `<hostname>-<pid>`. After
-an unclean exit, Chrome only reclaims a stale lock when the hostname
-matches — a changed hostname makes it assume the profile is open on another
-machine and it exits SILENTLY (icon click does nothing). Bit twice in one
-week; any app using hostname-tagged lockfiles can hit this.
+**Set a static hostname on day one, before apps ever run:**
+`sudo hostnamectl set-hostname mra-fedora` (any stable name). Fedora leaves
+it unset by default; the transient hostname then follows the network (DHCP
+hands out the IP as the name), so the machine flip-flops between e.g.
+`fedora` and `192.168.1.5`.
 
-Fix once: `sudo hostnamectl set-hostname mra-fedora` (any stable name).
-One-off recovery if it ever recurs: `rm ~/.config/google-chrome/Singleton*`.
+Why it matters: every Chromium-based app (Chrome, and via Electron/CEF also
+Spotify, Discord, Bitwarden, Unity Hub, custom `--user-data-dir` app
+windows…) guards its profile with a `SingletonLock` symlink named
+`<hostname>-<pid>`. A stale lock (unclean exit) is only reclaimed when the
+hostname matches; under a *different* hostname the app assumes the profile
+is open on another machine (NFS-home caution) and exits SILENTLY — icon
+click does nothing, no error, `flatpak run` exits 0. Six apps hit this here
+in one week.
+
+**If the hostname ever changes on a live machine**, sweep the stale locks
+once (covers flatpaks, dot-config apps, and custom browser profiles):
+
+```sh
+find ~/.var/app ~/.config ~/.local/share ~/.cache -maxdepth 5 \
+  -name SingletonLock 2>/dev/null | while read f; do
+  [ "$(readlink "$f" | sed 's/-[0-9]*$//')" != "$(hostname)" ] \
+    && rm -fv "${f%Lock}"{Lock,Cookie,Socket}
+done
+```
+
+Caveat: don't judge staleness by PID liveness — flatpak apps write their
+sandbox-namespace PID (e.g. `-4`), which looks dead from the host while the
+app is running. Hostname mismatch is the reliable test; skip apps that are
+currently running (their lock regenerates on their next clean restart).
 
 ### Update cadence — one weekly ritual, four channels
 
