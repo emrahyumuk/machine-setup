@@ -42,24 +42,27 @@ Layers:
 - Default browser. Second profile ("Music") launched as its own app with pinned
   profile selection — for music/media isolation.
 - **PWAs via firefoxpwa** (PWAsForFirefox extension + native host): mra-agent,
-  mRA Notes, WhatsApp. Each PWA profile is separate on purpose (session isolation).
-- **WhatsApp PWA specifics**:
-  - Icon: WhatsApp logo SVG (`assets/whatsapp.svg` in this repo — this exact
-    file is what the dock icon is generated from).
-    Generate all FFPWA-<id> icon sizes from it with ImageMagick
-    (`magick -background none <svg> -resize NxN -gravity center -extent NxN`),
-    overwrite files under `~/.local/share/icons/hicolor/*/apps/FFPWA-<id>.png`,
-    then `gtk-update-icon-cache`. Do NOT edit the .desktop Icon= line — replace
-    the files it points to, so firefoxpwa regenerations don't undo it.
-  - Setting: enable "Open out-of-scope URLs in a default browser" in the PWA's
-    own settings page (pref `firefoxpwa.openOutOfScopeInDefaultBrowser`, default
-    is false). Otherwise external links open inside the WhatsApp window.
-  WHY PWA over a wrapper app (karere etc.): same ~700 MB content cost either way
-  (WhatsApp Web is just heavy), but one less flatpak to maintain, Firefox engine
-  security updates, uBlock works. NOT a memory win — measured ±0.
-- WHY firefoxpwa over Chromium `--app=`: on Wayland, Chromium ignores `--class`
-  → wrong dock icon unless forced to XWayland. firefoxpwa generates correct
-  desktop entries natively.
+  mRA Notes. Each PWA profile is separate on purpose (session isolation).
+  Per-PWA tip: enable "Open out-of-scope URLs in a default browser" (pref
+  `firefoxpwa.openOutOfScopeInDefaultBrowser`, default false) or external
+  links open inside the PWA window. To replace a PWA's icon, overwrite the
+  `~/.local/share/icons/hicolor/*/apps/FFPWA-<id>.png` files (ImageMagick
+  from an SVG) + `gtk-update-icon-cache` — never edit the .desktop Icon=
+  line, so firefoxpwa regenerations don't undo it.
+- **WhatsApp lives in a CHROME PWA, not here** (moved 2026-08-18): in the
+  Firefox PWA outgoing messages intermittently stalled (WebSocket recovery
+  after suspend/background); WhatsApp Web treats Chromium as first-class.
+  Install: web.whatsapp.com in Chrome → address-bar Install button → allow
+  notifications. Chrome manages the desktop entry and icon itself — keep its
+  stock icon; a custom one gets silently reverted on manifest refreshes.
+  (History: replaced the karere flatpak wrapper 2026-07-30 — same ~700 MB
+  content cost either way, WhatsApp Web is just heavy.)
+- WHY firefoxpwa over a manual Chromium `--app=` window for the other PWAs:
+  on Wayland, Chromium ignores `--class` → wrong dock icon unless forced to
+  XWayland. firefoxpwa generates correct desktop entries natively. (A real
+  Chrome PWA *install* is fine — Chrome manages its own entry, as WhatsApp
+  shows — but mra-agent/mRA Notes stay on the Firefox engine on purpose:
+  session isolation + uBlock.)
 
 ### Google Calendar via CalDAV (GNOME Online Accounts / Thunderbird / any client)
 - TRAP: after connecting the Google account, only the default calendar shows
