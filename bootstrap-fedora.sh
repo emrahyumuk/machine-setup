@@ -60,9 +60,14 @@ EOF
 sudo sysctl --system >/dev/null
 
 echo "== disk overflow swap tier (see SETUP.md — zram stays primary) =="
+# Both this block and the snapper one ASSUME / is btrfs (Fedora default);
+# on anything else they are skipped — read the SETUP.md entries and adapt.
+ROOT_FS=$(findmnt -n -o FSTYPE /)
 # Own subvolume: a swapfile inside the root subvolume makes every btrfs
 # snapshot of / fail (ETXTBSY) — see the swapfile TRAP in SETUP.md.
-if [ ! -f /swap/swapfile ]; then
+if [ "$ROOT_FS" != btrfs ]; then
+  echo "  / is $ROOT_FS, not btrfs — skipping swapfile (SETUP.md: adapt by hand)"
+elif [ ! -f /swap/swapfile ]; then
   sudo btrfs subvolume show /swap >/dev/null 2>&1 || sudo btrfs subvolume create /swap
   sudo chmod 700 /swap
   sudo btrfs filesystem mkswapfile --size 16g /swap/swapfile
@@ -74,11 +79,15 @@ fi
 echo "== snapper: pre/post snapshot pair around every dnf transaction =="
 # python3-dnf-plugin-snapper is a DNF4 plugin — inert under dnf5; the dnf5
 # way is the generic actions plugin + the hook file below (see SETUP.md).
-if rpm -q python3-dnf-plugin-snapper >/dev/null 2>&1; then
-  sudo dnf remove -y python3-dnf-plugin-snapper
+if [ "$ROOT_FS" != btrfs ]; then
+  echo "  / is $ROOT_FS, not btrfs — skipping snapper (needs btrfs snapshots)"
+else
+  if rpm -q python3-dnf-plugin-snapper >/dev/null 2>&1; then
+    sudo dnf remove -y python3-dnf-plugin-snapper
+  fi
+  [ -f /etc/snapper/configs/root ] || sudo snapper -c root create-config /
+  sudo install -Dm644 assets/snapper.actions /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
 fi
-[ -f /etc/snapper/configs/root ] || sudo snapper -c root create-config /
-sudo install -Dm644 assets/snapper.actions /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
 
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 update-check.sh ~/.local/bin/update-check.sh
