@@ -145,12 +145,23 @@ Layers:
   transient pressure spike, save work first (or just reboot later).
 
 ### Disk overflow swap tier (the wall remover)
-- 16 GB btrfs swapfile at priority 10 under zram's 100:
+- 16 GB btrfs swapfile at priority 10 under zram's 100, in its OWN
+  subvolume:
   ```
-  btrfs filesystem mkswapfile --size 16g /swapfile
-  swapon --priority 10 /swapfile
-  # /etc/fstab: /swapfile none swap defaults,pri=10 0 0
+  btrfs subvolume create /swap && chmod 700 /swap
+  btrfs filesystem mkswapfile --size 16g /swap/swapfile
+  swapon --priority 10 /swap/swapfile
+  # /etc/fstab: /swap/swapfile none swap defaults,pri=10 0 0
   ```
+  TRAP (cost two weeks of silent breakage, found 2026-08-20): btrfs refuses
+  to snapshot a subvolume that holds an ACTIVE swapfile
+  (`btrfs_util_create_snapshot_fd2 … errno 26 Text file busy`). The file
+  lived at `/swapfile` inside the root subvolume from 08-06 to 08-20, so
+  every snapper snapshot of `/` failed in that window — and snapper's dnf
+  hook only says "Creating snapshot failed." Nested subvolumes are excluded
+  from the parent's snapshot, hence `/swap` as a subvolume of its own.
+  Moving it is safe while USED is ~0: create the new one, `swapon` it,
+  `swapoff` + `rm` the old, fix fstab.
   WHY (and the honest history — REJECTED TWICE before being added
   2026-08-06): rejected 07-31 as a thrashing fix (the sysctl tuning was the
   real fix) and 08-04 as a freeze fix (panic-time eviction through LUKS =
@@ -168,8 +179,9 @@ Layers:
   storms — see the hardware section.)
   ASSUMES: btrfs (mkswapfile handles NOCOW/compression); LUKS cost is
   per-page AES-NI, negligible at trickle rates.
-  VERIFY: `swapon --show` → two rows, zram pri 100, /swapfile pri 10,
-  swapfile USED stays ~0 except under genuine overflow.
+  VERIFY: `swapon --show` → two rows, zram pri 100, /swap/swapfile pri
+  10, swapfile USED stays ~0 except under genuine overflow;
+  `btrfs subvolume show /swap` succeeds (it is a subvolume, not a dir).
   FIELD-PROVEN 2026-08-11: first real overflow day — 18 parallel agent
   processes, zram full at 10.6/11.6 GB, 3.6 GB spilled to the swapfile,
   memory PSI 0.00 the whole time, zero UI impact. The exact workload class
@@ -325,6 +337,40 @@ currently running (their lock regenerates on their next clean restart).
   WHY weekly not daily: no measurable benefit to chasing updates daily on a
   desktop; weekly + reboot picks up kernels/mesa at a humane failure rate.
   VERIFY: `systemctl --user list-timers update-check.timer` shows next Sun.
+
+### Snapshots around every dnf transaction (snapper + dnf5 actions plugin)
+
+- Packages: `snapper libdnf5-plugin-actions`; config `snapper -c root
+  create-config /` (only `/` — `/home` is its own subvolume and is NOT
+  snapshotted, which is what you want for package-level undo); hook file
+  `assets/snapper.actions` → `/etc/dnf/libdnf5-plugins/actions.d/snapper.actions`
+  (bootstrap installs it). Result: every dnf transaction on the host gets a
+  `pre`/`post` pair described by the dnf command line, tagged cleanup
+  `number`, pruned by `NUMBER_LIMIT=10` in `/etc/snapper/configs/root`.
+  WHY this shape: the obvious package, `python3-dnf-plugin-snapper`, is a
+  DNF4 plugin — Fedora 44 runs dnf5, which never loads it. It sat installed
+  here from 2026-07-22 to 08-20 producing exactly zero snapshots across 90
+  transactions: a silent no-op that LOOKS like protection. dnf5's own
+  mechanism is the generic `actions` plugin; the hook file ports upstream's
+  documented snapper example, plus `-c number` (upstream's example omits it
+  and would accumulate forever).
+  WHY at all: `/` is btrfs, so a pre/post pair costs ~nothing and turns a
+  bad kernel/mesa/dnf-update into `snapper undochange N..M` or a file
+  restore instead of a reinstall. This is package-level undo, NOT a backup
+  (same disk, same LUKS volume) and NOT boot-menu rollback (Fedora has no
+  grub-btrfs wiring; `/.snapshots` is a plain directory in the root
+  subvolume, fine for undochange/diff).
+  TRAP: see the swapfile entry above — a swapfile inside the root
+  subvolume makes EVERY snapshot fail with `Text file busy`. Keep
+  `/swap` a subvolume of its own.
+  NOTE: `snapper-timeline.timer` may be enabled by the package; it does
+  nothing because `TIMELINE_CREATE="no"` — hourly snapshots are not wanted
+  (dnf pairs + the one manual baseline are the whole point).
+  VERIFY: `sudo snapper list` shows `pre`/`post` rows whose Description is
+  a dnf command line; after `sudo dnf reinstall -y libdnf5-plugin-actions`
+  a fresh pair appears. If the dnf output ever says "Creating snapshot
+  failed.", read `/var/log/snapper.log` — errno 26 means a swapfile crept
+  back into `/`.
 
 ### PipeWire sample rates — REVERTED same day, keep the default fixed 48 kHz
 - `allowed-rates = [44100 48000 88200 96000]` was tried 2026-08-06 (let the

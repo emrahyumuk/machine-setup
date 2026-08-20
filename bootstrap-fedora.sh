@@ -23,7 +23,9 @@ sudo dnf install -y \
   libva-utils \
   mold \
   zsh \
-  earlyoom
+  earlyoom \
+  snapper \
+  libdnf5-plugin-actions
 
 echo "== earlyoom (anti-freeze OOM layer — see SETUP.md for the full story) =="
 # Stock Fedora avoid-list kept whole + ghostty; prefer extended with
@@ -58,12 +60,25 @@ EOF
 sudo sysctl --system >/dev/null
 
 echo "== disk overflow swap tier (see SETUP.md — zram stays primary) =="
-if [ ! -f /swapfile ]; then
-  sudo btrfs filesystem mkswapfile --size 16g /swapfile
-  sudo swapon --priority 10 /swapfile
-  grep -q '^/swapfile' /etc/fstab \
-    || echo '/swapfile none swap defaults,pri=10 0 0' | sudo tee -a /etc/fstab >/dev/null
+# Own subvolume: a swapfile inside the root subvolume makes every btrfs
+# snapshot of / fail (ETXTBSY) — see the swapfile TRAP in SETUP.md.
+if [ ! -f /swap/swapfile ]; then
+  sudo btrfs subvolume show /swap >/dev/null 2>&1 || sudo btrfs subvolume create /swap
+  sudo chmod 700 /swap
+  sudo btrfs filesystem mkswapfile --size 16g /swap/swapfile
+  sudo swapon --priority 10 /swap/swapfile
+  grep -q '^/swap/swapfile' /etc/fstab \
+    || echo '/swap/swapfile none swap defaults,pri=10 0 0' | sudo tee -a /etc/fstab >/dev/null
 fi
+
+echo "== snapper: pre/post snapshot pair around every dnf transaction =="
+# python3-dnf-plugin-snapper is a DNF4 plugin — inert under dnf5; the dnf5
+# way is the generic actions plugin + the hook file below (see SETUP.md).
+if rpm -q python3-dnf-plugin-snapper >/dev/null 2>&1; then
+  sudo dnf remove -y python3-dnf-plugin-snapper
+fi
+[ -f /etc/snapper/configs/root ] || sudo snapper -c root create-config /
+sudo install -Dm644 assets/snapper.actions /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
 
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 update-check.sh ~/.local/bin/update-check.sh
@@ -86,7 +101,8 @@ fi
 echo
 echo "Done. Verification:"
 echo "  vainfo | grep -c H264       -> must be > 0 (needs relogin/reboot if 0)"
-echo "  swapon --show               -> zram size per min(ram/2, 12288) after reboot"
+echo "  swapon --show               -> zram size per min(ram/2, 12288) after reboot; /swap/swapfile pri 10"
+echo "  sudo snapper list           -> pre/post pair per dnf transaction (after the next one)"
 echo "  sysctl vm.swappiness        -> 150"
 echo "  journalctl -u earlyoom -b | grep SIGTERM  -> 10%/10% thresholds"
 echo

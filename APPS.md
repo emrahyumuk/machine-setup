@@ -67,6 +67,7 @@ Wired together in `dotfiles/zshrc`:
 | mold | Rust linker — see SETUP.md §1. |
 | podman (+compose, +docker shim) | Containers; `DOCKER_HOST` points to podman socket. |
 | nvme-cli, libva-utils | Diagnostics (`vainfo` is the VA-API verify tool). |
+| snapper + libdnf5-plugin-actions | btrfs `pre`/`post` snapshot pair around every dnf transaction (package-level undo, not a backup) — hook file `assets/snapper.actions`, story in SETUP.md §2. NOT `python3-dnf-plugin-snapper` (dnf4-only, silently inert on dnf5). |
 | gcloud (`google-cloud-cli`) | Google Cloud CLI via Google's official dnf repo (`/etc/yum.repos.d/google-cloud-sdk.repo`, el9 baseurl works on Fedora) — updates ride the dnf channel; extra components (kubectl etc.) are separate dnf packages, `gcloud components` is disabled in rpm installs. |
 | claude-code | Claude Code via Anthropic's **native installer** (`curl -fsSL https://claude.ai/install.sh \| bash`) — binary under `~/.local/share/claude/versions/`, launcher symlink `~/.local/bin/claude`, self-updates in the background. Moved off npm/nvm 2026-08-17 (GUI apps and non-interactive shells couldn't see the nvm-managed binary; the updater kept resolving the wrong npm). **Deliberate exception to the rpm-first policy:** the official dnf repo exists but doesn't self-update, and Claude Code ships near-daily releases — the weekly `upall` cadence would lag it. |
 

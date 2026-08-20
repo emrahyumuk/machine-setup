@@ -1,0 +1,24 @@
+# dnf5 actions plugin — btrfs snapshot pair (pre/post) around every dnf
+# transaction on the host. Ports the DNF4 snapper plugin
+# (python3-dnf-plugin-snapper — silently inert under dnf5) to
+# libdnf5-plugin-actions, following the upstream actions(8) example.
+#
+# Installed by bootstrap-fedora.sh to
+#   /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
+# Line format: callback:package_filter:direction:options:command
+# Spaces INSIDE one argument are backslash-escaped (the whole `sh -c` body is
+# a single argument). ${pid} / ${tmp.*} are substituted by the plugin; a
+# command sets a tmp.* variable by printing `tmp.name=value` to stdout.
+#
+# Difference from upstream: `-c number` tags the snapshots for snapper's
+# NUMBER_CLEANUP so NUMBER_LIMIT in /etc/snapper/configs/root prunes them —
+# without it they would accumulate forever.
+
+# 1. Description = the dnf command line that is running.
+pre_transaction:::enabled=host-only:/usr/bin/sh -c echo\ "tmp.snapper_descr=$(ps\ -o\ command\ --no-headers\ -p\ '${pid}')"
+
+# 2. PRE snapshot, number kept in tmp.snapper_pre_number.
+pre_transaction:::enabled=host-only:/usr/bin/sh -c echo\ "tmp.snapper_pre_number=$(snapper\ create\ -t\ pre\ -c\ number\ -p\ -d\ '${tmp.snapper_descr}')"
+
+# 3. POST snapshot paired to the pre one, then drop both variables.
+post_transaction:::enabled=host-only:/usr/bin/sh -c [\ -n\ "${tmp.snapper_pre_number}"\ ]\ &&\ snapper\ create\ -t\ post\ -c\ number\ --pre-number\ "${tmp.snapper_pre_number}"\ -d\ "${tmp.snapper_descr}"\ ;\ echo\ tmp.snapper_pre_number\ ;\ echo\ tmp.snapper_descr
