@@ -7,7 +7,7 @@ works around) the items below; software notes for each live in SETUP.md.
 
 | Item | Model | Notes |
 |------|-------|-------|
-| Laptop | Lenovo ThinkPad P14s Gen 6 AMD (21QMS1BQ00) | Ryzen AI 7 PRO 350 (8c/16t), Radeon 860M iGPU, XDNA2 NPU (58 TOPS), 32 GB RAM — of which 8 GB is a BIOS UMA carve-out for the iGPU, so the OS sees ~24 GB (reclaiming it was deliberately declined: the dedicated VRAM is kept for local LLMs — see SETUP.md). LUKS btrfs. Charge limit capped via Battery Health Charging extension (APPS.md). |
+| Laptop | Lenovo ThinkPad P14s Gen 6 AMD (21QMS1BQ00) | Ryzen AI 7 PRO 350 (8c/16t), Radeon 860M iGPU, XDNA2 NPU (58 TOPS), 32 GB RAM — of which 4 GB is a BIOS UMA carve-out for the iGPU, so the OS sees ~27 GB (was 8 GB until 2026-08-20; halved after a week of OOM storms — see SETUP.md). LUKS btrfs. Charge limit capped via Battery Health Charging extension (APPS.md). |
 
 ## Peripherals
 

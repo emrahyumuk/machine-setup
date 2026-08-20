@@ -154,8 +154,10 @@ Layers:
   problem was the WALL itself (zram's hard ceiling). Windows and macOS
   never hit this failure class because both ship auto-growing swap; this
   tier gives Fedora the same "degrade, never die" behavior. The BIOS UMA
-  reclaim (+4-6 GB) was considered and DECLINED — the 8 GB iGPU reserve
-  stays for local-LLM plans; the swapfile alone removes the wall.
+  reclaim (+4-6 GB) was considered and DECLINED at the time — the 8 GB
+  iGPU reserve stayed for local-LLM plans; the swapfile alone removed the
+  wall. (Reversed 2026-08-20: UMA lowered to 4 GB after a week of OOM
+  storms — see the hardware section.)
   ASSUMES: btrfs (mkswapfile handles NOCOW/compression); LUKS cost is
   per-page AES-NI, negligible at trickle rates.
   VERIFY: `swapon --show` → two rows, zram pri 100, /swapfile pri 10,
@@ -342,10 +344,13 @@ currently running (their lock regenerates on their next clean restart).
 
 **Nothing here auto-ports. Re-evaluate each item on new hardware.**
 
-- **BIOS UMA frame buffer: 8 GB to iGPU — deliberate, keep.** OS sees 23 of
-  32 GB. Kept for local LLM experiments (some runtimes want dedicated VRAM;
-  GTT gives ~11.6 GB more dynamically → ~19.6 GB addressable). If local LLM
-  plans die, lowering it in BIOS returns ~6 GB to the system.
+- **BIOS UMA frame buffer: 4 GB to iGPU** (Config → Display → Total
+  Graphics Memory). Was 8 GB for local-LLM headroom; halved 2026-08-20
+  after a week of memory storms (38 earlyoom kills in 12h at the worst) —
+  the +4 GB of system RAM wins every day, while GTT still lets the iGPU
+  address ~13.8 GB dynamically (~17.8 GB total), so the local-LLM envelope
+  survives. Revert is one BIOS visit if a runtime ever truly needs 8 GB
+  dedicated.
 - **Qudelix 5K DAC**: WebHID over USB (not Bluetooth) for the config app;
   needs a udev rule; pipewire profile analog-stereo. Listening-chain rules
   (all three found violated 2026-08-06, together = "sounds worse than the
