@@ -13,9 +13,11 @@ machine, or someone else adapting this setup?"**
 - **Owner** → everything is in scope, including the personal layer and
   hardware section (still verify hardware matches before applying §3 items).
 - **Someone else** → owner-specific items default to SKIP: the personal apps
-  and PWA/icon setup (SETUP.md §1 Firefox parts), the entire hardware section
-  (§3), and `dotfiles/` contents (offer as examples to cherry-pick, never
-  install as-is). What remains genuinely portable: the CLI stack, Rust/mold,
+  and PWA/icon setup (SETUP.md §1 Firefox parts), the Claude Code entry's
+  dot-claude-config repo (private — unreachable for non-owners; offer only
+  its allowlist-gitignore PATTERN for their own `~/.claude`), the entire
+  hardware section (§3), and `dotfiles/` contents (offer as examples to
+  cherry-pick, never install as-is). What remains genuinely portable: the CLI stack, Rust/mold,
   and the OS layer (§2) where assumptions hold.
 
 ## Step 1 — Survey the machine (read-only)

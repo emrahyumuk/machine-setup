@@ -79,11 +79,14 @@ Layers:
   event search.
 
 ### Claude Code
-- **The whole `~/.claude` config surface syncs via a private repo**:
-  github.com/emrahyumuk/dot-claude-config — allowlist .gitignore (CLAUDE.md,
-  settings.json, skills/, rules/, agents/, commands/, hooks/, bin/, project
-  memory dirs; sessions/credentials/caches can never enter). New machine:
-  clone it as `~/.claude` before first launch.
+- **The whole `~/.claude` config surface syncs via a private repo** (OWNER
+  ONLY — the repo is private; new machine: clone it as `~/.claude` before
+  first launch): github.com/emrahyumuk/dot-claude-config.
+  The PORTABLE part for anyone else is the pattern, not the repo: version
+  `~/.claude` with an allowlist .gitignore — ignore `/*`, then whitelist
+  CLAUDE.md, settings.json, skills/, rules/, agents/, commands/, hooks/,
+  bin/, and `projects/*/memory/` — so sessions, credentials and caches
+  structurally can never enter; push it to a private remote of your own.
 - Global prefs in `~/.claude/CLAUDE.md` (Turkish responses, human-voice for
   authored text, separator formatting). Memory dir has machine quirks — worth
   copying `fedora_desktop_quirks.md` content into new machines' context.
