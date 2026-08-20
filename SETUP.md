@@ -79,6 +79,11 @@ Layers:
   event search.
 
 ### Claude Code
+- **The whole `~/.claude` config surface syncs via a private repo**:
+  github.com/emrahyumuk/dot-claude-config — allowlist .gitignore (CLAUDE.md,
+  settings.json, skills/, rules/, agents/, commands/, hooks/, bin/, project
+  memory dirs; sessions/credentials/caches can never enter). New machine:
+  clone it as `~/.claude` before first launch.
 - Global prefs in `~/.claude/CLAUDE.md` (Turkish responses, human-voice for
   authored text, separator formatting). Memory dir has machine quirks — worth
   copying `fedora_desktop_quirks.md` content into new machines' context.
@@ -306,11 +311,11 @@ currently running (their lock regenerates on their next clean restart).
   across all four channels; doubles as the ritual reminder. Files ship in
   this repo (script at root, units in assets/), installed by bootstrap.
 - TRAP (root cause found 2026-08-06): npm's `allowScripts` policy BLOCKS
-  claude-code's postinstall on update — the CLI then dies with "native
-  binary not installed" on every invocation. Permanent fix:
-  `npm config set allow-scripts=@anthropic-ai/claude-code,opencode-ai,protobufjs,re2 --location=user`.
-  `upall` also self-heals as a belt (checks `claude --version` after the
-  npm step, runs the package's `install.cjs` if broken).
+  postinstall scripts of npm-installed CLIs — the tool then dies with
+  "native binary not installed" on every invocation. Permanent fix:
+  `npm config set allow-scripts=opencode-ai,protobufjs,re2 --location=user`.
+  (claude-code was the original victim and had a self-heal step in `upall`;
+  both retired 2026-08-17 when it moved to the native installer.)
 - Fedora RELEASE upgrades (44→45) are a separate twice-yearly event: wait
   ~2-3 weeks after release, then `dnf system-upgrade`; afterwards walk the
   VERIFY lines in this manifest.

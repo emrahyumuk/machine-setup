@@ -94,6 +94,5 @@ on Fedora.
 ## Not yet covered
 
 - Firefox profile contents (bookmarks, extensions' own settings) — sync/manual.
-- Claude Code memory dir (`~/.claude/projects/*/memory/`) — machine quirks
-  live there too; copy the relevant quirk files' content into new machines'
-  AI context when porting.
+- (Claude Code config+memory used to sit here — covered since 2026-08-20 by
+  the private dot-claude-config sync repo; see SETUP.md §1.)

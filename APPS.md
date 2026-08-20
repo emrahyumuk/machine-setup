@@ -73,7 +73,7 @@ Wired together in `dotfiles/zshrc`:
 ## Dev runtimes
 
 - Node: nodejs22 (system) + NVM for per-project versions; pnpm via PNPM_HOME.
-- AI agent CLIs: codex, opencode-ai (npm), agy (`~/.local/bin`); claude-code is dnf (see CLI stack).
+- AI agent CLIs: codex, opencode-ai (npm), agy (`~/.local/bin`); claude-code is the native installer (see CLI stack).
 - Rust: rustup-managed; global cargo config only sets mold.
 
 ## GNOME extensions

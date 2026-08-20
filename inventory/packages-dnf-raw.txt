@@ -394,6 +394,7 @@ uresourced
 usb_modeswitch
 usbutils
 util-linux
+uv
 vim-minimal
 virtualbox-guest-additions
 vte-profile
