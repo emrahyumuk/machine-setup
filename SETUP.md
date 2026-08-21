@@ -22,6 +22,13 @@ Layers:
 ### Shell & terminal
 - zsh, Ghostty terminal. Catppuccin Mocha lives ONLY in Ghostty's own config
   (app-internal) — desktop stays stock theming (see §2 theming trap).
+- starship prompt, config in `dotfiles/starship.toml` (Catppuccin powerline
+  preset, `cmd_duration` with milliseconds). `show_notifications = false`
+  on purpose: the "Command finished" desktop notification fires from EVERY
+  shell that renders the prompt, and on a machine where agent sessions run
+  dozens of zsh PTYs in parallel that is a notification storm (2026-08-21:
+  ~15 identical "1m33s" toasts from one test run) — the duration is in the
+  prompt anyway, and the agent tooling has its own attention notifications.
 
 ### dnf tweaks (or the OS's package manager equivalent)
 - `max_parallel_downloads=10` in `/etc/dnf/dnf.conf`.
