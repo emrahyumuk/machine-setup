@@ -133,6 +133,14 @@ native on this platform" (e.g. memory compression on macOS/Windows, hardware
 video decode) get one line saying so, so the next port doesn't re-litigate
 them. The manifest grows from real sessions, never from speculation.
 
+Placement: a new OS layer goes right after the existing one as
+`## 2b. OS-specific — <OS>` (then 2c…); §1/§3/§4 and every existing "§2"
+cross-reference keep their numbers. On the owner's laptop, Windows is the
+dual-boot slice described in HARDWARE.md — same hardware, so §3 items are
+in scope there too (translated: charge limit → vendor tool, WebHID app →
+Chrome on Windows, BIOS items already done and OS-independent). Commit the
+port on its own branch (e.g. `windows-port`) for review from the primary OS.
+
 ## Step 5 — Your own recommendations (beyond the manifest)
 
 The survey usually reveals things this repo doesn't cover. After the report,

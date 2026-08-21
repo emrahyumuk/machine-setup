@@ -1,0 +1,6 @@
+# Line endings are LF everywhere, on every OS — this repo is cloned on
+# Windows too, and a CRLF'd shell script breaks on Linux ("bad interpreter").
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.svg text eol=lf
