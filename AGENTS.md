@@ -52,20 +52,34 @@ checklist from SETUP.md + APPS.md where every item carries:
 - **your recommendation for THIS machine** (fits / already satisfied / doesn't
   apply — with the reason).
 
-Offer three selection granularities: **select all** / **per group** /
-**per item**. Use your platform's native multi-select prompt UI if you have
-one (e.g. Claude Code's multi-select question tool — real checkboxes, chunk
-into groups of up to 4 options per question); otherwise present a numbered
-list and let the user reply with selections. If the user asks "what does X
-do?", expand from SETUP.md/APPS.md before they decide.
+**Two steps, in this order — SHOW, then SELECT.** (Lesson from the first
+Windows port, 2026-08-21: asking "all / per group / per item?" up front and
+then using a chip-style question widget produced group lumps with no
+per-item explanation — the widget's option text cannot carry the
+annotation, and "per group" read as "hide the items". Don't.)
+
+1. **SHOW — print the whole annotated checklist as plain text in the
+   conversation first.** Group headings for navigation, and under each
+   heading one line per item:
+   `[ ] name — what it is — why you'd want it — recommendation for THIS
+   machine (fits / already installed / no equivalent → alternative)`.
+   Every item, every time, before any selection prompt. If the user asks
+   "what does X do?", expand from SETUP.md/APPS.md before they decide.
+2. **SELECT — only after the list is on screen.** Accept free text ("just
+   eza, bat and lazygit", "all of group 1 except zoxide", "everything
+   recommended") and/or a native multi-select widget if the platform has
+   one (Claude Code's multi-select question tool, up to 4 options per
+   question). The widget is a ticking aid, not the carrier of the list: its
+   option labels repeat the item name + one-line purpose, never a group
+   name alone. "Select all" / "whole group N" are shortcuts the user may
+   use in their reply — not a mode you ask them to pick before they have
+   seen the items.
 
 **Groups are for navigation only — selection and annotation are PER ITEM.**
 Never present "CLI stack" or "GNOME extensions" as a single yes/no lump:
 each tool, extension and app gets its own checklist line with its one-line
 purpose, pulled from APPS.md (that file exists precisely to feed this menu —
 e.g. "zoxide — cd with memory", "Vitals — CPU/temp/RAM in the top bar").
-Accept selections as checkboxes AND as free text ("just eza, bat and
-lazygit" is a valid answer).
 
 Typical groups:
 

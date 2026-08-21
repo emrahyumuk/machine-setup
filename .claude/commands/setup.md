@@ -8,9 +8,12 @@ the current user and machine:
 1. Ask whether the user is the repo owner or someone adapting this setup
    (Step 0 — scope depends on it).
 2. Survey the machine read-only; filter out anything already installed.
-3. Present the annotated per-item checklist (every tool/app/extension its
-   own line with purpose + recommendation; checkbox or free-text selection;
-   subjective look-and-feel is asked, never inherited).
+3. Present the annotated per-item checklist AS PLAIN TEXT FIRST (every
+   tool/app/extension its own line: what it is, why, recommendation for
+   this machine) — only then collect the selection (free text and/or the
+   multi-select widget as a ticking aid; never a "all/group/item?" mode
+   question before the list is shown; subjective look-and-feel is asked,
+   never inherited).
 4. Apply only what was selected: VERIFY-first, check ASSUMES, confirm each
    system-level change individually, verify after.
 5. Finish with the four-list report (applied / already satisfied / skipped /
