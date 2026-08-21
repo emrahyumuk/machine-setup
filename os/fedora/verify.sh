@@ -1,5 +1,5 @@
 #!/bin/bash
-# verify-fedora.sh — drift check: runs every VERIFY line of SETUP.md (Fedora
+# os/fedora/verify.sh — drift check: runs every VERIFY line of SETUP.md (Fedora
 # + this hardware) and prints PASS / FAIL / SKIP. Read-only. Run plainly for
 # the user-level checks; with sudo for the ones that need root (marked SKIP
 # otherwise). Exit 1 if anything FAILs.
@@ -8,8 +8,8 @@
 # plugin inert under dnf5 for a month, and the swapfile blocking every btrfs
 # snapshot for two weeks. Neither makes noise. This does.
 #
-# Usage: ./verify-fedora.sh            (user-level)
-#        sudo -E ./verify-fedora.sh    (everything; -E keeps $HOME)
+# Usage: os/fedora/verify.sh            (user-level)
+#        sudo -E os/fedora/verify.sh    (everything; -E keeps $HOME)
 #        machine-verify                (installed by bootstrap to ~/.local/bin)
 
 pass=0; fail=0; skip=0

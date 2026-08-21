@@ -6,7 +6,6 @@ on  GNOME Shell integration | chrome-gnome-shell@gnome.org
 on  Progressive Web Apps for Firefox | firefoxpwa@filips.si
 on  uBlock Origin | uBlock0@raymondhill.net
 off Coupert - Automatic Coupon Finder & Cashback | appledev@soarinfotech.com
-off DeepL: translate and write with AI | firefox-extension@deepl.com
 off Take Webpage Screenshots Entirely - FireShot | {0b457cAA-602d-484a-8fe7-c1d894a011ba}
 off Wappalyzer - Technology profiler | wappalyzer@crunchlabz.com
 # google-chrome (name | id)

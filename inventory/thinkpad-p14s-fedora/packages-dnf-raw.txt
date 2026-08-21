@@ -221,6 +221,7 @@ kexec-tools
 lemonade-server
 less
 libappindicator-gtk3-devel
+libdnf5-plugin-actions
 libertas-firmware
 libglvnd-gles
 libreoffice-calc
@@ -257,6 +258,7 @@ microcode_ctl
 ModemManager
 mold
 mpage
+mpv
 mt7xxx-firmware
 mtr
 nautilus
@@ -325,7 +327,6 @@ psacct
 psmisc
 ptyxis
 pylix
-python3-dnf-plugin-snapper
 qcom-wwan-firmware
 qemu-guest-agent
 qemu-user-static

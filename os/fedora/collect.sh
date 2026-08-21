@@ -1,13 +1,16 @@
 #!/bin/bash
-# Regenerates inventory/ from the current machine state.
+# Regenerates inventory/<machine-os>/ + dotfiles/ from the current machine
+# state, and stamps the machine record (machines/<machine-os>.md).
 # Run after installing/removing things; review the diff, then commit.
 #
 # PRIVACY RULE: inventory holds CONFIG (deliberate choices), never STATE.
 # Pairing data, certificates, device ids, caches never land here. dconf is
 # therefore a whitelist — add a namespace only after reading its dump.
 set -euo pipefail
-cd "$(dirname "$0")"
-mkdir -p inventory
+cd "$(dirname "$0")/../.."   # repo root
+MID=thinkpad-p14s-fedora
+INV=inventory/$MID
+mkdir -p "$INV"
 
 echo "== system =="
 {
@@ -15,17 +18,17 @@ echo "== system =="
   . /etc/os-release && echo "os: $PRETTY_NAME"
   echo "kernel-at-collect: $(uname -r)   # informational only, rolls constantly"
   echo "model: $(cat /sys/devices/virtual/dmi/id/product_family 2>/dev/null || true) ($(cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null || true))"
-} > inventory/system.txt
+} > $INV/system.txt
 
 echo "== dnf user-installed (RAW appendix — curated view lives in APPS.md) =="
 # .collect-exclude (gitignored, one package name per line) keeps
 # not-yet-public items out of the published inventory
 dnf repoquery --userinstalled --qf '%{name}\n' 2>/dev/null | sort -u \
   | { [ -f .collect-exclude ] && grep -vxf .collect-exclude || cat; } \
-  > inventory/packages-dnf-raw.txt
+  > $INV/packages-dnf-raw.txt
 
 echo "== flatpaks =="
-flatpak list --app --columns=application,origin 2>/dev/null | sort > inventory/flatpaks.txt
+flatpak list --app --columns=application,origin 2>/dev/null | sort > $INV/flatpaks.txt
 
 echo "== gnome extensions (annotations live in APPS.md) =="
 {
@@ -33,13 +36,13 @@ echo "== gnome extensions (annotations live in APPS.md) =="
   gnome-extensions list --enabled 2>/dev/null | sort
   echo "# installed but disabled"
   comm -23 <(gnome-extensions list 2>/dev/null | sort) <(gnome-extensions list --enabled 2>/dev/null | sort)
-} > inventory/gnome-extensions.txt
+} > $INV/gnome-extensions.txt
 
 echo "== browser extensions (annotations live in APPS.md 'Browsers') =="
 # Names + ids only — no extension settings/storage (that is state, some of
 # it private: vault data, API keys). Disabled ones listed separately so a
 # deliberate "installed but off" decision stays visible.
-python3 - > inventory/browser-extensions.txt <<'PY'
+python3 - > $INV/browser-extensions.txt <<'PY'
 import json, glob, os
 H = os.path.expanduser("~")
 # Firefox: every profile under XDG or legacy root
@@ -86,7 +89,7 @@ PY
 
 echo "== gnome settings (whitelisted namespaces) =="
 {
-  echo "# Whitelist only — see privacy rule in collect.sh."
+  echo "# Whitelist only — see privacy rule in os/fedora/collect.sh."
   echo "# GSConnect is EXCLUDED on purpose: its dconf tree is pairing STATE"
   echo "# (device certificate, ids, phone name, local IP). On a new machine:"
   echo "# install GSConnect, pair the phone manually."
@@ -109,7 +112,7 @@ echo "== gnome settings (whitelisted namespaces) =="
     echo "### EOF"
     echo
   done
-} > inventory/gnome-settings.dconf
+} > $INV/gnome-settings.dconf
 
 echo "== dev tool globals =="
 # npm globals live under nvm's node. `command -v npm` is NOT a safe guard:
@@ -121,7 +124,7 @@ if [ -n "$nvm_bin" ] && [ -x "$nvm_bin/npm" ]; then
   {
     echo "# npm -g"
     PATH="$nvm_bin:$PATH" "$nvm_bin/npm" ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | xargs -rn1 basename || true
-  } > inventory/dev-globals.txt
+  } > $INV/dev-globals.txt
 else
   echo "  nvm npm not found — keeping the existing inventory list"
 fi
@@ -139,5 +142,16 @@ if grep -rqiE "token|secret|password|api[_-]?key|BEGIN (RSA|EC|OPENSSH)" dotfile
   echo "!! possible secret in dotfiles/ — review before committing" >&2
 fi
 
+echo "== machine record: stamp last-collected / last-verified =="
+M=machines/$MID.md
+if [ -f "$M" ]; then
+  sed -i "s/^last-collected: .*/last-collected: $(date +%F)/" "$M"
+  if os/fedora/verify.sh >/dev/null 2>&1; then
+    sed -i "s/^last-verified: .*/last-verified: $(date +%F)/" "$M"; echo "  verify: all PASS → last-verified stamped"
+  else
+    echo "  verify: FAILs present → last-verified NOT stamped (run os/fedora/verify.sh to see)"
+  fi
+fi
+
 echo
-echo "Done → inventory/ + dotfiles/. Review the diff before committing."
+echo "Done → $INV/ + dotfiles/ + $M. Review the diff before committing."

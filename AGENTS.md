@@ -19,7 +19,7 @@ this setup to other machines too, and the hardware layer only follows the
 hardware:
 
 - **Owner, THIS laptop** (another OS on the same machine — e.g. the Windows
-  dual-boot slice in HARDWARE.md) → everything is in scope: personal layer,
+  dual-boot slice in HARDWARE.md / machines/) → everything is in scope: personal layer,
   OS layer translated, AND the hardware section §3 (same hardware; apply
   the items' intent via the platform's tools, see "Owner on a NEW OS").
 - **Owner, ANOTHER machine** (a MacBook, a desktop…) → personal layer and OS
@@ -39,6 +39,30 @@ hardware:
 Detect before proposing: OS + version, package manager, desktop environment,
 CPU/GPU vendor, RAM, laptop vs desktop, swap/zram situation, what from
 APPS.md is already installed. Never assume Fedora — check.
+
+**Which machine is this?** Read the DMI product name (Linux:
+`/sys/class/dmi/id/product_name`; Windows: `Get-CimInstance Win32_ComputerSystem`;
+macOS: `system_profiler SPHardwareDataType`) and the OS, then look in
+`machines/` for a record with the same `model:` + `os:`. One match → "I
+recognise this machine: <file>, last verified <date>". Several (two
+identical models) → use `hostname:` to break the tie, else ask. None → a
+new machine: propose the short name from the model (`thinkpad-t14`,
+`mbp14`, `desk-b650`), let the user adjust, and create
+`machines/<hardware>-<os>.md` + `hardware/<hardware>.md` as part of the
+session (owner) or of Step 6 (someone else). Suggest a static hostname in
+the same shape if the current one is generic/unset. Never write serials,
+MACs or keys into these files.
+
+**Freshness.** Each machine record carries `last-verified`. A layer older
+than **90 days** (or never verified) is a CACHE of mechanics, not truth:
+say so ("§2b was last verified on DATE"), run each item's VERIFY before
+trusting it, re-check package ids/paths/commands against current sources
+(research allowed — say when you did), and prefer the item's WHY over its
+HOW. The primary machine's layer is the reference for DECISIONS: a decision
+present there but missing from this OS's layer is a gap — offer it
+("Fedora has snapshots before every package transaction; the Windows
+equivalent is System Restore points before winget upgrades — add it?"),
+don't silently skip it. Staleness is surfaced, never hidden.
 
 **Browsers are asked, not assumed.** Ask which browser is the user's daily
 driver (and whether a second one has a job — e.g. Claude-in-Chrome, WebHID,
@@ -130,6 +154,10 @@ never applied; system-level ones are re-confirmed individually at apply time
   fails, say so and skip or adapt (e.g. swappiness=150 is zram-only).
 - Translate mechanics to the platform (dnf → apt/pacman/brew/winget; sysctl
   → the platform's equivalent or "no equivalent").
+- **Print the plan first**: before the first command runs, list the exact
+  commands/changes you are about to make for the selected items (one block,
+  grouped by item). The user sees the whole shape before any permission
+  prompt; surprises are caught here, not mid-run.
 - **Ask before every system-level change** (root/admin, BIOS advice, kernel
   params). Batch user-level changes if the user prefers.
 - Run the item's **VERIFY** line (or its platform equivalent) after applying.
@@ -150,11 +178,12 @@ never applied; system-level ones are re-confirmed individually at apply time
   4. Label every such pick as YOUR suggestion, not the owner's manifest
      (same rule as Step 5), and record pick + reasoning in the new OS
      section of SETUP.md so the next port inherits a decision, not a guess.
-- On Fedora, the items `bootstrap-fedora.sh` covers may be applied by running
-  that script once (with the user's consent) instead of re-implementing them
-  one by one — it is the deterministic form of those exact decisions. Still
-  run the per-item VERIFY lines afterwards. Note it overwrites its config
-  files unconditionally; if the survey found user-customized versions, apply
+- If `os/<os>/bootstrap` exists for this OS (Fedora today), the items it
+  covers may be applied by running that script once (with the user's
+  consent) instead of re-implementing them one by one — it is the
+  deterministic form of those exact decisions. Still run the per-item VERIFY
+  lines afterwards (`os/<os>/verify`). Note it overwrites its config files
+  unconditionally; if the survey found user-customized versions, apply
   per-item instead.
 
 ## Step 4 — Report and hand off
@@ -176,7 +205,15 @@ them. The manifest grows from real sessions, never from speculation.
 
 Placement: a new OS layer goes right after the existing one as
 `## 2b. OS-specific — <OS>` (then 2c…); §1/§3/§4 and every existing "§2"
-cross-reference keep their numbers. On the owner's laptop, Windows is the
+cross-reference keep their numbers. New hardware gets `## 3b. …` and
+`hardware/<name>.md`. **A port also produces its mechanics**: from what was
+actually applied, write `os/<os>/bootstrap` (the judgment-free part —
+package-manager lines, config copies, default handlers), `os/<os>/verify`
+(every VERIFY line of the new layer as PASS/FAIL) and `os/<os>/collect`
+(inventory + dotfiles + machine-record stamps), in the platform's native
+script language (`.ps1` on Windows, `.sh` on macOS). Fill or create
+`machines/<hardware>-<os>.md` with the stamps. The second run on that OS is
+then one script + VERIFY, like Fedora today. On the owner's laptop, Windows is the
 dual-boot slice described in HARDWARE.md — same hardware, so §3 items are
 in scope there too (translated: charge limit → vendor tool, WebHID app →
 Chrome on Windows, BIOS items already done and OS-independent). Commit the
@@ -218,8 +255,9 @@ and grow?"** If yes:
    does not apply to repo files); remind them of the privacy rule before
    the first push: config only, never state/identity/secrets.
 6. Tell them how it grows: every future machine-level decision → SETUP.md
-   with its WHY, same sitting; `collect.sh` equivalent for their platform
-   is theirs to write (offer a starter if they want one).
+   with its WHY, same sitting; their `os/<os>/{bootstrap,verify,collect}`
+   come out of this very session (write them — the same rule as "Owner on
+   a NEW OS"), and `machines/<their-hardware>-<os>.md` starts stamped today.
 
 ## Hard rules
 

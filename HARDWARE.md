@@ -1,13 +1,16 @@
-# Hardware — what's on the desk
+# Hardware — machines and the desk
 
-The physical layer of this setup. Everything else in this repo assumes (or
-works around) the items below; software notes for each live in SETUP.md.
+The physical layer. One file per machine under `hardware/`, one record per
+(machine, OS) under `machines/`; this page is the index plus the shared desk.
 
-## Computer
+## Machines
 
-| Item | Model | Notes |
-|------|-------|-------|
-| Laptop | Lenovo ThinkPad P14s Gen 6 AMD (21QMS1BQ00) | Ryzen AI 7 PRO 350 (8c/16t), Radeon 860M iGPU, XDNA2 NPU (58 TOPS), 32 GB RAM — of which 4 GB is a BIOS UMA carve-out for the iGPU, so the OS sees ~27 GB (was 8 GB until 2026-08-20; halved after a week of OOM storms — see SETUP.md). 512 GB NVMe, **dual boot**: the Windows it shipped with stays in a ~95 GB NTFS slice (firmware boot order puts Fedora first), Fedora owns the rest as LUKS btrfs (379 GB). Because Windows is still there the RTC runs in LOCAL time (Anaconda does this when it detects Windows) so both OSes agree on the clock; `timedatectl` warns about DST with that mode, moot in Türkiye (no DST). Charge limit capped via Battery Health Charging extension (APPS.md). |
+| Short name | Machine | OSes (see `machines/`) | Details |
+|------------|---------|------------------------|---------|
+| `thinkpad-p14s` | Lenovo ThinkPad P14s Gen 6 AMD | fedora (primary), windows (dual-boot slice, not yet set up) | [hardware/thinkpad-p14s.md](hardware/thinkpad-p14s.md) |
+
+Naming: `<hardware>-<os>` everywhere (machine records, inventory dirs,
+suggested hostnames). The short name comes from the model, not the owner.
 
 ## Peripherals
 

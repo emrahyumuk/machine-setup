@@ -20,15 +20,13 @@ important — what I decided *against* and why.
 
 | Path | What |
 |------|------|
-| `SETUP.md` | The manifest: every decision with WHAT / WHY / VERIFY / ASSUMES, in three layers (personal → OS → hardware) + a deliberately-NOT-done list. Source of truth. |
+| `SETUP.md` | The manifest: every decision with WHAT / WHY / VERIFY / ASSUMES, in layers (§1 personal → §2/§2b/… per OS → §3a/§3b… per hardware → §4 deliberately NOT done). Source of truth; one file on purpose — decisions read as one document. |
 | `APPS.md` | Curated, annotated app/tool/extension list — what is installed on purpose and why. The human/agent-facing view. |
-| `HARDWARE.md` | The physical desk: laptop, peripherals, what drives what. |
-| `bootstrap-fedora.sh` | Mechanical base for Fedora: repos, packages, config files that need no judgment. Idempotent. |
-| `verify-fedora.sh` | Drift check: every VERIFY line of SETUP.md as PASS/FAIL/SKIP (sudo for the root-only ones). Installed as `machine-verify`; `upall` runs it weekly. |
-| `collect.sh` | Regenerates `inventory/` + `dotfiles/` from the live machine. Whitelist-based (see its privacy rule). |
-| `inventory/` | Generated state: raw dnf list (appendix), flatpaks, GNOME extensions, browser extensions (on/off, per profile), whitelisted dconf namespaces, dev globals. Never hand-edited. |
-| `dotfiles/` | Verbatim copies of zshrc, ghostty config, starship prompt config, mpv config; `gitconfig.template` is sanitized (identity set per machine). |
-| `assets/` | Files the manifest references (e.g. the WhatsApp PWA icon source). |
+| `HARDWARE.md` + `hardware/<name>.md` | The desk (shared peripherals) + one file per machine. |
+| `machines/<hardware>-<os>.md` | One record per (machine, OS): model, role, which layers apply, and freshness stamps (`last-applied` / `last-collected` / `last-verified`). Agents match here first; staleness is visible here, not hidden. |
+| `os/<os>/` | Per-OS mechanics: `bootstrap` (judgment-free base), `verify` (every VERIFY line as PASS/FAIL — installed as `machine-verify`, run by `upall`), `collect` (regenerates inventory + dotfiles, stamps the machine record), notifier scripts, systemd units/assets. Today: `os/fedora/`. A port produces its own `os/<os>/` from its session. |
+| `inventory/<hardware>-<os>/` | Generated state per machine: raw package list (appendix), flatpaks, GNOME/browser extensions, whitelisted dconf, dev globals. Never hand-edited. |
+| `dotfiles/` | Verbatim copies of zshrc, ghostty, starship, mpv configs; `gitconfig.template` is sanitized (identity set per machine). Shared across OSes where the tool exists; per-OS files go under `dotfiles/<os>/` when one appears. |
 
 ## Privacy rule
 
@@ -70,15 +68,17 @@ language, while repo files stay English.
 
 Works on other distros/OSes too — items with no equivalent get flagged with
 alternatives instead of silently dropped. No AI at hand? `SETUP.md` reads
-fine as a human document; `bootstrap-fedora.sh` covers the mechanical base
+fine as a human document; `os/fedora/bootstrap.sh` covers the mechanical base
 on Fedora.
 
 ## Fresh machine procedure (owner)
 
-1. Fedora: run `./bootstrap-fedora.sh`. Other OS: skip.
-2. Install from inventory: `inventory/packages-dnf.txt` (dnf),
-   `inventory/flatpaks.txt` (flathub), `inventory/gnome-extensions.txt`,
-   then load `inventory/gnome-settings.dconf` per-namespace with `dconf load`.
+1. Fedora: run `os/fedora/bootstrap.sh`. Other OS: its `os/<os>/bootstrap`
+   if a port produced one, else skip.
+2. Install from inventory: `inventory/thinkpad-p14s-fedora/packages-dnf-raw.txt`
+   (dnf, appendix — APPS.md is the intent), `flatpaks.txt` (flathub),
+   `gnome-extensions.txt`, then load `gnome-settings.dconf` per-namespace
+   with `dconf load`.
 3. Hand `SETUP.md` to an AI agent:
 
    > Apply this manifest to this machine. Adapt each item to the current
@@ -96,7 +96,8 @@ on Fedora.
   → add to `SETUP.md` **with its WHY and VERIFY, in the same sitting**.
   An entry without a WHY will either be blindly ported somewhere it harms,
   or deleted because nobody remembers it.
-- Installed/removed something? → `./collect.sh`, review the diff, commit.
+- Installed/removed something? → `os/fedora/collect.sh` (or the OS's
+  collect), review the diff, commit. It also stamps `machines/<id>.md`.
 
 ## Not yet covered
 

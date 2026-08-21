@@ -25,7 +25,7 @@ fi
 # systemd-run gives the terminal its own scope so it survives this service.
 repo="$HOME/Projects/mRA/emrahyumuk/machine-setup"
 if [ -d "$repo/.git" ]; then
-  "$repo/collect.sh" >/dev/null 2>&1 || true
+  "$repo/os/fedora/collect.sh" >/dev/null 2>&1 || true
   if ! git -C "$repo" diff --quiet 2>/dev/null; then
     (
       drift=$(timeout 12h notify-send -A default="Show diff" \

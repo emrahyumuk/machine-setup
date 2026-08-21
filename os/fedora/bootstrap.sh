@@ -4,7 +4,8 @@
 # SETUP.md and is applied by reading it, not by this script.
 # Idempotent: safe to re-run.
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../.."   # repo root
+OSD=os/fedora
 
 echo "== RPM Fusion (free + nonfree) =="
 if ! dnf repolist 2>/dev/null | grep -q rpmfusion-free; then
@@ -40,8 +41,8 @@ sudo systemctl restart earlyoom
 echo "== earlyoom kill notifications (journal watcher) =="
 # systembus-notify is retired from Fedora repos and earlyoom's DynamicUser
 # sandbox can't reach the session anyway — a user-side journal tail can.
-install -Dm755 earlyoom-notify.sh ~/.local/bin/earlyoom-notify.sh
-install -Dm644 assets/earlyoom-notify.service ~/.config/systemd/user/earlyoom-notify.service
+install -Dm755 $OSD/earlyoom-notify.sh ~/.local/bin/earlyoom-notify.sh
+install -Dm644 $OSD/assets/earlyoom-notify.service ~/.config/systemd/user/earlyoom-notify.service
 systemctl --user daemon-reload
 systemctl --user enable --now earlyoom-notify.service
 
@@ -87,7 +88,7 @@ else
     sudo dnf remove -y python3-dnf-plugin-snapper
   fi
   [ -f /etc/snapper/configs/root ] || sudo snapper -c root create-config /
-  sudo install -Dm644 assets/snapper.actions /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
+  sudo install -Dm644 $OSD/assets/snapper.actions /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
 fi
 
 echo "== mpv: config + default video/stream handler =="
@@ -95,13 +96,13 @@ install -Dm644 dotfiles/mpv.conf ~/.config/mpv/mpv.conf
 xdg-mime default mpv.desktop application/vnd.apple.mpegurl application/x-mpegurl \
   audio/x-mpegurl audio/mpegurl video/mp4 video/x-matroska video/webm 2>/dev/null || true
 
-echo "== drift check (verify-fedora.sh → machine-verify; upall runs it) =="
-install -Dm755 verify-fedora.sh ~/.local/bin/machine-verify
+echo "== drift check (os/fedora/verify.sh → machine-verify; upall runs it) =="
+install -Dm755 $OSD/verify.sh ~/.local/bin/machine-verify
 
 echo "== weekly update summary notifier (Sun 18:00) =="
-install -Dm755 update-check.sh ~/.local/bin/update-check.sh
-install -Dm644 assets/update-check.service ~/.config/systemd/user/update-check.service
-install -Dm644 assets/update-check.timer ~/.config/systemd/user/update-check.timer
+install -Dm755 $OSD/update-check.sh ~/.local/bin/update-check.sh
+install -Dm644 $OSD/assets/update-check.service ~/.config/systemd/user/update-check.service
+install -Dm644 $OSD/assets/update-check.timer ~/.config/systemd/user/update-check.timer
 systemctl --user daemon-reload
 systemctl --user enable --now update-check.timer
 
@@ -115,6 +116,10 @@ EOF
 else
   echo "  ~/.cargo/config.toml exists — merge manually (see SETUP.md)"
 fi
+
+# machine record: stamp last-applied (see machines/README.md)
+M=machines/thinkpad-p14s-fedora.md
+[ -f "$M" ] && sed -i "s/^last-applied: .*/last-applied: $(date +%F)/" "$M"
 
 echo
 echo "Done. Verification:"

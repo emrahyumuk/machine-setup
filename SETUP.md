@@ -126,6 +126,10 @@ Layers:
 
 ## 2. OS-specific — Fedora
 
+(Other OS layers follow as §2b, §2c… — written from real sessions, never
+speculation. Each has its own `os/<os>/` scripts and `machines/` record with
+freshness stamps; see HARDWARE.md / machines/README.md.)
+
 ### RPM Fusion + hardware video decode (BIG one)
 - Enable RPM Fusion free + nonfree, then install `mesa-va-drivers-freeworld`.
   WHY: stock Fedora mesa ships with H.264/HEVC VA-API decode stripped (patent
@@ -355,7 +359,8 @@ currently running (their lock regenerates on their next clean restart).
 - A user timer (`update-check.timer`, Sun 18:00, Persistent=true) runs
   `update-check.sh` → one desktop notification summarizing pending counts
   across all four channels; doubles as the ritual reminder. Files ship in
-  this repo (script at root, units in assets/), installed by bootstrap.
+  this repo (`os/fedora/update-check.sh`, units in `os/fedora/assets/`),
+  installed by bootstrap.
 - TRAP (root cause found 2026-08-06): npm's `allowScripts` policy BLOCKS
   postinstall scripts of npm-installed CLIs — the tool then dies with
   "native binary not installed" on every invocation. Permanent fix:
@@ -365,7 +370,7 @@ currently running (their lock regenerates on their next clean restart).
 - Fedora RELEASE upgrades (44→45) are a separate twice-yearly event: wait
   ~2-3 weeks after release, then `dnf system-upgrade`; afterwards walk the
   VERIFY lines in this manifest.
-  `upall` ends with **`machine-verify`** (= `verify-fedora.sh`): every
+  `upall` ends with **`machine-verify`** (= `os/fedora/verify.sh`): every
   VERIFY line of this manifest as PASS/FAIL, so silent drift surfaces
   weekly instead of by accident (snapper was inert for a month and the
   swapfile blocked snapshots for two weeks before this existed, 2026-08).
@@ -379,7 +384,7 @@ currently running (their lock regenerates on their next clean restart).
 - Packages: `snapper libdnf5-plugin-actions`; config `snapper -c root
   create-config /` (only `/` — `/home` is its own subvolume and is NOT
   snapshotted, which is what you want for package-level undo); hook file
-  `assets/snapper.actions` → `/etc/dnf/libdnf5-plugins/actions.d/snapper.actions`
+  `os/fedora/assets/snapper.actions` → `/etc/dnf/libdnf5-plugins/actions.d/snapper.actions`
   (bootstrap installs it). Result: every dnf transaction on the host gets a
   `pre`/`post` pair described by the dnf command line, tagged cleanup
   `number`, pruned by `NUMBER_LIMIT=10` in `/etc/snapper/configs/root`.
@@ -430,7 +435,7 @@ currently running (their lock regenerates on their next clean restart).
 
 ---
 
-## 3. Hardware-specific — ThinkPad P14s Gen6 AMD
+## 3a. Hardware-specific — ThinkPad P14s Gen6 AMD (`thinkpad-p14s`)
 
 **Nothing here auto-ports. Re-evaluate each item on new hardware.**
 

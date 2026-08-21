@@ -1,4 +1,4 @@
-# Whitelist only — see privacy rule in collect.sh.
+# Whitelist only — see privacy rule in os/fedora/collect.sh.
 # GSConnect is EXCLUDED on purpose: its dconf tree is pairing STATE
 # (device certificate, ids, phone name, local IP). On a new machine:
 # install GSConnect, pair the phone manually.
@@ -116,7 +116,7 @@ charging-mode='bal'
 device-type=20
 force-discharge-enabled=false
 icon-style-type=0
-indicator-position-max=3
+indicator-position-max=4
 polkit-status='installed'
 show-battery-panel2=false
 show-quickmenu-subtitle=true
@@ -136,7 +136,7 @@ use-higher-precision=false
 ### dconf load /org/gnome/shell/extensions/caffeine/  <<'EOF'
 [/]
 cli-toggle=false
-indicator-position-max=3
+indicator-position-max=4
 user-enabled=true
 ### EOF
 
