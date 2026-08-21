@@ -81,8 +81,10 @@ exists, only a global switch, and its Google rules strip the parameters
 Google AI Mode needs → "Something went wrong and an AI response wasn't
 generated" on every query (worked in a private window = extensions off).
 uBO's URL-tracking list does the same cleaning and can be excused per site.
-**Coupert** (cashback/affiliate injector) and **Wappalyzer** sit disabled in
-Firefox — not worth their site access.
+**Coupert** (cashback/affiliate injector) sits disabled in Firefox — not
+worth its site access. **Wappalyzer** (tech-stack profiler) is the same
+pattern as FireShot: installed, disabled, switched on for the occasional
+"what is this site built with" look, then off again.
 
 ## CLI stack
 
