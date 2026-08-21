@@ -69,7 +69,7 @@ the raw list.)
 | DeepL | both (Translate in Chrome) | Translation for writing; Firefox's built-in on-device translation covers reading. |
 | GNOME Shell integration | both | Needed by extensions.gnome.org to install/update shell extensions (see GNOME extensions below). |
 | Progressive Web Apps for Firefox | Firefox | The firefoxpwa UI half (native host is the rpm) — SETUP.md §1. |
-| FireShot | Firefox | Full-page capture to PDF / annotate. Plain full-page PNG is built in (Ctrl+Shift+S → Save full page) — keep only while the PDF/annotate half is used. |
+| FireShot | Firefox (installed, DISABLED) | Full-page capture that SCROLLS the page, so lazy-loaded content below the fold is rendered and captured; also PDF output / annotate. Firefox's built-in Ctrl+Shift+S → Save full page renders in one pass and misses not-yet-loaded sections. Kept off by default (site access) — enable for the occasional long-page capture, disable again after. |
 | uBlock Origin Lite | Chrome | MV3-era blocker; the only one — no second blocker stacked (Ghostery and "I don't care about cookies" are installed-but-disabled, kept off on purpose). |
 | Claude | Chrome | Claude-in-Chrome: lets Claude Code drive tabs in this profile. |
 | Qudelix | Chrome | WebHID DAC config — SETUP.md §3. |
