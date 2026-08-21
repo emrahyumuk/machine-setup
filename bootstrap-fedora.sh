@@ -95,6 +95,9 @@ install -Dm644 dotfiles/mpv.conf ~/.config/mpv/mpv.conf
 xdg-mime default mpv.desktop application/vnd.apple.mpegurl application/x-mpegurl \
   audio/x-mpegurl audio/mpegurl video/mp4 video/x-matroska video/webm 2>/dev/null || true
 
+echo "== drift check (verify-fedora.sh → machine-verify; upall runs it) =="
+install -Dm755 verify-fedora.sh ~/.local/bin/machine-verify
+
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 update-check.sh ~/.local/bin/update-check.sh
 install -Dm644 assets/update-check.service ~/.config/systemd/user/update-check.service

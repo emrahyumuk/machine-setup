@@ -24,6 +24,7 @@ important — what I decided *against* and why.
 | `APPS.md` | Curated, annotated app/tool/extension list — what is installed on purpose and why. The human/agent-facing view. |
 | `HARDWARE.md` | The physical desk: laptop, peripherals, what drives what. |
 | `bootstrap-fedora.sh` | Mechanical base for Fedora: repos, packages, config files that need no judgment. Idempotent. |
+| `verify-fedora.sh` | Drift check: every VERIFY line of SETUP.md as PASS/FAIL/SKIP (sudo for the root-only ones). Installed as `machine-verify`; `upall` runs it weekly. |
 | `collect.sh` | Regenerates `inventory/` + `dotfiles/` from the live machine. Whitelist-based (see its privacy rule). |
 | `inventory/` | Generated state: raw dnf list (appendix), flatpaks, GNOME extensions, browser extensions (on/off, per profile), whitelisted dconf namespaces, dev globals. Never hand-edited. |
 | `dotfiles/` | Verbatim copies of zshrc, ghostty config, starship prompt config, mpv config; `gitconfig.template` is sanitized (identity set per machine). |

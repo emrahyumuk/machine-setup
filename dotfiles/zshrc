@@ -71,6 +71,8 @@ upall() {
   else
     echo ">> done — weekly reboot still recommended"
   fi
+  # drift check against the machine-setup manifest (installed by bootstrap)
+  command -v machine-verify >/dev/null && { echo "$sep"; machine-verify; }
 }
 
 # NVM

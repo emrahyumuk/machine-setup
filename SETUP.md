@@ -365,6 +365,11 @@ currently running (their lock regenerates on their next clean restart).
 - Fedora RELEASE upgrades (44→45) are a separate twice-yearly event: wait
   ~2-3 weeks after release, then `dnf system-upgrade`; afterwards walk the
   VERIFY lines in this manifest.
+  `upall` ends with **`machine-verify`** (= `verify-fedora.sh`): every
+  VERIFY line of this manifest as PASS/FAIL, so silent drift surfaces
+  weekly instead of by accident (snapper was inert for a month and the
+  swapfile blocked snapshots for two weeks before this existed, 2026-08).
+  Run `sudo -E machine-verify` now and then for the root-only checks.
   WHY weekly not daily: no measurable benefit to chasing updates daily on a
   desktop; weekly + reboot picks up kernels/mesa at a humane failure rate.
   VERIFY: `systemctl --user list-timers update-check.timer` shows next Sun.
