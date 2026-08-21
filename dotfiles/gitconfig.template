@@ -1,5 +1,5 @@
 # Sanitized template — [user] identity is set per machine, never committed:
-#   git config --global user.name  <name>
+#   git config --global user.name  <git-host-username>   # the handle, not the full name
 #   git config --global user.email <email>
 [core]
 	pager = delta

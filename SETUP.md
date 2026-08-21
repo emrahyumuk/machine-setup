@@ -51,8 +51,10 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
   numbers + Catppuccin theme, `zdiff3` conflicts, `pull.rebase`,
   `init.defaultBranch=main`), then the identity is set PER MACHINE and never
   committed: `git config --global user.name <name>` /
-  `git config --global user.email <email>`. Use the same name/email as the
-  Git host account (GitHub) so commits link to the account.
+  `git config --global user.email <email>`. Owner's convention:
+  `user.name` = the **Git host username** (e.g. the GitHub handle), not the
+  full name — `git log`, `git blame` and GitHub then show one and the same
+  identity; the email is what links commits to the account anyway.
   WHY a template + a question instead of a full file: the config is
   portable, the identity is not — and a committed identity is exactly the
   state/identity this repo's privacy rule forbids. Agents: ask for name

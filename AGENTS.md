@@ -130,9 +130,10 @@ Typical groups:
    + browser extensions (APPS.md "Browsers": per the engine mapping from
    Step 1; the owner-specific ones — Qudelix, TheTab.Ninja, PWA helper —
    are examples for non-owners)
-3. Git: `gitconfig.template` + identity (ASK name/email — the only place
-   the protocol asks for personal data; it goes into `~/.gitconfig` on the
-   machine, never into the repo) + the OS's line-ending setting where one
+3. Git: `gitconfig.template` + identity (ASK for the Git host username
+   and email — the only place the protocol asks for personal data; it goes
+   into `~/.gitconfig` on the machine, never into the repo; suggest the
+   username, not the full name, for `user.name` — see SETUP.md §1) + the OS's line-ending setting where one
    applies (§2b on Windows). Each setting with its one-line reason.
 4. Rust dev: mold linker + cargo config
 5. Hardware video decode (Fedora/mesa only — §2 VA-API; on other platforms,
