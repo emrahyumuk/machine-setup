@@ -107,6 +107,21 @@ never applied; system-level ones are re-confirmed individually at apply time
 - Run the item's **VERIFY** line (or its platform equivalent) after applying.
 - No equivalent on this platform? Say so explicitly and suggest the closest
   alternative — don't silently drop items.
+- **How to pick an alternative** (the owner's Fedora choices were researched
+  and argued, not defaulted — hold the port to the same bar):
+  1. Read the item's WHY first and carry the *intent*, not the tool name
+     (e.g. "browsers stay native so the host codec fix applies" → on
+     Windows the intent is "native installer, not a sandboxed store build").
+  2. Prefer, in order: what the platform ships first-party (PowerShell 7,
+     Windows Terminal, winget; macOS built-ins, brew) → the mainstream
+     community standard → niche tools only if the WHY demands them.
+  3. If the choice is contested or trades something off (winget vs scoop,
+     WSL2 vs native Podman, Store vs vendor installer), DO NOT pick silently:
+     offer 2-3 options with one-line trade-offs and let the user choose. You
+     may research current state (web) before offering — say when you did.
+  4. Label every such pick as YOUR suggestion, not the owner's manifest
+     (same rule as Step 5), and record pick + reasoning in the new OS
+     section of SETUP.md so the next port inherits a decision, not a guess.
 - On Fedora, the items `bootstrap-fedora.sh` covers may be applied by running
   that script once (with the user's consent) instead of re-implementing them
   one by one — it is the deterministic form of those exact decisions. Still
