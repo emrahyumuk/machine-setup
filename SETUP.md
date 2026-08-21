@@ -12,7 +12,7 @@ and verify each item with its VERIFY line."*
 Layers (one file on purpose — decisions read as one document; per-OS
 mechanics live in `os/<os>/`, per-machine records in `machines/`):
 1. [Personal](#1-personal--any-machine-any-os) — travels everywhere
-2. [OS: Fedora](#2-os-specific--fedora) — other OS layers follow as §2b, §2c… (written from real sessions)
+2. [OS: Fedora](#2-os-specific--fedora) · [OS: Windows](#2b-os-specific--windows) (§2b, first session pending) — further OS layers as §2c…
 3. [Hardware: ThinkPad P14s](#3a-hardware-specific--thinkpad-p14s-gen6-amd-thinkpad-p14s) — §3a; §3b… per further machine; does NOT auto-port
 4. [Deliberately NOT done](#4-deliberately-not-done) — decisions against, with reasons
 
@@ -435,6 +435,34 @@ currently running (their lock regenerates on their next clean restart).
   Fedora Workstation defaults — just confirm after install.
 
 ---
+
+## 2b. OS-specific — Windows
+
+Status: the first Windows session (owner, the dual-boot slice — see
+`machines/thinkpad-p14s-windows.md`) has not run yet; it will fill this
+layer from what is actually applied. The item below predates it because it
+came from a real incident, not speculation.
+
+### Git for Windows — line endings
+- `git config --global core.autocrlf input` and `git config --global
+  core.eol lf`, right after installing Git (before the first clone).
+  WHY: Git for Windows' installer default is `autocrlf=true` ("checkout
+  Windows-style"), which rewrites every text file to CRLF on checkout. A
+  shell script checked out that way fails on Git Bash/WSL/any Linux box
+  with `bad interpreter: /bin/bash^M` or `$'\r': command not found`.
+  `input` = no conversion on checkout, LF normalisation on commit — files
+  arrive as the repo has them and CRLF cannot leak back in even if an
+  editor writes it. (`false` + `eol=lf`, the other common fix, also works
+  but skips the commit-time normalisation.)
+  TRAP (2026-08-21, a friend's machine running a shared repo's `.sh`): the
+  global setting is per machine — it protects nobody else. Repos that mix
+  platforms carry their own `.gitattributes` (`* text=auto eol=lf`,
+  `*.sh text eol=lf`), which wins over any local setting; this repo has one.
+  Projects that genuinely need CRLF (`.bat`/`.cmd`, legacy Windows-only
+  code) declare `eol=crlf` for those paths in their `.gitattributes`.
+  VERIFY: `git config --global core.autocrlf` → input; clone a repo with a
+  `.sh` and `file script.sh` → "ASCII text", not "with CRLF line
+  terminators".
 
 ## 3a. Hardware-specific — ThinkPad P14s Gen6 AMD (`thinkpad-p14s`)
 
