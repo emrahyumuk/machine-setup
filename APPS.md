@@ -36,6 +36,7 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | VS Code (`code`) | Microsoft repo | Editor. |
 | Neovim | Fedora | `vim`/`EDITOR` alias target. |
 | Thunderbird | Fedora | Mail. |
+| mpv | RPM Fusion | THE video player (there was none before 2026-08-21 — `.m3u8`/videos fell to the music app). Opens every file/stream/URL, GPU decode via VA-API (the freeworld driver's H.264/HEVC — a Flatpak build would not see it, same rule as browsers), Wayland-native, keyboard-driven. Config in `dotfiles/mpv.conf`: deinterlace always on + `hwdec=vaapi-copy` (see SETUP.md §1). Chosen over VLC for weight and GPU path; VLC stays the fallback if something exotic refuses to open. |
 | Steam | RPM Fusion | Games. |
 | Spotify | Flathub | Music. |
 | Discord | Flathub | Chat. |

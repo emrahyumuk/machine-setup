@@ -131,6 +131,7 @@ mkdir -p dotfiles
 cp ~/.zshrc dotfiles/zshrc
 cp ~/.config/ghostty/config dotfiles/ghostty.config
 cp ~/.config/starship.toml dotfiles/starship.toml 2>/dev/null || true
+cp ~/.config/mpv/mpv.conf dotfiles/mpv.conf 2>/dev/null || true
 cp ~/.config/gtk-3.0/settings.ini dotfiles/gtk3-settings.ini 2>/dev/null || true
 # .gitconfig is NOT auto-copied: it contains identity (email).
 # A sanitized template lives at dotfiles/gitconfig.template — update by hand.

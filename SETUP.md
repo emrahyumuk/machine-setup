@@ -29,6 +29,21 @@ Layers:
   dozens of zsh PTYs in parallel that is a notification storm (2026-08-21:
   ~15 identical "1m33s" toasts from one test run) — the duration is in the
   prompt anyway, and the agent tooling has its own attention notifications.
+- mpv as the video player, config `dotfiles/mpv.conf` → `~/.config/mpv/`,
+  and `.m3u8`/mp4/mkv/webm MIME types pointed at it (`xdg-mime default
+  mpv.desktop …` — Fedora otherwise hands `.m3u8` to the music app).
+  WHY the two non-default lines: `deinterlace=yes` because some live HLS
+  streams are interlaced material encoded as progressive (fields woven, no
+  flag) and comb badly in browsers and unfiltered players; `hwdec=vaapi-copy`
+  instead of `auto-safe` because with pure hardware decode the GPU-side
+  deinterlacer skips unflagged frames — measured 2026-08-21: software path
+  clean, pure-hwdec path still combed. `-copy` keeps GPU decode and runs
+  bwdif on the copied frames; the copy cost is invisible at 1080p.
+  LIMIT: if a stream was already downscaled from interlaced source without
+  deinterlacing (combing "baked in"), no player can fix it — that is the
+  source's fault; `ffprobe`'s resolution flipping (1080→720) is the tell.
+  VERIFY: `xdg-mime query default application/vnd.apple.mpegurl` →
+  mpv.desktop; in mpv Shift+i shows "vaapi-copy" and Deinterlace: yes.
 
 ### dnf tweaks (or the OS's package manager equivalent)
 - `max_parallel_downloads=10` in `/etc/dnf/dnf.conf`.

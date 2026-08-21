@@ -25,7 +25,8 @@ sudo dnf install -y \
   zsh \
   earlyoom \
   snapper \
-  libdnf5-plugin-actions
+  libdnf5-plugin-actions \
+  mpv
 
 echo "== earlyoom (anti-freeze OOM layer — see SETUP.md for the full story) =="
 # Stock Fedora avoid-list kept whole + ghostty; prefer extended with
@@ -88,6 +89,11 @@ else
   [ -f /etc/snapper/configs/root ] || sudo snapper -c root create-config /
   sudo install -Dm644 assets/snapper.actions /etc/dnf/libdnf5-plugins/actions.d/snapper.actions
 fi
+
+echo "== mpv: config + default video/stream handler =="
+install -Dm644 dotfiles/mpv.conf ~/.config/mpv/mpv.conf
+xdg-mime default mpv.desktop application/vnd.apple.mpegurl application/x-mpegurl \
+  audio/x-mpegurl audio/mpegurl video/mp4 video/x-matroska video/webm 2>/dev/null || true
 
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 update-check.sh ~/.local/bin/update-check.sh
