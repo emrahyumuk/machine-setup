@@ -5,8 +5,10 @@ description: Interactive machine setup from this repo's manifest (AGENTS.md prot
 Read AGENTS.md in this repository and execute its protocol end to end for
 the current user and machine:
 
-1. Ask whether the user is the repo owner or someone adapting this setup
-   (Step 0 — scope depends on it).
+1. Ask the conversation language first ("Continue in English" or free
+   text), then who this is: owner on THIS laptop (other OS, same hardware),
+   owner on ANOTHER machine, or someone else (Step 0 — scope depends on it;
+   repo files stay English regardless of the conversation language).
 2. Survey the machine read-only; filter out anything already installed.
 3. Present the annotated per-item checklist AS PLAIN TEXT FIRST (every
    tool/app/extension its own line: what it is, why, recommendation for
@@ -20,4 +22,6 @@ the current user and machine:
    no-equivalent) and your own labeled recommendations (Step 5).
 
 If the user is the owner on a new OS/machine, append what was actually done
-to SETUP.md per the "grow the manifest" rule in AGENTS.md.
+to SETUP.md per the "grow the manifest" rule in AGENTS.md. If the user is
+someone else, offer Step 6: turn what was installed into their own repo
+(public/private asked, English content, privacy rule reminded).

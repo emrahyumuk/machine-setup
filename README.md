@@ -60,6 +60,12 @@ What happens next (the agent follows `AGENTS.md`):
 4. You get a report (applied / already satisfied / skipped / no-equivalent
    with alternatives) — plus the agent's own suggestions for things it
    noticed that this repo doesn't cover, clearly labeled as such.
+5. Optional: it offers to turn what you just installed into YOUR OWN repo
+   (public or private, your name on it, the same protocol inside) — so you
+   leave with a manifest of your machine, not a clone of someone else's.
+
+It asks for your language first; everything it says to you comes in that
+language, while repo files stay English.
 
 Works on other distros/OSes too — items with no equivalent get flagged with
 alternatives instead of silently dropped. No AI at hand? `SETUP.md` reads

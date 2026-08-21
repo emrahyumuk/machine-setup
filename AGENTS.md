@@ -5,13 +5,27 @@ be "set up", "apply this", or anything similar, follow this protocol. Do not
 bulk-apply the manifest — it describes ONE person's machine; your job is to
 adapt it to THIS user on THIS machine, interactively.
 
-## Step 0 — Who is this?
+## Step 0 — Language, then who is this?
 
-Ask one question first: **"Are you the repo owner restoring/porting your own
-machine, or someone else adapting this setup?"**
+**First question, before anything else: language.** Offer "Continue in
+English" plus a free-text field ("or type the language you want"). From then
+on every explanation, checklist line, question and report is in that
+language. The repo's own files stay English no matter what (SETUP.md
+additions, a forked repo's content — see Step 6): English is the repo's
+language, the user's language is the conversation's.
 
-- **Owner** → everything is in scope, including the personal layer and
-  hardware section (still verify hardware matches before applying §3 items).
+**Second question: who is this?** Three answers, not two — the owner ports
+this setup to other machines too, and the hardware layer only follows the
+hardware:
+
+- **Owner, THIS laptop** (another OS on the same machine — e.g. the Windows
+  dual-boot slice in HARDWARE.md) → everything is in scope: personal layer,
+  OS layer translated, AND the hardware section §3 (same hardware; apply
+  the items' intent via the platform's tools, see "Owner on a NEW OS").
+- **Owner, ANOTHER machine** (a MacBook, a desktop…) → personal layer and OS
+  layer in scope; §3 is NOT — survey the new hardware and re-decide each §3
+  item from scratch (charge limit, GPU memory, DAC quirks are all
+  per-machine). What you apply becomes a new hardware section.
 - **Someone else** → owner-specific items default to SKIP: the personal apps
   and PWA/icon setup (SETUP.md §1 Firefox parts), the Claude Code entry's
   dot-claude-config repo (private — unreachable for non-owners; offer only
@@ -147,10 +161,8 @@ never applied; system-level ones are re-confirmed individually at apply time
 
 End with four lists: applied (with verify results), already satisfied,
 skipped (with reasons), no-equivalent (with suggestions). If the user is not
-the owner, recommend they fork: set their own Owner line, prune the
-personal/hardware layers, regenerate `inventory/` with `collect.sh` (Fedora)
-or note their platform's equivalent, and adopt the maintenance rules in
-README.
+the owner, offer Step 6 — turning what was just applied into their own repo
+— instead of leaving them with a clone of someone else's manifest.
 
 ## Owner on a NEW OS or machine — grow the manifest
 
@@ -178,6 +190,36 @@ manifest**: missing safety layers (no backups, no firewall, EOL OS version),
 outdated GPU drivers, obvious wins for THIS user's workload the manifest
 never anticipated. Same rules apply: explain what/why, let the user pick,
 ask before system-level changes.
+
+
+## Step 6 — Make it theirs (offered to non-owners; optional)
+
+After the report, ask: **"Want this turned into your own machine-setup
+repo — what you actually installed today, as a manifest you can re-apply
+and grow?"** If yes:
+
+1. Ask **public or private**, and the repo name (default `machine-setup`).
+2. Create it (`gh repo create` when available, otherwise init locally and
+   print the push commands) — never push to THIS repo's origin.
+3. Seed it with this repo's SKELETON, not its content: README (rewritten:
+   their name on the Owner line, the same intent-over-commands purpose,
+   the privacy rule verbatim), AGENTS.md and `.claude/commands/setup.md`
+   unchanged (the protocol is the reusable part), `.gitattributes`, and an
+   empty `inventory/` + `dotfiles/`.
+4. Write THEIR manifest from the session: `SETUP.md` §1 personal (what they
+   chose), §2 OS-specific for the OS they are on (each applied item with
+   WHAT/WHY/VERIFY as it was actually done — the Windows/macOS mechanics
+   from this session, not the owner's Fedora ones), §3 hardware only if a
+   hardware item was applied, §4 "deliberately not done" from what they
+   declined and why. `APPS.md` = only the rows they selected, with the
+   reasons they agreed with. Owner-specific items (PWAs, icons, private
+   repos, the owner's hardware) do not cross over.
+5. Repo language stays **English** (the conversation language from Step 0
+   does not apply to repo files); remind them of the privacy rule before
+   the first push: config only, never state/identity/secrets.
+6. Tell them how it grows: every future machine-level decision → SETUP.md
+   with its WHY, same sitting; `collect.sh` equivalent for their platform
+   is theirs to write (offer a starter if they want one).
 
 ## Hard rules
 
