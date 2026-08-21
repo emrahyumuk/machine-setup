@@ -66,7 +66,7 @@ the raw list.)
 | uBlock Origin | Firefox | The one blocker. Extra list enabled: *AdGuard URL Tracking Protection* (Filter lists → Privacy) — strips `utm_*`/`fbclid`/`gclid`… the job ClearURLs used to do. |
 | Bitwarden | both | Password manager (desktop app is the rpm; extension does autofill). |
 | Firefox Multi-Account Containers | Firefox | Account/session isolation per container. |
-| DeepL | both (Translate in Chrome) | Translation for writing; Firefox's built-in on-device translation covers reading. |
+| Translate (Chrome) | Chrome | Page/selection translation in the tool browser. In Firefox the BUILT-IN on-device translation does this (address-bar icon, right-click → Translate Selection, `about:translations`) — DeepL was removed from Firefox 2026-08-21 for that reason. |
 | GNOME Shell integration | both | Needed by extensions.gnome.org to install/update shell extensions (see GNOME extensions below). |
 | Progressive Web Apps for Firefox | Firefox | The firefoxpwa UI half (native host is the rpm) — SETUP.md §1. |
 | FireShot | Firefox (installed, DISABLED) | Full-page capture that SCROLLS the page, so lazy-loaded content below the fold is rendered and captured; also PDF output / annotate. Firefox's built-in Ctrl+Shift+S → Save full page renders in one pass and misses not-yet-loaded sections. Kept off by default (site access) — enable for the occasional long-page capture, disable again after. |
@@ -76,7 +76,9 @@ the raw list.)
 | TheTab.Ninja | Chrome | New-tab bookmark/tab manager. |
 | Oceanic | Chrome | Theme only (no site access) — listed because it shows up in the inventory. |
 
-Removed on purpose: **ClearURLs** (2026-08-21) — no per-site allow list
+Removed on purpose: **DeepL** from Firefox (2026-08-21) — built-in
+translation (on-device, no site access) covers reading; writing-side
+translation wasn't used. **ClearURLs** (2026-08-21) — no per-site allow list
 exists, only a global switch, and its Google rules strip the parameters
 Google AI Mode needs → "Something went wrong and an AI response wasn't
 generated" on every query (worked in a private window = extensions off).
