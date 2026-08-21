@@ -106,6 +106,14 @@ install -Dm644 $OSD/assets/update-check.timer ~/.config/systemd/user/update-chec
 systemctl --user daemon-reload
 systemctl --user enable --now update-check.timer
 
+echo "== git: config template (identity is asked in the session, never shipped) =="
+if [ ! -f ~/.gitconfig ]; then
+  install -Dm644 dotfiles/gitconfig.template ~/.gitconfig
+  echo "  ~/.gitconfig from template — now set: git config --global user.name/user.email"
+else
+  echo "  ~/.gitconfig exists — merge dotfiles/gitconfig.template by hand (see SETUP.md §1)"
+fi
+
 echo "== cargo: mold as linker =="
 mkdir -p ~/.cargo
 if [ ! -f ~/.cargo/config.toml ]; then

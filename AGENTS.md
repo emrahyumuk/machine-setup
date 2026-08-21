@@ -130,17 +130,21 @@ Typical groups:
    + browser extensions (APPS.md "Browsers": per the engine mapping from
    Step 1; the owner-specific ones — Qudelix, TheTab.Ninja, PWA helper —
    are examples for non-owners)
-3. Rust dev: mold linker + cargo config
-4. Hardware video decode (Fedora/mesa only — §2 VA-API; on other platforms,
+3. Git: `gitconfig.template` + identity (ASK name/email — the only place
+   the protocol asks for personal data; it goes into `~/.gitconfig` on the
+   machine, never into the repo) + the OS's line-ending setting where one
+   applies (§2b on Windows). Each setting with its one-line reason.
+4. Rust dev: mold linker + cargo config
+5. Hardware video decode (Fedora/mesa only — §2 VA-API; on other platforms,
    translate the intent)
-5. zram + VM tuning (Linux only — read the ASSUMES lines carefully)
-6. GNOME desktop: extensions (each listed individually with its purpose from
+6. zram + VM tuning (Linux only — read the ASSUMES lines carefully)
+7. GNOME desktop: extensions (each listed individually with its purpose from
    APPS.md) + settings (inventory/ is the owner's reference state, not a
    mandate). **Subjective look-and-feel is ASKED, never inherited silently**:
    dark/light, accent color, dock position, fonts are the user's taste —
    ask, then apply linked pairs consistently (e.g. dark mode = `color-scheme`
    AND the gtk-3.0 dark flag together; see SETUP.md §2 theming).
-7. Personal apps & PWAs (owner-specific — examples only for non-owners)
+8. Personal apps & PWAs (owner-specific — examples only for non-owners)
 
 Small machines/VMs: warn where a tuning doesn't fit. Unselected items are
 never applied; system-level ones are re-confirmed individually at apply time

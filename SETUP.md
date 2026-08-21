@@ -46,6 +46,24 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
   VERIFY: `xdg-mime query default application/vnd.apple.mpegurl` →
   mpv.desktop; in mpv Shift+i shows "vaapi-copy" and Deinterlace: yes.
 
+### Git — identity asked, config from the template
+- `dotfiles/gitconfig.template` → `~/.gitconfig` (delta as pager with line
+  numbers + Catppuccin theme, `zdiff3` conflicts, `pull.rebase`,
+  `init.defaultBranch=main`), then the identity is set PER MACHINE and never
+  committed: `git config --global user.name <name>` /
+  `git config --global user.email <email>`. Use the same name/email as the
+  Git host account (GitHub) so commits link to the account.
+  WHY a template + a question instead of a full file: the config is
+  portable, the identity is not — and a committed identity is exactly the
+  state/identity this repo's privacy rule forbids. Agents: ask for name
+  and email (an existing `git config --global user.*` is "already
+  satisfied"), explain each setting in one line, never invent values.
+  Line-ending settings are OS-specific: see §2b (Windows) — on Linux/macOS
+  the defaults are right.
+  VERIFY: `git config --global --get user.email` → set; `git config
+  --global core.pager` → delta; `git log` in any repo shows delta's
+  line-numbered diff.
+
 ### dnf tweaks (or the OS's package manager equivalent)
 - `max_parallel_downloads=10` in `/etc/dnf/dnf.conf`.
 

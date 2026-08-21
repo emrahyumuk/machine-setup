@@ -26,6 +26,8 @@ sec "§1 Personal"
   && ok "m3u8 → mpv" || bad "m3u8 → mpv" "xdg-mime default mpv.desktop application/vnd.apple.mpegurl …"
 grep -q '^deinterlace=yes' "$H/.config/mpv/mpv.conf" 2>/dev/null && ok "mpv deinterlace=yes" || bad "mpv.conf deinterlace"
 grep -q '^show_notifications = false' "$H/.config/starship.toml" 2>/dev/null && ok "starship notifications off" || bad "starship show_notifications must be false (agent-PTY storm)"
+[ -n "$(asuser git config --global --get user.email 2>/dev/null)" ] && ok "git identity set" || bad "git user.email unset" "git config --global user.name/user.email"
+[ "$(asuser git config --global --get core.pager 2>/dev/null)" = delta ] && ok "git pager = delta" || bad "git core.pager (expect delta — dotfiles/gitconfig.template)"
 grep -q 'fuse-ld=mold' "$H/.cargo/config.toml" 2>/dev/null && ok "cargo → mold" || bad "~/.cargo/config.toml lacks mold"
 n=$(asuser bash -lc 'which -a claude 2>/dev/null | sort -u | wc -l'); t=$(readlink -f "$H/.local/bin/claude" 2>/dev/null)
 [ "$n" = 1 ] && [[ "$t" == "$H/.local/share/claude/"* ]] && ok "claude: single native install" || bad "claude install" "which -a claude → $n entries; ~/.local/bin/claude → ${t:-missing}"
