@@ -60,7 +60,7 @@ first=$(efibootmgr 2>/dev/null | awk '/BootOrder/{split($2,a,","); print a[1]}')
 [[ "$lbl" == *Fedora* ]] && ok "UEFI boots Fedora first ($first)" || skipc "UEFI first entry: ${lbl:-unknown} (dual-boot: Windows updates may reorder; efibootmgr -o …)"
 [ "$(timedatectl show -p LocalRTC --value 2>/dev/null)" = yes ] && ok "RTC local (dual-boot, intentional)" || skipc "RTC not local — fine if Windows is gone"
 
-sec "§3 Hardware (ThinkPad P14s Gen6)"
+sec "§3a Hardware (ThinkPad P14s Gen6 — thinkpad-p14s)"
 [ "$(cat /sys/class/power_supply/BAT0/charge_control_end_threshold 2>/dev/null)" = 80 ] && ok "charge cap 80%" || bad "charge_control_end_threshold $(cat /sys/class/power_supply/BAT0/charge_control_end_threshold 2>/dev/null)"
 [ -f /etc/udev/rules.d/70-qudelix.rules ] && ok "Qudelix udev rule" || bad "70-qudelix.rules missing"
 v=$(cat /sys/class/drm/card1/device/mem_info_vram_total 2>/dev/null); [ -n "$v" ] && [ "$v" -le 4400000000 ] && ok "iGPU VRAM (UMA) $((v/1048576)) MB" || skipc "iGPU VRAM total: ${v:-?} bytes (expect ~4096 MB after the 2026-08-20 BIOS change)"

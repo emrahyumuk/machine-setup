@@ -19,9 +19,10 @@ this setup to other machines too, and the hardware layer only follows the
 hardware:
 
 - **Owner, THIS laptop** (another OS on the same machine — e.g. the Windows
-  dual-boot slice in HARDWARE.md / machines/) → everything is in scope: personal layer,
-  OS layer translated, AND the hardware section §3 (same hardware; apply
-  the items' intent via the platform's tools, see "Owner on a NEW OS").
+  dual-boot slice, see HARDWARE.md and `machines/`) → everything is in
+  scope: personal layer, OS layer translated, AND that machine's hardware
+  section (§3a for the ThinkPad; same hardware, so apply the items' intent
+  via the platform's tools — see "Owner on a NEW OS").
 - **Owner, ANOTHER machine** (a MacBook, a desktop…) → personal layer and OS
   layer in scope; §3 is NOT — survey the new hardware and re-decide each §3
   item from scratch (charge limit, GPU memory, DAC quirks are all
@@ -31,8 +32,9 @@ hardware:
   dot-claude-config repo (private — unreachable for non-owners; offer only
   its allowlist-gitignore PATTERN for their own `~/.claude`), the entire
   hardware section (§3), and `dotfiles/` contents (offer as examples to
-  cherry-pick, never install as-is). What remains genuinely portable: the CLI stack, Rust/mold,
-  and the OS layer (§2) where assumptions hold.
+  cherry-pick, never install as-is). What remains genuinely portable: the
+  CLI stack, Rust/mold, and the OS layers (§2, §2b…) where assumptions
+  hold. ("§3" below means the hardware layer: §3a, §3b… one per machine.)
 
 ## Step 1 — Survey the machine (read-only)
 
@@ -213,11 +215,13 @@ package-manager lines, config copies, default handlers), `os/<os>/verify`
 (inventory + dotfiles + machine-record stamps), in the platform's native
 script language (`.ps1` on Windows, `.sh` on macOS). Fill or create
 `machines/<hardware>-<os>.md` with the stamps. The second run on that OS is
-then one script + VERIFY, like Fedora today. On the owner's laptop, Windows is the
-dual-boot slice described in HARDWARE.md — same hardware, so §3 items are
-in scope there too (translated: charge limit → vendor tool, WebHID app →
-Chrome on Windows, BIOS items already done and OS-independent). Commit the
-port on its own branch (e.g. `windows-port`) for review from the primary OS.
+then one script + VERIFY, like Fedora today.
+
+On the owner's laptop, Windows is the dual-boot slice described in
+HARDWARE.md — same hardware, so §3a items are in scope there too
+(translated: charge limit → vendor tool, WebHID app → Chrome on Windows,
+BIOS items already done and OS-independent). Commit the port on its own
+branch (e.g. `windows-port`) for review from the primary OS.
 
 ## Step 5 — Your own recommendations (beyond the manifest)
 
@@ -241,9 +245,13 @@ and grow?"** If yes:
 3. Seed it with this repo's SKELETON, not its content: README (rewritten:
    their name on the Owner line, the same intent-over-commands purpose,
    the privacy rule verbatim), AGENTS.md and `.claude/commands/setup.md`
-   unchanged (the protocol is the reusable part), `.gitattributes`, and an
-   empty `inventory/` + `dotfiles/`.
-4. Write THEIR manifest from the session: `SETUP.md` §1 personal (what they
+   unchanged (the protocol is the reusable part), `.gitattributes`,
+   `machines/README.md`, and empty `inventory/`, `dotfiles/`, `os/`,
+   `hardware/`. The owner's `machines/*`, `hardware/*`, `inventory/*` and
+   `os/*` do NOT cross over — they describe the owner's machines.
+4. Write THEIR manifest from the session (plus `machines/<hardware>-<os>.md`
+   and `hardware/<hardware>.md` for their machine, named from the Step 1
+   survey): `SETUP.md` §1 personal (what they
    chose), §2 OS-specific for the OS they are on (each applied item with
    WHAT/WHY/VERIFY as it was actually done — the Windows/macOS mechanics
    from this session, not the owner's Fedora ones), §3 hardware only if a

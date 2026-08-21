@@ -26,7 +26,8 @@ fi
 repo="$HOME/Projects/mRA/emrahyumuk/machine-setup"
 if [ -d "$repo/.git" ]; then
   "$repo/os/fedora/collect.sh" >/dev/null 2>&1 || true
-  if ! git -C "$repo" diff --quiet 2>/dev/null; then
+  # machines/ stamps change on every collect — not drift, excluded here
+  if ! git -C "$repo" diff --quiet -- . ':(exclude)machines/' 2>/dev/null; then
     (
       drift=$(timeout 12h notify-send -A default="Show diff" \
         -i software-update-urgent "machine-setup drifted" \

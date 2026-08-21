@@ -9,10 +9,11 @@ to an AI with: *"Apply this manifest to this machine — adapt each item to the
 current OS/hardware, respect every ASSUMES line, skip anything already satisfied,
 and verify each item with its VERIFY line."*
 
-Layers:
+Layers (one file on purpose — decisions read as one document; per-OS
+mechanics live in `os/<os>/`, per-machine records in `machines/`):
 1. [Personal](#1-personal--any-machine-any-os) — travels everywhere
-2. [OS: Fedora](#2-os-specific--fedora) — port to other Linux with care
-3. [Hardware](#3-hardware-specific--thinkpad-p14s-gen6-amd) — does NOT auto-port; re-evaluate per machine
+2. [OS: Fedora](#2-os-specific--fedora) — other OS layers follow as §2b, §2c… (written from real sessions)
+3. [Hardware: ThinkPad P14s](#3a-hardware-specific--thinkpad-p14s-gen6-amd-thinkpad-p14s) — §3a; §3b… per further machine; does NOT auto-port
 4. [Deliberately NOT done](#4-deliberately-not-done) — decisions against, with reasons
 
 ---

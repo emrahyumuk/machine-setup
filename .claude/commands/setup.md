@@ -9,7 +9,8 @@ the current user and machine:
    text), then who this is: owner on THIS laptop (other OS, same hardware),
    owner on ANOTHER machine, or someone else (Step 0 — scope depends on it;
    repo files stay English regardless of the conversation language).
-2. Survey the machine read-only; filter out anything already installed.
+2. Survey the machine read-only; match it against `machines/` (DMI model +
+   OS; freshness rule), filter out anything already installed.
 3. Present the annotated per-item checklist AS PLAIN TEXT FIRST (every
    tool/app/extension its own line: what it is, why, recommendation for
    this machine) — only then collect the selection (free text and/or the
