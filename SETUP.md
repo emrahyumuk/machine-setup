@@ -57,6 +57,15 @@ Layers:
   stock icon; a custom one gets silently reverted on manifest refreshes.
   (History: replaced the karere flatpak wrapper 2026-07-30 — same ~700 MB
   content cost either way, WhatsApp Web is just heavy.)
+- Extensions: the curated list with reasons is in APPS.md "Browsers".
+  TRAP (2026-08-21): URL-cleaning extensions without a per-site allow list
+  (ClearURLs) break Google AI Mode — the page renders, the answer request
+  fails ("Something went wrong and an AI response wasn't generated").
+  Diagnostic that settles it in one step: retry in a private window
+  (extensions are off there); works → an extension, then toggle them on
+  that page one by one. Parameter stripping now comes from uBlock Origin's
+  *AdGuard URL Tracking Protection* list, which the uBO power button can
+  excuse per site.
 - WHY firefoxpwa over a manual Chromium `--app=` window for the other PWAs:
   on Wayland, Chromium ignores `--class` → wrong dock icon unless forced to
   XWayland. firefoxpwa generates correct desktop entries natively. (A real

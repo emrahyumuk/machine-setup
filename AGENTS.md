@@ -26,6 +26,17 @@ Detect before proposing: OS + version, package manager, desktop environment,
 CPU/GPU vendor, RAM, laptop vs desktop, swap/zram situation, what from
 APPS.md is already installed. Never assume Fedora — check.
 
+**Browsers are asked, not assumed.** Ask which browser is the user's daily
+driver (and whether a second one has a job — e.g. Claude-in-Chrome, WebHID,
+a PWA). APPS.md "Browsers" is written for Firefox-primary + Chrome-as-tool;
+map by ENGINE, not by name: Gecko (Firefox, LibreWolf, Zen, Floorp…) takes
+the Firefox rows as-is (full uBlock Origin, containers, firefoxpwa); any
+Chromium (Chrome, Brave, Edge, Vivaldi, Chromium) takes the Chrome rows
+(uBO Lite, no second blocker; Claude-in-Chrome and WebHID are
+Chromium-only). Brave already ships a blocker — then no uBO Lite on top.
+Extensions are offered one by one with their why, like everything else;
+the owner's choices are not a mandate.
+
 **Already-installed items never reach the menu.** Check every candidate
 (package manager query, `command -v`, extension list) and drop satisfied
 ones into the "already satisfied" bucket of the final report instead of
@@ -62,6 +73,9 @@ Typical groups:
    dotfiles/zshrc as reference for wiring)
 2. Applications (APPS.md "Desktop applications" table: dnf/flatpak apps —
    each with its why; skip owner-specific rows for non-owners)
+   + browser extensions (APPS.md "Browsers": per the engine mapping from
+   Step 1; the owner-specific ones — Qudelix, TheTab.Ninja, PWA helper —
+   are examples for non-owners)
 3. Rust dev: mold linker + cargo config
 4. Hardware video decode (Fedora/mesa only — §2 VA-API; on other platforms,
    translate the intent)

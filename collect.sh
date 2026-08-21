@@ -35,6 +35,55 @@ echo "== gnome extensions (annotations live in APPS.md) =="
   comm -23 <(gnome-extensions list 2>/dev/null | sort) <(gnome-extensions list --enabled 2>/dev/null | sort)
 } > inventory/gnome-extensions.txt
 
+echo "== browser extensions (annotations live in APPS.md 'Browsers') =="
+# Names + ids only — no extension settings/storage (that is state, some of
+# it private: vault data, API keys). Disabled ones listed separately so a
+# deliberate "installed but off" decision stays visible.
+python3 - > inventory/browser-extensions.txt <<'PY'
+import json, glob, os
+H = os.path.expanduser("~")
+# Firefox: every profile under XDG or legacy root
+print("# firefox (name | id)")
+for prof in sorted(glob.glob(H+"/.config/mozilla/firefox/*/") + glob.glob(H+"/.mozilla/firefox/*/")):
+    f = prof + "extensions.json"
+    if not os.path.exists(f):
+        continue
+    addons = [a for a in json.load(open(f))["addons"]
+              if a.get("type") == "extension" and not a.get("hidden")]
+    if not addons:
+        continue
+    print(f"## profile {os.path.basename(prof.rstrip('/'))}")
+    for a in sorted(addons, key=lambda a: (not a.get("active"), (a.get("defaultLocale") or {}).get("name",""))):
+        name = (a.get("defaultLocale") or {}).get("name", "?")
+        print(f"{'on ' if a.get('active') else 'off'} {name} | {a['id']}")
+# Chrome: Preferences knows enabled state (disable_reasons); names come from manifests
+print("# google-chrome (name | id)")
+for prof in sorted(glob.glob(H+"/.config/google-chrome/*/Preferences")):
+    d = json.load(open(prof)).get("extensions", {}).get("settings", {})
+    base = os.path.dirname(prof)
+    rows = []
+    for eid, v in d.items():
+        if v.get("location") not in (1, 0):          # 1 = web store/user; skip component/default-installed
+            continue
+        vers = sorted(glob.glob(f"{base}/Extensions/{eid}/*/manifest.json"))
+        if not vers:
+            continue
+        m = json.load(open(vers[-1]))
+        name = m.get("name", "?")
+        if name.startswith("__MSG_"):
+            key = name[6:-2]
+            for loc in glob.glob(os.path.dirname(vers[-1]) + "/_locales/en*/messages.json") + glob.glob(os.path.dirname(vers[-1]) + "/_locales/*/messages.json"):
+                try:
+                    name = json.load(open(loc))[key]["message"]; break
+                except Exception:
+                    pass
+        rows.append((bool(v.get("disable_reasons")), name, eid))
+    if rows:
+        print(f"## profile {os.path.basename(base)}")
+        for dis, name, eid in sorted(rows):
+            print(f"{'off' if dis else 'on '} {name} | {eid}")
+PY
+
 echo "== gnome settings (whitelisted namespaces) =="
 {
   echo "# Whitelist only — see privacy rule in collect.sh."

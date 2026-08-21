@@ -25,7 +25,7 @@ important — what I decided *against* and why.
 | `HARDWARE.md` | The physical desk: laptop, peripherals, what drives what. |
 | `bootstrap-fedora.sh` | Mechanical base for Fedora: repos, packages, config files that need no judgment. Idempotent. |
 | `collect.sh` | Regenerates `inventory/` + `dotfiles/` from the live machine. Whitelist-based (see its privacy rule). |
-| `inventory/` | Generated state: raw dnf list (appendix), flatpaks, GNOME extensions, whitelisted dconf namespaces, dev globals. Never hand-edited. |
+| `inventory/` | Generated state: raw dnf list (appendix), flatpaks, GNOME extensions, browser extensions (on/off, per profile), whitelisted dconf namespaces, dev globals. Never hand-edited. |
 | `dotfiles/` | Verbatim copies of zshrc + ghostty config; `gitconfig.template` is sanitized (identity set per machine). |
 | `assets/` | Files the manifest references (e.g. the WhatsApp PWA icon source). |
 

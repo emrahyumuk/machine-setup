@@ -1,0 +1,37 @@
+# firefox (name | id)
+## profile t6n89haj.default-release
+on  Bitwarden Password Manager | {446900e4-71c2-419f-a6a7-df9c091e268b}
+on  DeepL: translate and write with AI | firefox-extension@deepl.com
+on  Firefox Multi-Account Containers | @testpilot-containers
+on  GNOME Shell integration | chrome-gnome-shell@gnome.org
+on  Progressive Web Apps for Firefox | firefoxpwa@filips.si
+on  Take Webpage Screenshots Entirely - FireShot | {0b457cAA-602d-484a-8fe7-c1d894a011ba}
+on  uBlock Origin | uBlock0@raymondhill.net
+off Coupert - Automatic Coupon Finder & Cashback | appledev@soarinfotech.com
+off Wappalyzer - Technology profiler | wappalyzer@crunchlabz.com
+# google-chrome (name | id)
+## profile Default
+on  Bitwarden Password Manager | nngceckbapebfimnlniiiahkandclblb
+on  Claude | fcoeoabgfenejglbffodgkkbkcdhcgfn
+on  Oceanic | gbbacdmgjdfajabgglpjifcedoajdimg
+on  Qudelix | phaodiidhofhdmfkjiacigibgikhfafn
+on  TheTab.Ninja - New tab bookmark manager, tab organizer & GitHub sync | bnmjmbmlfohkaghofdaadenippkgpmab
+on  Translate - Translator, Dictionary, TTS | mnlohknjofogcljbcknkakphddjpijak
+on  uBlock Origin Lite | ddkjiahejlhfcafbddmgiahcphecmpfh
+off 1Password – Password Manager | aeblfdkhhhdcdjpifhhbdiojplfjncoa
+off ColorZilla | bhlhnicpbhignbdhedgjhgdocnmhomnp
+off Coupert - Automatic Coupon Finder & Cashback | mfidniedemcgceagapgdekdbmanojomk
+off DeepL: translate and write with AI | cofdbpoegempjloogbagkncekinflcnj
+off Ghostery AdBlocker for Privacy | mlomiejdfkolichcflejclcbmpeaniij
+off I don't care about cookies | fihnjjcciajhdojfnbdddfaoknhalnja
+off JSON Formatter | bcjindcccaagfpapjjmafapmmgkkhgoa
+off Open SEO Stats(Formerly: PageRank Status) | hbdkkfheckcdppiaiabobmennhijkknn
+off Open in Private Mode | fcmoifjllifgjedihhcmbhjmfakcadcm
+off Requestly: Intercept & Modify HTTP Requests | mdnleldcmiljblolnjhpnblkcekpdkpa
+off Responsive Viewer | inmopeiepgfljkpkidclfgbgbmfcennb
+off Take Webpage Screenshots Entirely - FireShot | mcbpblocgmgfnpjjppndjkmgjaogfceg
+off Tampermonkey | dhdgffkkebhmkfjojejmpbldmpobfkfo
+off Toby: Tab Management Tool | hddnkoipeenegfoeaoibdmnaalmgkpip
+off Vue Telescope | neaebjphlfplgdhedjdhcnpjkndddbpd
+off Vue.js devtools | nhdogjmejiglipccpnnnanhbledajbpd
+off Wappalyzer - Technology profiler | gppongmhjkpfnbhagpmjfkannfbllamg

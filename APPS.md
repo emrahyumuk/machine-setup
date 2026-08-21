@@ -29,9 +29,9 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 
 | App | Source | Why / notes |
 |-----|--------|-------------|
-| Firefox | Fedora | Main browser. Separate "Music" profile launched as its own app; default profile pinned via alias (profile group drifts to last-used otherwise — see `dotfiles/zshrc`). |
+| Firefox | Fedora | Main browser (full uBlock Origin lives here — see "Browsers" below). Separate "Music" profile launched as its own app; default profile pinned via alias (profile group drifts to last-used otherwise — see `dotfiles/zshrc`). |
 | firefoxpwa (PWAsForFirefox) | rpm + extension | PWAs as real apps: mra-agent, mRA Notes. (WhatsApp moved to a Chrome PWA 2026-08-18 — messages intermittently stalled in the Firefox PWA; WhatsApp Web treats Chromium as first-class.) See SETUP.md §1 for icon + link-handling config. |
-| Google Chrome | Google repo | Secondary; also hosts the Qudelix 5K WebHID app (`--app` window, XWayland — see SETUP.md hardware notes). |
+| Google Chrome | Google repo | Tool browser — Claude-in-Chrome, WebHID (Qudelix 5K `--app` window, XWayland — see SETUP.md hardware notes), WhatsApp PWA. Roles + extensions in "Browsers" below. |
 | Ghostty | COPR | Terminal. Config in `dotfiles/ghostty.config` (Catppuccin Mocha, JetBrainsMono Nerd Font). |
 | VS Code (`code`) | Microsoft repo | Editor. |
 | Neovim | Fedora | `vim`/`EDITOR` alias target. |
@@ -46,6 +46,43 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | Unity Hub | Flathub | Game engine experiments. |
 | GNOME Tweaks | Fedora | Occasional knobs. |
 | Solaar | Fedora | Logitech MX Master 3S config over Bluetooth (HID++ — no receiver needed). Package ships a system-wide autostart; device-stored settings (DPI, SmartShift) persist on their own, Solaar-side rules need it running. |
+
+## Browsers — roles and extensions
+
+Two browsers, two jobs. Neither is "the spare".
+
+| Browser | Role | Why this one for the job |
+|---------|------|--------------------------|
+| Firefox | Daily driver: browsing, accounts, PWAs (mra-agent, mRA Notes), Music profile | The only engine where FULL uBlock Origin still runs (Chrome MV3 cut it to uBO Lite); containers for account isolation; firefoxpwa for correct Wayland desktop entries. |
+| Google Chrome | Tool browser: Claude-in-Chrome (Claude Code opens tabs here when testing web work), WebHID (Qudelix), WhatsApp PWA | Claude-in-Chrome is Chromium-only; WebHID is Chromium-only; WhatsApp Web treats Chromium as first-class. Kept lean on purpose — the agent drives it, so every extension is something the agent's tabs inherit. |
+
+Extensions — each one has "read every site" power, so the list is short and
+each row carries its reason. (Synced back by Firefox Sync / the Google
+account; this table records the DECISIONS, `inventory/browser-extensions.txt`
+the raw list.)
+
+| Extension | Browser | Why |
+|-----------|---------|-----|
+| uBlock Origin | Firefox | The one blocker. Extra list enabled: *AdGuard URL Tracking Protection* (Filter lists → Privacy) — strips `utm_*`/`fbclid`/`gclid`… the job ClearURLs used to do. |
+| Bitwarden | both | Password manager (desktop app is the rpm; extension does autofill). |
+| Firefox Multi-Account Containers | Firefox | Account/session isolation per container. |
+| DeepL | both (Translate in Chrome) | Translation for writing; Firefox's built-in on-device translation covers reading. |
+| GNOME Shell integration | both | Needed by extensions.gnome.org to install/update shell extensions (see GNOME extensions below). |
+| Progressive Web Apps for Firefox | Firefox | The firefoxpwa UI half (native host is the rpm) — SETUP.md §1. |
+| FireShot | Firefox | Full-page capture to PDF / annotate. Plain full-page PNG is built in (Ctrl+Shift+S → Save full page) — keep only while the PDF/annotate half is used. |
+| uBlock Origin Lite | Chrome | MV3-era blocker; the only one — no second blocker stacked (Ghostery and "I don't care about cookies" are installed-but-disabled, kept off on purpose). |
+| Claude | Chrome | Claude-in-Chrome: lets Claude Code drive tabs in this profile. |
+| Qudelix | Chrome | WebHID DAC config — SETUP.md §3. |
+| TheTab.Ninja | Chrome | New-tab bookmark/tab manager. |
+| Oceanic | Chrome | Theme only (no site access) — listed because it shows up in the inventory. |
+
+Removed on purpose: **ClearURLs** (2026-08-21) — no per-site allow list
+exists, only a global switch, and its Google rules strip the parameters
+Google AI Mode needs → "Something went wrong and an AI response wasn't
+generated" on every query (worked in a private window = extensions off).
+uBO's URL-tracking list does the same cleaning and can be excused per site.
+**Coupert** (cashback/affiliate injector) and **Wappalyzer** sit disabled in
+Firefox — not worth their site access.
 
 ## CLI stack
 
