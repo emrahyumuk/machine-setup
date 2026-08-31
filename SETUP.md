@@ -535,6 +535,24 @@ came from a real incident, not speculation.
   at the cap is harmless (charge bypass). Avoid regular deep discharges below
   ~15-20%; a full 100→20→100 cycle every 2-3 months recalibrates the gauge.
   VERIFY: `cat /sys/class/power_supply/BAT0/charge_control_end_threshold` → 80.
+- **MT7925 Bluetooth dead after a Windows visit (TRAP, 2026-08-31)**: the
+  Wi-Fi/BT combo chip's Bluetooth half is a USB function (`0e8d:e025`);
+  on three consecutive warm boots its firmware handshake timed out —
+  `Bluetooth: hci0: Execution of wmt command timed out` /
+  `Failed to send wmt func ctrl (-110)` — so `hci0` existed but never
+  registered (`bluetoothctl list` empty, GNOME toggle inert, rfkill clean,
+  bluetoothd fine). Warm reboots don't cut power to the chip, so the bad
+  state survived them. First seen right after a Windows session (the same
+  visit also charged the battery to 100% past the 80% cap); the boots after
+  the earlier Windows visits were clean, so the trigger is likely Windows'
+  hybrid shutdown (Fast Startup) or a Windows BT driver update leaving the
+  chip half-initialised — keep Fast Startup OFF on the Windows side.
+  FIX (worked first try): re-initialise the chip by reloading the driver —
+  `sudo modprobe -r btusb btmtk && sudo modprobe btusb`. Next escalations:
+  USB re-authorise (`echo 0/1 > /sys/bus/usb/devices/<bt-path>/authorized`),
+  then a full power-off (not a reboot).
+  VERIFY: `bluetoothctl list` shows a controller; `journalctl -k -b | grep
+  wmt` empty.
 - **Fingerprint reader**: enrolled for sudo. Quirk: sudo inside embedded
   terminals/AI sessions may lack a TTY for password fallback — run sudo
   commands in a real terminal window.

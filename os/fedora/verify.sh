@@ -64,6 +64,7 @@ first=$(efibootmgr 2>/dev/null | awk '/BootOrder/{split($2,a,","); print a[1]}')
 
 sec "§3a Hardware (ThinkPad P14s Gen6 — thinkpad-p14s)"
 [ "$(cat /sys/class/power_supply/BAT0/charge_control_end_threshold 2>/dev/null)" = 80 ] && ok "charge cap 80%" || bad "charge_control_end_threshold $(cat /sys/class/power_supply/BAT0/charge_control_end_threshold 2>/dev/null)"
+[ -n "$(timeout 5 bluetoothctl list 2>/dev/null)" ] && ok "bluetooth controller registered" || bad "no bluetooth controller (MT7925 wmt timeout?)" "sudo modprobe -r btusb btmtk && sudo modprobe btusb — SETUP.md §3a"
 [ -f /etc/udev/rules.d/70-qudelix.rules ] && ok "Qudelix udev rule" || bad "70-qudelix.rules missing"
 v=$(cat /sys/class/drm/card1/device/mem_info_vram_total 2>/dev/null); [ -n "$v" ] && [ "$v" -le 4400000000 ] && ok "iGPU VRAM (UMA) $((v/1048576)) MB" || skipc "iGPU VRAM total: ${v:-?} bytes (expect ~4096 MB after the 2026-08-20 BIOS change)"
 
