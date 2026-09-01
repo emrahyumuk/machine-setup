@@ -547,12 +547,19 @@ came from a real incident, not speculation.
   the earlier Windows visits were clean, so the trigger is likely Windows'
   hybrid shutdown (Fast Startup) or a Windows BT driver update leaving the
   chip half-initialised — keep Fast Startup OFF on the Windows side.
-  FIX (worked first try): re-initialise the chip by reloading the driver —
-  `sudo modprobe -r btusb btmtk && sudo modprobe btusb`. Next escalations:
-  USB re-authorise (`echo 0/1 > /sys/bus/usb/devices/<bt-path>/authorized`),
-  then a full power-off (not a reboot).
-  VERIFY: `bluetoothctl list` shows a controller; `journalctl -k -b | grep
-  wmt` empty.
+  FIX: a **full power-off** (not a reboot) — after it the log shows
+  `hci0: Device setup in … usecs` with no wmt line, and the controller
+  registers first try. Reloading the driver
+  (`sudo modprobe -r btusb btmtk && sudo modprobe btusb`) is only a
+  band-aid: it brought Bluetooth up on 2026-08-31 but the controller stayed
+  degraded — the second reload still logged a wmt timeout and the mouse's
+  link dropped ~3x more often than normal (11 reconnects in 28 h vs 1-4 a
+  day) until the cold boot the next day. Use the reload to get through the
+  day, then power off.
+  VERIFY: `journalctl -k -b | grep -E 'wmt|Device setup'` → only the
+  "Device setup" line; `bluetoothctl list` shows a controller; MX Master
+  reconnects (`journalctl -b | grep -c 'input: Logitech MX Master'`) stay
+  in the 1-4/day band.
 - **Fingerprint reader**: enrolled for sudo. Quirk: sudo inside embedded
   terminals/AI sessions may lack a TTY for password fallback — run sudo
   commands in a real terminal window.
