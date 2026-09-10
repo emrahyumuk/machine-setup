@@ -99,6 +99,8 @@ echo "== gnome settings (whitelisted namespaces) =="
     /org/gnome/shell/keybindings/ \
     /org/gnome/desktop/wm/keybindings/ \
     /org/gnome/settings-daemon/plugins/media-keys/ \
+    /org/gnome/nautilus/preferences/ \
+    /org/gtk/gtk4/settings/file-chooser/ \
     /org/gnome/shell/extensions/dash-to-dock/ \
     /org/gnome/shell/extensions/blur-my-shell/ \
     /org/gnome/shell/extensions/Battery-Health-Charging/ \

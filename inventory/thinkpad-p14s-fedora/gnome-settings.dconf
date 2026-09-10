@@ -36,6 +36,19 @@ command='gtk-launch metal-browser'
 name='Metal Browser'
 ### EOF
 
+### dconf load /org/gnome/nautilus/preferences/  <<'EOF'
+[/]
+default-folder-viewer='icon-view'
+migrated-gtk-settings=true
+show-hidden-files=true
+### EOF
+
+### dconf load /org/gtk/gtk4/settings/file-chooser/  <<'EOF'
+[/]
+show-hidden=true
+sort-directories-first=false
+### EOF
+
 ### dconf load /org/gnome/shell/extensions/dash-to-dock/  <<'EOF'
 [/]
 always-center-icons=false
@@ -137,7 +150,7 @@ use-higher-precision=false
 [/]
 cli-toggle=false
 indicator-position-max=4
-user-enabled=true
+user-enabled=false
 ### EOF
 
 ### dconf load /org/gnome/shell/extensions/clipboard-indicator/  <<'EOF'
