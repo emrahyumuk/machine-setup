@@ -112,7 +112,7 @@ echo "== gnome settings (whitelisted namespaces) =="
     echo "### dconf load $ns  <<'EOF'"
     # Drop keys extensions write at runtime (not choices): BHC recounts the
     # panel's visible indicators into indicator-position-max on every load.
-    dconf dump "$ns" 2>/dev/null | grep -v '^indicator-position-max='
+    { dconf dump "$ns" 2>/dev/null | grep -v '^indicator-position-max=' || true; }
     echo "### EOF"
     echo
   done
