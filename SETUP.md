@@ -618,6 +618,19 @@ came from a real incident, not speculation.
   kernel updates check `journalctl -k -b | grep -c 'FT: Failed'` — when it
   reads 0 with roams still happening, roams have become carrier-preserving
   and the DoH workaround can be reconsidered.
+- **BIOS updates via fwupd/LVFS FAIL on this disk layout (TRAP, 2026-09-28)**:
+  the ESP is the 100 MB one Windows created at the factory
+  (`nvme0n1p1`, ~45 MB free); a UEFI capsule update needs ~140 MB there —
+  `fwupdmgr update` says "/boot/efi does not have sufficient space" and
+  leaves the device in `Update State: Failed`, and `upall` re-offers it every
+  week. Enlarging the ESP means moving the Microsoft reserved + Windows
+  partitions right behind it — not worth it. Apply BIOS updates from the
+  Windows side instead (Lenovo Vantage / System Update, which flashes
+  without the ESP) or Lenovo's bootable BIOS-update USB; answer `n` to the
+  fwupd prompt meanwhile. Firmware for other devices (fingerprint, dock,
+  NVMe…) still goes through fwupd fine — only the system-firmware capsule
+  hits the limit. Skipped on purpose: 0.1.19 → 0.1.22 only touches a
+  touch-panel device list.
 - **Fingerprint reader**: enrolled for sudo. Quirk: sudo inside embedded
   terminals/AI sessions may lack a TTY for password fallback — run sudo
   commands in a real terminal window.
