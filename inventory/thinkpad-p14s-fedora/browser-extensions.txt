@@ -19,7 +19,7 @@ on  Translate - Translator, Dictionary, TTS | mnlohknjofogcljbcknkakphddjpijak
 on  uBlock Origin Lite | ddkjiahejlhfcafbddmgiahcphecmpfh
 off 1Password – Password Manager | aeblfdkhhhdcdjpifhhbdiojplfjncoa
 off ColorZilla | bhlhnicpbhignbdhedgjhgdocnmhomnp
-off Coupert - Automatic Coupon Finder & Cashback | mfidniedemcgceagapgdekdbmanojomk
+off Coupert - Automatic Coupon Finder & Cash Back | mfidniedemcgceagapgdekdbmanojomk
 off DeepL: translate and write with AI | cofdbpoegempjloogbagkncekinflcnj
 off Ghostery AdBlocker for Privacy | mlomiejdfkolichcflejclcbmpeaniij
 off I don't care about cookies | fihnjjcciajhdojfnbdddfaoknhalnja
