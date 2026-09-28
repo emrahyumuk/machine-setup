@@ -109,6 +109,13 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
   that page one by one. Parameter stripping now comes from uBlock Origin's
   *AdGuard URL Tracking Protection* list, which the uBO power button can
   excuse per site.
+- ENVIRONMENT-SPECIFIC, NOT A SETUP ITEM (agents: never propose it): on
+  the owner's machine both browsers run DNS over HTTPS (Cloudflare) as a
+  workaround for a home-network condition — Wi-Fi roams on a mesh dropping
+  DNS for 0.3 s. Only relevant if someone sees the same symptom ("Server
+  Not Found", refresh works); diagnosis and the exact browser settings are
+  in §2 "Wi-Fi roam". Owner-side detail (router settings, placement) is
+  deliberately not in this repo.
 - WHY firefoxpwa over a manual Chromium `--app=` window for the other PWAs:
   on Wayland, Chromium ignores `--class` → wrong dock icon unless forced to
   XWayland. firefoxpwa generates correct desktop entries natively. (A real
@@ -450,6 +457,47 @@ currently running (their lock regenerates on their next clean restart).
   bypasses the DSP chain entirely ("sounds like bypass").
   VERIFY: `pw-metadata -n settings | grep allowed-rates` → no match.
 
+### TRAP (environment-specific, NOT a setup item): Wi-Fi roam → "Server Not Found"
+Diagnostic knowledge only — nothing here is applied by bootstrap or checked
+by verify. Read it when the symptom shows up on a multi-AP Wi-Fi network;
+skip it otherwise. Router-side settings belong to the owner's network, not
+to this repo.
+- SYMPTOM: on a multi-AP network (owner's case: a 2-node mesh, both nodes
+  on the same 5 GHz channel) pages sometimes fail to load on first try with
+  Firefox's "Server Not Found"; refresh works. Measured 2026-09-27 over
+  150 s windows: 674 lookups OK, every failure within 0.3 s of a roam.
+- CAUSE 1 — the roams: NetworkManager hard-codes wpa_supplicant's
+  `bgscan simple:30:-65:300` for any network it has seen at >1 BSSID (string
+  lives in the binary; no config knob). Below -65 dBm the supplicant scans
+  every 30 s, the scan takes ~7 s, and with two equal-strength APs it flips
+  after every scan → a roam every **37 s, clock-regular** (2189 roams in
+  one 6-day boot). Above -65 dBm the scan interval is 300 s and the
+  problem vanishes — which is why an earlier "fix" (router per-client
+  steering off + powersave off, 2026-09-09) only seemed to work: the desk
+  signal sat above the threshold that day.
+- CAUSE 2 — the failure: each roam is a full reconnect (`disconnect from AP
+  … for new auth`) = 0.33 s `NO-CARRIER` on the interface. systemd-resolved
+  drops the per-link scope on carrier loss and fails the in-flight query
+  at once ("No appropriate name servers or networks for name found"); with
+  a global `DNS=` it instead gets `ENETDOWN` from the kernel and fails just
+  as fast ("Network is down"). Everything with a retry survives the gap:
+  `dig` UDP/TCP, `curl --doh-url` → 0 failures across roams, ~1.1-1.6 s late.
+- NOT the cause (tested, harmless to keep): DHCP renew on roam (a static
+  address changed nothing), a missing global DNS server in resolved.
+- WORKAROUND the owner uses: browser DNS over HTTPS — Firefox Settings →
+  Privacy & Security → DNS over HTTPS → **Custom**, provider Cloudflare,
+  "Always warn me if secure DNS isn't available" UNCHECKED (silent native
+  fallback, needed for captive portals; pref `network.trr.mode=2`); Chrome
+  `chrome://settings/security` → Use secure DNS → With → Cloudflare. The
+  browser's own persistent HTTPS connection queues the query through the
+  gap and answers ~1 s late. Not done: system-wide DoT in resolved
+  (`DNS=1.1.1.1#cloudflare-dns.com` + `DNSOverTLS=opportunistic`) — would
+  cover CLI tools too, untested. Real fixes: signal above -65 dBm at the
+  desk (node placement / third node), or 802.11r — see §3a for why that
+  doesn't work on this chip yet.
+- DIAGNOSE: `journalctl -k -b 0 | grep -c 'for new auth'` (hundreds/day =
+  bgscan ping-pong; intervals via `-o short-unix`, 37 s = bgscan).
+
 ### Already-default safety layers (verify present, don't install)
 - systemd-oomd active, uresourced active, fstrim.timer enabled. These are
   Fedora Workstation defaults — just confirm after install.
@@ -560,6 +608,16 @@ came from a real incident, not speculation.
   "Device setup" line; `bluetoothctl list` shows a controller; MX Master
   reconnects (`journalctl -b | grep -c 'input: Logitech MX Master'`) stay
   in the 1-4/day band.
+- **MT7925 Wi-Fi: 802.11r fast roaming is negotiated but fails** (2026-09-27,
+  kernel 7.2.5, firmware 20260813): with the mesh advertising `FT/PSK`, the
+  supplicant runs the FT auth and then logs `FT: Failed to set PTK to the
+  driver` / `nl80211: kernel reports: key not allowed` and falls back to a
+  full reconnect — so 802.11r does NOT shorten the carrier drop described in
+  §2 "Wi-Fi roam". A mac80211 patch deferring the FT key install is in
+  flight upstream (Sep 2026). Leave fast roaming ON at the router; after
+  kernel updates check `journalctl -k -b | grep -c 'FT: Failed'` — when it
+  reads 0 with roams still happening, roams have become carrier-preserving
+  and the DoH workaround can be reconsidered.
 - **Fingerprint reader**: enrolled for sudo. Quirk: sudo inside embedded
   terminals/AI sessions may lack a TTY for password fallback — run sudo
   commands in a real terminal window.

@@ -9,4 +9,4 @@ scripts: os/fedora/{bootstrap,verify,collect,update-check}.sh
 last-applied: 2026-07-22
 last-collected: 2026-09-10
 last-verified: 2026-09-10
-notes: Fedora 44 · GNOME 50 · Wayland · LUKS btrfs. The reference machine — every decision is born here.
+notes: Fedora 44 · GNOME 50 · Wayland · LUKS btrfs. The reference machine — every decision is born here. Environment-only workaround in place (not a repo item): browser DoH for the home-mesh roam glitch, SETUP.md §2 "Wi-Fi roam" TRAP.

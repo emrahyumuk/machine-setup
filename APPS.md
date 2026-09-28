@@ -57,6 +57,10 @@ Two browsers, two jobs. Neither is "the spare".
 | Firefox | Daily driver: browsing, accounts, PWAs (mra-agent, mRA Notes), Music profile | The only engine where FULL uBlock Origin still runs (Chrome MV3 cut it to uBO Lite); containers for account isolation; firefoxpwa for correct Wayland desktop entries. |
 | Google Chrome | Tool browser: Claude-in-Chrome (Claude Code opens tabs here when testing web work), WebHID (Qudelix), WhatsApp PWA | Claude-in-Chrome is Chromium-only; WebHID is Chromium-only; WhatsApp Web treats Chromium as first-class. Kept lean on purpose — the agent drives it, so every extension is something the agent's tabs inherit. |
 
+(Owner's machine only, not a setup item: both browsers have DNS over
+HTTPS on as a workaround for a home-network roaming glitch — SETUP.md §2
+"Wi-Fi roam" TRAP. Don't propose it elsewhere.)
+
 Extensions — each one has "read every site" power, so the list is short and
 each row carries its reason. (Synced back by Firefox Sync / the Google
 account; this table records the DECISIONS, `inventory/<machine-os>/browser-extensions.txt`
