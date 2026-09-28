@@ -45,7 +45,7 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | Beekeeper Studio | Flathub | DB client (postgres containers). |
 | Podman Desktop | Flathub | Container GUI. Optional — CLI covers it; the GUI costs ~500+ MB RAM when open. |
 | Unity Hub | Flathub | Game engine experiments. |
-| GNOME Web (Epiphany) | Flathub | WebKitGTK reference browser. Tauri v2 apps render with WebKitGTK on Linux, so a layout/CSS question gets answered by loading the page here: if Web shows it too, it is the engine, not the app (Firefox = Gecko, Chrome = Blink — neither tells you). Caveat: the flatpak bundles its own WebKitGTK (GNOME 51 runtime) while Tauri links the system `webkit2gtk4.1` (2.54 at the time of writing) — same major line, not bit-identical. |
+| GNOME Web (Epiphany) | Flathub | WebKit reference browser — the engine behind Safari, in its GTK port. Two jobs: (1) the closest "how would Safari render this" check without a Mac (same engine and JavaScriptCore; Apple's build differs in features/ports, so it is a strong hint, not proof); (2) Tauri v2 apps render with WebKitGTK on Linux, so a layout/CSS question gets answered by loading the page here: if Web shows it too, it is the engine, not the app (Firefox = Gecko, Chrome = Blink — neither tells you). Caveat: the flatpak bundles its own WebKitGTK (GNOME 51 runtime) while Tauri links the system `webkit2gtk4.1` (2.54 at the time of writing) — same major line, not bit-identical. |
 | GNOME Tweaks | Fedora | Occasional knobs. |
 | Solaar | Fedora | Logitech MX Master 3S config over Bluetooth (HID++ — no receiver needed). Package ships a system-wide autostart; device-stored settings (DPI, SmartShift) persist on their own, Solaar-side rules need it running. |
 
