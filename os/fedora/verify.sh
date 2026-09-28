@@ -49,6 +49,7 @@ swapon --show=NAME,PRIO --noheadings 2>/dev/null | grep -q '^/swap/swapfile *10$
 systemctl is-active earlyoom >/dev/null 2>&1 && grep -q -- '-m 10,5 -s 10,5' /etc/default/earlyoom 2>/dev/null && ok "earlyoom active, 10%/10% thresholds" || bad "earlyoom service/args"
 [ "$(asuser systemctl --user is-active earlyoom-notify.service 2>/dev/null)" = active ] && ok "earlyoom-notify (user) active" || bad "earlyoom-notify.service not active"
 [ "$(asuser systemctl --user is-enabled update-check.timer 2>/dev/null)" = enabled ] && ok "update-check.timer enabled" || bad "update-check.timer not enabled"
+[ "$(asuser gsettings get org.gnome.software download-updates 2>/dev/null)" = false ] && ok "gnome-software background download off" || bad "gnome-software download-updates should be false (upall owns updates)" "gsettings set org.gnome.software download-updates false"
 [ "$(cat /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/cpu.weight 2>/dev/null)" = 500 ] && ok "session.slice cpu.weight 500 (uresourced)" || bad "session.slice cpu.weight"
 [ "$(asuser gsettings get org.gnome.shell.extensions.user-theme name 2>/dev/null)" = "''" ] && ok "shell theme empty (stock)" || skipc "user-theme name not '' or schema absent — check SETUP theming trap"
 ar=$(asuser pw-metadata -n settings 2>/dev/null | grep -o "allowed-rates. value:'[^']*'" | sed "s/.*value://"); case "$ar" in ""|"'[ 48000 ]'") ok "pipewire rates: fixed 48 kHz (default)";; *) bad "pipewire allowed-rates $ar (SETUP: keep the fixed-48k default)";; esac

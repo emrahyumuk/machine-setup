@@ -380,6 +380,13 @@ currently running (their lock regenerates on their next clean restart).
 - Updates arrive via dnf (system + vendor repos), flatpak, fwupd (firmware)
   and npm -g (agent CLIs). GNOME Software is a FRONTEND over the first
   three, not a fifth channel — its notifications are informational only.
+  Its background download is OFF (2026-09-28):
+  `gsettings set org.gnome.software download-updates false`. WHY: with it
+  on, GNOME Software pre-downloads the same packages and stages an
+  "offline update on next boot"; every `upall` (or any `dnf install`)
+  then prints "Pending offline transaction has been invalidated" and the
+  staged copy was wasted bandwidth. One channel owner: `upall`.
+  VERIFY: `gsettings get org.gnome.software download-updates` → false.
 - The ritual, Sunday evening, then the (already planned) weekly reboot —
   shipped as two zshrc functions (see `dotfiles/zshrc`): **`upcheck`**
   (what's pending, all four channels, one screen) and **`upall`**
