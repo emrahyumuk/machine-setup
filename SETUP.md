@@ -84,8 +84,16 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
 ### Firefox
 - Default browser. Second profile ("Music") launched as its own app with pinned
   profile selection — for music/media isolation.
-- **PWAs via firefoxpwa** (PWAsForFirefox extension + native host): mra-agent,
-  mRA Notes. Each PWA profile is separate on purpose (session isolation).
+- **PWAs via firefoxpwa** (PWAsForFirefox extension + native host): mRA OS
+  (os.mra.software — replaced the separate mra-agent + mRA Notes apps
+  2026-09-30; its manifest ships its own icon and a "new chat" shortcut).
+  Each PWA gets its own profile on purpose (session isolation). Install from
+  the CLI: `firefoxpwa profile create --name "mRA OS"` →
+  `firefoxpwa site install https://os.mra.software/manifest.webmanifest
+  --profile <id>`; retire with `site uninstall <id> -q` + `profile remove
+  <id> -q` (the `-q` skips the y/n prompt — needed from an agent shell).
+  Then swap the `FFPWA-<id>.desktop` entry in
+  `org.gnome.shell favorite-apps` for the dock.
   Per-PWA tip: enable "Open out-of-scope URLs in a default browser" (pref
   `firefoxpwa.openOutOfScopeInDefaultBrowser`, default false) or external
   links open inside the PWA window. To replace a PWA's icon, overwrite the
@@ -120,7 +128,7 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
   on Wayland, Chromium ignores `--class` → wrong dock icon unless forced to
   XWayland. firefoxpwa generates correct desktop entries natively. (A real
   Chrome PWA *install* is fine — Chrome manages its own entry, as WhatsApp
-  shows — but mra-agent/mRA Notes stay on the Firefox engine on purpose:
+  shows — but mRA OS stays on the Firefox engine on purpose:
   session isolation + uBlock.)
 
 ### Google Calendar via CalDAV (GNOME Online Accounts / Thunderbird / any client)

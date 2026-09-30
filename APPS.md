@@ -30,7 +30,7 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | App | Source | Why / notes |
 |-----|--------|-------------|
 | Firefox | Fedora | Main browser (full uBlock Origin lives here — see "Browsers" below). Separate "Music" profile launched as its own app; default profile pinned via alias (profile group drifts to last-used otherwise — see `dotfiles/zshrc`). |
-| firefoxpwa (PWAsForFirefox) | rpm + extension | PWAs as real apps: mra-agent, mRA Notes. (WhatsApp moved to a Chrome PWA 2026-08-18 — messages intermittently stalled in the Firefox PWA; WhatsApp Web treats Chromium as first-class.) See SETUP.md §1 for icon + link-handling config. |
+| firefoxpwa (PWAsForFirefox) | rpm + extension | PWAs as real apps: mRA OS (os.mra.software; replaced mra-agent + mRA Notes 2026-09-30). (WhatsApp moved to a Chrome PWA 2026-08-18 — messages intermittently stalled in the Firefox PWA; WhatsApp Web treats Chromium as first-class.) See SETUP.md §1 for icon + link-handling config. |
 | Google Chrome | Google repo | Tool browser — Claude-in-Chrome, WebHID (Qudelix 5K `--app` window, XWayland — see SETUP.md hardware notes), WhatsApp PWA. Roles + extensions in "Browsers" below. |
 | Ghostty | COPR | Terminal. Config in `dotfiles/ghostty.config` (Catppuccin Mocha, JetBrainsMono Nerd Font). |
 | VS Code (`code`) | Microsoft repo | Editor. |
@@ -55,7 +55,7 @@ Two browsers, two jobs. Neither is "the spare".
 
 | Browser | Role | Why this one for the job |
 |---------|------|--------------------------|
-| Firefox | Daily driver: browsing, accounts, PWAs (mra-agent, mRA Notes), Music profile | The only engine where FULL uBlock Origin still runs (Chrome MV3 cut it to uBO Lite); containers for account isolation; firefoxpwa for correct Wayland desktop entries. |
+| Firefox | Daily driver: browsing, accounts, PWA (mRA OS), Music profile | The only engine where FULL uBlock Origin still runs (Chrome MV3 cut it to uBO Lite); containers for account isolation; firefoxpwa for correct Wayland desktop entries. |
 | Google Chrome | Tool browser: Claude-in-Chrome (Claude Code opens tabs here when testing web work), WebHID (Qudelix), WhatsApp PWA | Claude-in-Chrome is Chromium-only; WebHID is Chromium-only; WhatsApp Web treats Chromium as first-class. Kept lean on purpose — the agent drives it, so every extension is something the agent's tabs inherit. |
 
 (Owner's machine only, not a setup item: both browsers have DNS over
