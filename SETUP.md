@@ -497,8 +497,14 @@ to this repo.
   a global `DNS=` it instead gets `ENETDOWN` from the kernel and fails just
   as fast ("Network is down"). Everything with a retry survives the gap:
   `dig` UDP/TCP, `curl --doh-url` → 0 failures across roams, ~1.1-1.6 s late.
-- NOT the cause (tested, harmless to keep): DHCP renew on roam (a static
-  address changed nothing), a missing global DNS server in resolved.
+- NOT the cause (tested): DHCP renew on roam (a static address changed
+  nothing), a missing global DNS server in resolved. TRAP inside the trap:
+  the global `DNS=<home router>` drop-in tried on 2026-09-27 was NOT
+  harmless — resolved queries the global scope on every network, so on a
+  hotspot every lookup of a non-existent name (gcloud's metadata probe,
+  npm registry fallbacks) waited ~2 minutes for the unreachable home
+  router. Removed 2026-10-05. Never put a LAN address in resolved's global
+  `DNS=`; per-link DNS from the connection profile is the right scope.
 - WORKAROUND the owner uses: browser DNS over HTTPS — Firefox Settings →
   Privacy & Security → DNS over HTTPS → **Custom**, provider Cloudflare,
   "Always warn me if secure DNS isn't available" UNCHECKED (silent native
