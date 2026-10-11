@@ -97,7 +97,7 @@ xdg-mime default mpv.desktop application/vnd.apple.mpegurl application/x-mpegurl
   audio/x-mpegurl audio/mpegurl video/mp4 video/x-matroska video/webm 2>/dev/null || true
 
 echo "== drift check (os/fedora/verify.sh → machine-verify; upall runs it) =="
-install -Dm755 $OSD/verify.sh ~/.local/bin/machine-verify
+mkdir -p ~/.local/bin && ln -sfn "$(readlink -f $OSD/verify.sh)" ~/.local/bin/machine-verify   # symlink, not copy: a copy went stale within weeks (2026-10-11: 36 vs 37 checks)
 
 echo "== weekly update summary notifier (Sun 18:00) =="
 install -Dm755 $OSD/update-check.sh ~/.local/bin/update-check.sh
