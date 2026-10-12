@@ -111,8 +111,10 @@ echo "== gnome settings (whitelisted namespaces) =="
   ; do
     echo "### dconf load $ns  <<'EOF'"
     # Drop keys extensions write at runtime (not choices): BHC recounts the
-    # panel's visible indicators into indicator-position-max on every load.
-    { dconf dump "$ns" 2>/dev/null | grep -v '^indicator-position-max=' || true; }
+    # panel's visible indicators into indicator-position-max on every load;
+    # Caffeine stores its current toggle in user-enabled/cli-toggle (resets
+    # on every login unless restore-state is on).
+    { dconf dump "$ns" 2>/dev/null | grep -vE '^(indicator-position-max|user-enabled|cli-toggle)=' || true; }
     echo "### EOF"
     echo
   done
