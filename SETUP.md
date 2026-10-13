@@ -636,9 +636,13 @@ came from a real incident, not speculation.
   full reconnect — so 802.11r does NOT shorten the carrier drop described in
   §2 "Wi-Fi roam". A mac80211 patch deferring the FT key install is in
   flight upstream (Sep 2026). Leave fast roaming ON at the router; after
-  kernel updates check `journalctl -k -b | grep -c 'FT: Failed'` — when it
-  reads 0 with roams still happening, roams have become carrier-preserving
-  and the DoH workaround can be reconsidered.
+  kernel updates check `journalctl -b -u wpa_supplicant | grep -c 'FT: Failed'`
+  (the line comes from wpa_supplicant, NOT the kernel — `journalctl -k` always
+  reads 0 and once produced a false "fixed" verdict, 2026-10-12) against
+  `journalctl -k -b | grep -c 'for new auth'`. When FT failures read 0 with
+  roams still happening, roams have become carrier-preserving and the DoH
+  workaround can be reconsidered. Still failing on every roam at kernel 7.2.9
+  (2026-10-13: 59 roams, 59 failures).
 - **BIOS updates via fwupd/LVFS FAIL on this disk layout (TRAP, 2026-09-28)**:
   the ESP is the 100 MB one Windows created at the factory
   (`nvme0n1p1`, ~45 MB free); a UEFI capsule update needs ~140 MB there —
