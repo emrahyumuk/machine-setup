@@ -1037,9 +1037,50 @@ Mac never FAILs a server check.
 - No Logi Options+ (the MX Master stays at the ThinkPad desk).
   VERIFY: `defaults read com.apple.AppleMultitouchMouse MouseButtonMode` → TwoButton.
 
+### Health — heartbeat, memory, disk (the box can't report its own death)
+- *[role]* `os/macos/health-check.sh` every 5 min as a LaunchDaemon with
+  `UserName` (runs with nobody logged in at the desk, from the moment
+  FileVault is unlocked). It pings a **healthchecks.io** check (period 5 min,
+  grace 10 min): when the pings STOP — machine off, frozen, offline, waiting
+  at the FileVault screen — the service alerts the phone. Ping URL in
+  `~/.config/machine-setup/healthcheck-url` (600; a token, never the repo).
+  WHY an outside service: everything on the Mac — notifications included —
+  dies with the Mac, and at a headless box nobody sees a desktop toast.
+- Same run, trend + alerts: one line per run in
+  `~/Library/Logs/machine-setup-health.log` (memory pressure level, free %,
+  swap, disk free, Wi-Fi channel/signal, top-3 memory users; rotates at
+  5 MB). Memory pressure at warn+ (`kern.memorystatus_vm_pressure_level` ≥ 2)
+  for 3 runs in a row, disk free < 30 GB, or a FAILED weekly maintenance →
+  the ping goes to `/fail` with the reason as body, so the alert says WHY.
+  Judge memory by PRESSURE, never by "used" or swap size — the §2 zram rule
+  holds here too. `DISK_FLOOR_GB=1000 health-check` exercises the alert path.
+  VERIFY: `machine-verify` → daemon installed, URL present, last log line
+  < 15 min old with `ping=ok`.
+
+### Disk maintenance — weekly
+- *[role]* `os/macos/maintenance.sh`, Sunday 04:00, same daemon pattern:
+  `simctl delete unavailable`, Xcode DerivedData folders untouched 30+ days,
+  `brew cleanup -s --prune=30`, `podman image prune -f` (DANGLING images
+  only — never containers, volumes or tagged images: the home-automation
+  stack will live there). One line per run with GB freed; a failed step
+  writes `FAILED=<step>`, which the health check turns into an alert.
+  VERIFY: `tail -1 ~/Library/Logs/machine-setup-maintenance.log` → no `FAILED=`.
+
+### Decided for now
+- **No UPS** (2026-10-18, accepted): the battery covers short outages; a
+  long one shuts the Mac down, and it stays at the FileVault screen —
+  unlockable from the LAN only — until someone home unlocks it. The
+  heartbeat makes that state visible instead of silent.
+- **No static IP yet**: SSH/Screen Sharing find the Mac by NAME
+  (`mra-mac.local`, Tailscale `mra-mac`), so an address change breaks
+  nothing today. Set a DHCP reservation on the router when the
+  home-automation devices need to reach it by IP.
+- **Wi-Fi, not Ethernet**: no cable run to this desk.
+
 ### Open items (decided to revisit, not forgotten)
 - **Time Machine**: no destination. Wanted before the macOS 27 upgrade at
-  the latest; needs an external disk or a NAS share.
+  the latest (and before home-automation data lives here); waits for an
+  external disk.
 - **macOS 27**: wait for 27.1 (§2c "Update cadence").
 
 ---

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  [role] SETUP.md §3b. A LaunchDaemon that runs as the USER (UserName), so it
+  works with nobody logged in at the desk — after a reboot it starts as soon
+  as FileVault is unlocked. Installed to /Library/LaunchDaemons/ (root-owned,
+  sudo) by os/macos/bootstrap.sh in server mode, which replaces __HOME__ and
+  __USER__ (launchd expands neither ~ nor $HOME).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.machine-setup.maintenance</string>
+  <key>UserName</key>
+  <string>__USER__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__HOME__/.local/bin/maintenance</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>__HOME__</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key><integer>0</integer>
+    <key>Hour</key><integer>4</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-maintenance.launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-maintenance.launchd.log</string>
+</dict>
+</plist>

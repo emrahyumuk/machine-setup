@@ -156,6 +156,15 @@ if [[ "$a" =~ ^[Yy]$ ]]; then
     sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool false
     # Tailscale as a LaunchDaemon: up before anyone logs in (the app variant is not)
     sudo brew services start tailscale
+    # health heartbeat + weekly disk maintenance: LaunchDaemons running as the
+    # user, so they work with nobody logged in at the desk (§3b "Health")
+    for j in health-check maintenance; do
+      ln -sfn "$PWD/$OSD/$j.sh" ~/.local/bin/$j
+      D=/Library/LaunchDaemons/com.machine-setup.$j.plist
+      sed -e "s#__HOME__#$HOME#g" -e "s#__USER__#$(id -un)#g" $OSD/assets/com.machine-setup.$j.plist | sudo tee "$D" >/dev/null
+      sudo launchctl bootout system "$D" 2>/dev/null || true
+      sudo launchctl bootstrap system "$D" 2>/dev/null || { sleep 2; sudo launchctl bootstrap system "$D"; }
+    done
   fi
   echo "Static hostname — current: $(scutil --get HostName 2>/dev/null || echo unset)"
   read -r -p "  set HostName/LocalHostName/ComputerName to (empty = keep): " hn
@@ -179,6 +188,8 @@ EOF
   - SSH keys only: other machine's key from `gh api user/keys` → authorized_keys,
     log in with it FIRST, then sshd_config.d/010-machine-setup.conf (§3b)
   - Settings → Battery → Charging: 80% limit (docked machine)
+  - healthchecks.io: check with period 5 min / grace 10 min → its ping URL into
+    ~/.config/machine-setup/healthcheck-url (chmod 600; never the repo)
   - App Store sign-in → sudo mas install 497799835 (Xcode) → §3b Xcode steps
     (first launch brings an iOS runtime — don't -downloadPlatform on top)
 EOF
