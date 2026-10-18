@@ -23,6 +23,9 @@
 set -euo pipefail
 SERVER=0
 [ "${1:-}" = --server ] && SERVER=1
+# Mark the role FIRST: if the sudo section is declined or fails, verify must
+# still check (and FAIL) the server items instead of silently skipping them.
+if [ $SERVER = 1 ]; then mkdir -p ~/.config/machine-setup && echo server > ~/.config/machine-setup/roles; fi
 cd "$(dirname "$0")/../.."   # repo root
 OSD=os/macos
 
@@ -36,7 +39,7 @@ echo "== formulae (CLI stack — APPS.md 'CLI stack'; curated intent lives there
 brew install \
   starship zoxide fzf atuin eza bat duf btop lazygit git-delta neovim \
   zsh-autosuggestions zsh-syntax-highlighting \
-  podman podman-compose mpv duti mas dockutil firefoxpwa \
+  podman podman-compose mpv duti mas dockutil \
   node@24 pnpm gh tmux jq
 [ $SERVER = 1 ] && brew install tailscale
 brew link --force node@24 >/dev/null 2>&1 || true   # system node = 24 (Active LTS)
@@ -107,11 +110,17 @@ fi
 
 echo "== Rust (rustup; NO mold — macOS links with Apple's ld_prime) =="
 command -v rustup >/dev/null || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
-"$HOME/.cargo/bin/rustup" target add aarch64-apple-ios aarch64-apple-ios-sim
+[ $SERVER = 1 ] && "$HOME/.cargo/bin/rustup" target add aarch64-apple-ios aarch64-apple-ios-sim   # [role] iOS testing
 
 echo "== podman machine =="
 podman machine inspect >/dev/null 2>&1 || podman machine init
 podman machine start 2>/dev/null || true
+
+# (re)load a LaunchAgent; bootout may complete asynchronously, so retry once
+load_agent() {
+  launchctl bootout "gui/$(id -u)" "$1" 2>/dev/null || true
+  launchctl bootstrap "gui/$(id -u)" "$1" 2>/dev/null || { sleep 2; launchctl bootstrap "gui/$(id -u)" "$1"; }
+}
 
 echo "== update notifier + drift check =="
 mkdir -p ~/.local/bin ~/Library/LaunchAgents ~/Library/Logs
@@ -122,8 +131,13 @@ ln -sfn "$PWD/$OSD/update-check.sh" ~/.local/bin/update-check
 ln -sfn "$PWD/$OSD/verify.sh"       ~/.local/bin/machine-verify
 P=~/Library/LaunchAgents/com.machine-setup.update-check.plist
 sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.update-check.plist > "$P"
-launchctl bootout "gui/$(id -u)" "$P" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$P"
+load_agent "$P"
+
+if [ $SERVER = 1 ]; then   # [role] podman VM back after every reboot — no sudo needed
+  PM=~/Library/LaunchAgents/com.machine-setup.podman-machine.plist
+  sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.podman-machine.plist > "$PM"
+  load_agent "$PM"
+fi
 
 echo
 echo "== sudo section (system-level; each line is SETUP.md §2c/§3b) =="
@@ -142,12 +156,6 @@ if [[ "$a" =~ ^[Yy]$ ]]; then
     sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool false
     # Tailscale as a LaunchDaemon: up before anyone logs in (the app variant is not)
     sudo brew services start tailscale
-    # podman VM back after every reboot (it stays stopped otherwise)
-    PM=~/Library/LaunchAgents/com.machine-setup.podman-machine.plist
-    sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.podman-machine.plist > "$PM"
-    launchctl bootout "gui/$(id -u)" "$PM" 2>/dev/null || true
-    launchctl bootstrap "gui/$(id -u)" "$PM"
-    mkdir -p ~/.config/machine-setup && echo server > ~/.config/machine-setup/roles
   fi
   echo "Static hostname — current: $(scutil --get HostName 2>/dev/null || echo unset)"
   read -r -p "  set HostName/LocalHostName/ComputerName to (empty = keep): " hn

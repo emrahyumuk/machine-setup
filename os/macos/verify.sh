@@ -44,8 +44,11 @@ grep -q 'fuse-ld=mold' "$H/.cargo/config.toml" 2>/dev/null \
   || ok "no mold rustflags (correct on macOS — Apple's ld_prime is the linker)"
 n=$(which -a claude 2>/dev/null | sort -u | wc -l | tr -d ' ')
 [ "$n" = 1 ] && [ -x "$H/.local/bin/claude" ] && ok "claude: single native install" || bad "claude install" "which -a claude → $n entries"
-[ "$(git -C "$H/.claude" remote get-url origin 2>/dev/null)" = "https://github.com/emrahyumuk/dot-claude-config" ] \
-  && ok "~/.claude is the dot-claude-config checkout" || bad "~/.claude not attached to dot-claude-config" "SETUP.md §2c 'Claude Code on macOS'"
+# owner item: a machine without a synced ~/.claude is not a failure
+if [ -d "$H/.claude/.git" ]; then
+  [ "$(git -C "$H/.claude" remote get-url origin 2>/dev/null)" = "https://github.com/emrahyumuk/dot-claude-config" ] \
+    && ok "~/.claude is the dot-claude-config checkout" || bad "~/.claude is a repo but not dot-claude-config"
+else skipc "~/.claude not synced (owner item, SETUP.md §2c)"; fi
 if [ -f "$H/.claude/settings.json" ]; then
   grep -q '"/home/' "$H/.claude/settings.json" \
     && bad "settings.json has absolute /home/ paths (hooks fire errors on the Mac)" "use the \$HOME + existence-check form — SETUP.md §1 Claude Code" \
@@ -87,11 +90,17 @@ launchctl list 2>/dev/null | grep -q 'com.machine-setup.update-check' \
   && ok "update-check agent loaded (Sun 18:00)" || bad "update-check LaunchAgent not loaded" "launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.update-check.plist"
 [ -L "$H/.local/bin/machine-verify" ] && ok "machine-verify is a symlink into the repo" || bad "machine-verify is a copy (goes stale)" "ln -sfn <repo>/os/macos/verify.sh ~/.local/bin/machine-verify"
 grep -q 'check FAILED' "$H/.local/bin/update-check" 2>/dev/null \
-  && ok "update-check reports failed channels (not a silent 0)" || bad "update-check is the old silent-0 version" "install -m755 os/macos/update-check.sh ~/.local/bin/update-check"
+  && ok "update-check reports failed channels (not a silent 0)" || bad "update-check is the old silent-0 version" "ln -sfn <repo>/os/macos/update-check.sh ~/.local/bin/update-check"
+UL="$H/Library/Logs/machine-setup-update-check.log"
+if [ -s "$UL" ]; then
+  tail -1 "$UL" | grep -q 'FAILED=' && bad "last update check FAILED: $(tail -1 "$UL")" "run update-check by hand and read the log" || ok "last update check ran clean"
+else skipc "update-check has not run yet"; fi
 SU=/Library/Preferences/com.apple.SoftwareUpdate
 [ "$(defaults read $SU CriticalUpdateInstall 2>/dev/null)" != 0 ] \
-  && ok "security responses still automatic" || bad "CriticalUpdateInstall is off — security responses must stay automatic"
-if command -v podman >/dev/null; then
+  && [ "$(defaults read $SU ConfigDataInstall 2>/dev/null)" != 0 ] \
+  && ok "security responses + XProtect data still automatic" || bad "CriticalUpdateInstall/ConfigDataInstall off — security updates must stay automatic"
+if command -v podman >/dev/null && ! grep -qx server "$H/.config/machine-setup/roles" 2>/dev/null; then
+  # on the server this is a hard check in the [role] block below
   podman machine list --format '{{.Name}} {{.Running}}' 2>/dev/null | grep -q 'true' \
     && ok "podman machine running" || skipc "podman machine not running (podman machine start)"
   sock="${DOCKER_HOST#unix://}"
@@ -137,16 +146,20 @@ nc -z -G1 127.0.0.1 5900 2>/dev/null && ok "Screen Sharing listening" || bad "Sc
 KO=/etc/ssh/sshd_config.d/010-machine-setup.conf
 if [ ! -s "$H/.ssh/authorized_keys" ]; then
   skipc "SSH key-only login pending — no ~/.ssh/authorized_keys yet (add a key, test it, then $KO)"
-elif grep -qE '^PasswordAuthentication +no' "$KO" 2>/dev/null; then
-  ok "SSH key-only (password auth off)"
+elif grep -qE '^PasswordAuthentication +no' "$KO" 2>/dev/null && grep -qE '^KbdInteractiveAuthentication +no' "$KO" 2>/dev/null; then
+  # both: with UsePAM yes (macOS 100-macos.conf) keyboard-interactive is a password path too
+  ok "SSH key-only (password + keyboard-interactive off)"
 else
   bad "authorized_keys present but SSH still accepts passwords" "write $KO — SETUP.md §3b"
 fi
 if command -v tailscale >/dev/null; then
   tailscale status >/dev/null 2>&1 && ok "tailscale up ($(tailscale ip -4 2>/dev/null | head -1))" || bad "tailscale not connected" "sudo brew services start tailscale && tailscale up"
 else bad "tailscale missing" "brew install tailscale (the formula — daemon runs before login)"; fi
+# loaded is not enough: the first agent "started successfully" and left no VM
 launchctl list 2>/dev/null | grep -q 'com.machine-setup.podman-machine' \
   && ok "podman machine starts at login (LaunchAgent)" || bad "podman autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.podman-machine.plist"
+podman machine list --format '{{.Running}}' 2>/dev/null | grep -q true \
+  && ok "podman machine running" || bad "podman machine not running on the server" "podman machine start; check ~/Library/Logs/machine-setup-podman-machine.log"
 case "$(xcode-select -p 2>/dev/null)" in
   /Applications/Xcode*.app/*) ok "xcode-select → full Xcode"
     xcrun simctl list runtimes 2>/dev/null | grep -q '^iOS' && ok "iOS simulator runtime installed" || bad "no iOS simulator runtime" "xcodebuild -downloadPlatform iOS";;

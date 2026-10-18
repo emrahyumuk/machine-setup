@@ -4,7 +4,8 @@
   The macOS equivalent of os/fedora/assets/update-check.{service,timer}.
   Sunday 18:00, one notification summarising the four update channels.
   StartCalendarInterval is launchd's Persistent=true equivalent: a missed run
-  (machine asleep/off at 18:00) fires as soon as the machine is awake again.
+  (machine ASLEEP at 18:00) fires as soon as it wakes. A run missed while the
+  machine was powered OFF is not made up — the next Sunday covers it.
   Installed to ~/Library/LaunchAgents/ by os/macos/bootstrap.sh, which
   replaces __HOME__ with $HOME (launchd does not expand ~ or $HOME).
 -->

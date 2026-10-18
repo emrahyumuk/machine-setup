@@ -755,8 +755,8 @@ comments recorded, nothing more.
   reaches Fedora's VS Code.
 - Input sources: ABC (US) default, Turkish Q-PC second — matches the
   keyboard's printed (US) layout.
-  VERIFY: `jq '.profiles[]|select(.selected)|.complex_modifications.rules|length' ~/.config/karabiner/karabiner.json`
-  → 4; in TextEdit Ctrl+C/V copy-paste; in Ghostty Ctrl+C interrupts `sleep 30`
+  VERIFY: `machine-verify` counts the selected profile's "PC-style" rules → 4
+  (rules of your own don't count); in TextEdit Ctrl+C/V copy-paste; in Ghostty Ctrl+C interrupts `sleep 30`
   and Ctrl+Shift+C/V copy-paste.
 
 ### Claude Code on macOS — attaching `~/.claude` (owner)
@@ -954,8 +954,7 @@ Mac never FAILs a server check.
   read:public_key`, then `gh api user/keys` shows each key's TITLE
   (`curl github.com/<user>.keys` lists keys without titles) — only the key
   titled `mra-fedora` went into `~/.ssh/authorized_keys` (700/600 perms).
-  An old "Gameflex Macbook M2" key on the account was deliberately NOT
-  authorized. Order matters: log in from the ThinkPad with the key FIRST,
+  Another, older key on the account was deliberately NOT authorized. Order matters: log in from the ThinkPad with the key FIRST,
   then `/etc/ssh/sshd_config.d/010-machine-setup.conf` =
   `PasswordAuthentication no` + `KbdInteractiveAuthentication no`, checked
   with `sudo sshd -t`. `010-` because sshd keeps the FIRST value it reads
