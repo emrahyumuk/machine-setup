@@ -155,6 +155,31 @@ Installed-but-disabled (`apps-menu`, `places-menu`, `window-list`,
 ship with Fedora — not used, nothing to do. `user-theme` stays disabled on
 purpose (stale shell themes silently corrupt GNOME layout — SETUP.md §2).
 
+## macOS (`mbp14`) — where it differs
+
+Same intent, platform mechanics: everything native via Homebrew (formulae
+for CLI, casks for apps, `mas` for the App Store); the tables above still
+hold the WHY. Only the rows that change are listed — details in SETUP.md
+§2c / §3b. Rows marked *[role]* exist because this Mac is the owner's
+always-on home server — not a default for any other Mac.
+
+| Fedora row | On the Mac | Why |
+|------------|------------|-----|
+| mpv as THE player | **IINA** (mpv-based, native UI) owns video/stream types; `mpv` CLI also installed | IINA reads `~/.config/mpv` — one mpv.conf for both. |
+| WhatsApp Chrome PWA | **WhatsApp** native app (cask) | The PWA was a Linux workaround; the native app exists here. |
+| GNOME Web (WebKit reference) | **Safari** itself | The real engine — no proxy needed. |
+| Solaar / MX Master | — | Apple Magic Mouse + Keyboard at that desk; no Logi Options+. |
+| Flatseal, Extension Manager, GNOME Tweaks | — | No equivalent needed. |
+| Steam | — | Not on this Mac. |
+| mold | — (Apple `ld_prime`) | mold has no Mach-O backend. |
+| podman-docker shim | `alias docker=podman` | podman runs in `podman machine`. |
+| nodejs22 (dnf) | `node@24` (brew, force-linked) + nvm | Same shape: a system Node + nvm per project; 24 = Active LTS (Fedora's line should follow). |
+| — | **Karabiner-Elements** | Linux shortcut muscle memory on a Mac keyboard, scoped away from terminals. |
+| — | **gh**, **tmux**, **jq** | gh: auth for private repos (no SSH keys on the Mac); tmux: remote sessions survive SSH drops; jq: a Claude Code hook needs it. |
+| — | **Tailscale** (formula, system daemon) *[role]* | Reach the home server from outside; daemon so it's up before login. |
+| — | **Xcode** (App Store) *[role]* | iOS simulator testing. |
+| — | **agy** (Antigravity CLI) | On Fedora too (`~/.local/bin`); first recorded here. |
+
 ## Removed on purpose
 
 - **karere** (WhatsApp wrapper flatpak) → replaced by the Firefox PWA

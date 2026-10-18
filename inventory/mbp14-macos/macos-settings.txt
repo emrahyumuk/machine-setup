@@ -1,0 +1,18 @@
+# defaults read <domain> <key> → value. Whitelist only (privacy rule).
+-g AppleInterfaceStyle = Dark
+-g AppleAccentColor = 4
+-g com.apple.swipescrolldirection = 0
+com.apple.dock orientation = left
+com.apple.dock autohide = 0
+com.apple.AppleMultitouchMouse MouseButtonMode = TwoButton
+com.apple.driver.AppleBluetoothMultitouch.mouse MouseButtonMode = TwoButton
+com.colliderli.iina useUserDefinedConfDir = 1
+/Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates = 0
+/Library/Preferences/com.apple.SoftwareUpdate CriticalUpdateInstall = 1
+# pmset (AC)
+ standby              1
+ powernap             1
+ displaysleep         10
+ womp                 1
+ sleep                0
+ disksleep            10

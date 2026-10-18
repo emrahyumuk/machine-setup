@@ -24,9 +24,9 @@ important — what I decided *against* and why.
 | `APPS.md` | Curated, annotated app/tool/extension list — what is installed on purpose and why. The human/agent-facing view. |
 | `HARDWARE.md` + `hardware/<name>.md` | The desk (shared peripherals) + one file per machine. |
 | `machines/<hardware>-<os>.md` | One record per (machine, OS): model, role, which layers apply, and freshness stamps (`last-applied` / `last-collected` / `last-verified`). Agents match here first; staleness is visible here, not hidden. |
-| `os/<os>/` | Per-OS mechanics: `bootstrap` (judgment-free base), `verify` (every VERIFY line as PASS/FAIL — installed as `machine-verify`, run by `upall`), `collect` (regenerates inventory + dotfiles, stamps the machine record), notifier scripts, systemd units/assets. Today: `os/fedora/`. A port produces its own `os/<os>/` from its session. |
+| `os/<os>/` | Per-OS mechanics: `bootstrap` (judgment-free base), `verify` (every VERIFY line as PASS/FAIL — installed as `machine-verify`, run by `upall`), `collect` (regenerates inventory + dotfiles, stamps the machine record), notifier scripts, systemd units/launchd assets. Today: `os/fedora/`, `os/macos/`. A port produces its own `os/<os>/` from its session. |
 | `inventory/<hardware>-<os>/` | Generated state per machine: raw package list (appendix), flatpaks, GNOME/browser extensions, whitelisted dconf, dev globals. Never hand-edited. |
-| `dotfiles/` | Verbatim copies of zshrc, ghostty, starship, mpv configs; `gitconfig.template` is sanitized (identity set per machine). Shared across OSes where the tool exists; per-OS files go under `dotfiles/<os>/` when one appears. |
+| `dotfiles/` | Verbatim copies of zshrc, ghostty, starship, mpv configs; `gitconfig.template` is sanitized (identity set per machine). Shared across OSes where the tool exists; per-OS files live under `dotfiles/<os>/` (today `dotfiles/macos/`: zshrc/zprofile/zshenv, mpv.conf, Karabiner rules). |
 
 ## Privacy rule
 
@@ -69,7 +69,7 @@ language, while repo files stay English.
 Works on other distros/OSes too — items with no equivalent get flagged with
 alternatives instead of silently dropped. No AI at hand? `SETUP.md` reads
 fine as a human document; `os/fedora/bootstrap.sh` covers the mechanical base
-on Fedora.
+on Fedora, `os/macos/bootstrap.sh` on macOS.
 
 ## Fresh machine procedure (owner)
 

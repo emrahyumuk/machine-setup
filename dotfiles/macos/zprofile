@@ -1,0 +1,5 @@
+# Homebrew (Apple Silicon prefix) — must be in .zprofile so login shells,
+# GUI-launched apps and non-interactive shells all see brew's bin.
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi

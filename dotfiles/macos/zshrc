@@ -1,0 +1,99 @@
+# PATH — must come first; the inits below look for binaries here
+export PATH="$HOME/.local/bin:$PATH"
+
+# Homebrew (also set in .zprofile for login shells; harmless twice)
+[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+BREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
+
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# Prompt & navigation
+command -v starship >/dev/null && eval "$(starship init zsh)"
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
+command -v fzf      >/dev/null && source <(fzf --zsh)
+
+# Suggestions & highlighting (Homebrew paths — on Fedora these live in /usr/share)
+[ -f "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && \
+  source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+[ -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && \
+  source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=100000
+SAVEHIST=100000
+setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE
+
+# Aliases
+alias ls='eza --icons'
+alias ll='eza -la --icons --git'
+alias tree='eza --tree --icons'
+alias cat='bat --paging=never'
+alias df='duf'
+alias lg='lazygit'
+alias top='btop'
+alias vim='nvim'
+export EDITOR=nvim VISUAL=nvim
+
+# atuin (Ctrl+R history search) — must come after zsh-syntax-highlighting
+command -v atuin >/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
+
+# Update ritual (see machine-setup SETUP.md "Update cadence", macOS layer §2c)
+# Four channels here: brew (formulae + casks), softwareupdate (macOS + CLT),
+# npm -g (agent CLIs), mas (App Store). Fedora's dnf/flatpak/fwupd trio maps
+# onto brew/softwareupdate; firmware rides the macOS update itself.
+upcheck() {
+  echo "== brew =="
+  brew update >/dev/null 2>&1
+  brew outdated --greedy || true
+  echo "== macOS (softwareupdate) =="
+  softwareupdate -l 2>&1 | grep -E '^\s+\*|No new software' || true
+  echo "== npm -g =="
+  command -v npm >/dev/null && { npm outdated -g || true; } || echo "(npm yok)"
+  echo "== App Store (mas) =="
+  command -v mas >/dev/null && { mas outdated || true; } || echo "(mas yok)"
+  echo
+  echo "-- apply --------------------------------"
+  echo "  everything : upall"
+  echo "  brew only  : brew upgrade && brew upgrade --cask --greedy"
+  echo "  macOS      : sudo softwareupdate -i -a -R"
+  echo "  npm -g     : npm update -g"
+  echo "  App Store  : mas upgrade"
+  echo "  (then: weekly reboot)"
+}
+upall() {
+  local sep="─────────────────────────────────────────"
+  echo "$sep"; echo "▶ brew — formulae + casks"
+  brew update && brew upgrade && brew upgrade --cask --greedy
+  brew cleanup -s
+  echo "$sep"; echo "▶ npm -g — agent CLIs"
+  command -v npm >/dev/null && npm update -g
+  echo "$sep"; echo "▶ App Store"
+  command -v mas >/dev/null && mas upgrade
+  echo "$sep"; echo "▶ macOS + firmware (needs sudo — run the line below yourself)"
+  echo "   sudo softwareupdate -i -a -R    # -R reboots if a restart is required"
+  softwareupdate -l 2>&1 | grep -E '^\s+\*' || echo "   (nothing pending)"
+  echo "$sep"
+  # drift check against the machine-setup manifest (installed by bootstrap)
+  command -v machine-verify >/dev/null && { machine-verify; }
+}
+
+# podman — the docker-compatible socket. On Fedora this is
+# unix://$XDG_RUNTIME_DIR/podman/podman.sock; on macOS podman runs in a VM and
+# exposes its API socket under the per-user Darwin temp dir. `getconf` resolves
+# that dir without hardcoding the random /var/folders path, and without needing
+# `sudo podman-mac-helper install` (which is the other way to get /var/run/docker.sock).
+export DOCKER_HOST="unix://$(getconf DARWIN_USER_TEMP_DIR)podman/podman-machine-default-api.sock"
+# Fedora gets `docker` from the podman-docker package; here an alias does the job.
+alias docker=podman
+
+# NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Rust (rustup)
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"

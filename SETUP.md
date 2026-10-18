@@ -12,8 +12,8 @@ and verify each item with its VERIFY line."*
 Layers (one file on purpose — decisions read as one document; per-OS
 mechanics live in `os/<os>/`, per-machine records in `machines/`):
 1. [Personal](#1-personal--any-machine-any-os) — travels everywhere
-2. [OS: Fedora](#2-os-specific--fedora) · [OS: Windows](#2b-os-specific--windows) (§2b, first session pending) — further OS layers as §2c…
-3. [Hardware: ThinkPad P14s](#3a-hardware-specific--thinkpad-p14s-gen6-amd-thinkpad-p14s) — §3a; §3b… per further machine; does NOT auto-port
+2. [OS: Fedora](#2-os-specific--fedora) · [OS: Windows](#2b-os-specific--windows) (§2b, first session pending) · [OS: macOS](#2c-os-specific--macos) (§2c) — further OS layers as §2d…
+3. [Hardware: ThinkPad P14s](#3a-hardware-specific--thinkpad-p14s-gen6-amd-thinkpad-p14s) — §3a · [Hardware: MacBook Pro 14" M2 Pro](#3b-hardware-specific--macbook-pro-14-m2-pro-mbp14) — §3b; §3c… per further machine; does NOT auto-port
 4. [Deliberately NOT done](#4-deliberately-not-done) — decisions against, with reasons
 
 ---
@@ -157,6 +157,21 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
 - Global prefs in `~/.claude/CLAUDE.md` (Turkish responses, human-voice for
   authored text, separator formatting). Memory dir has machine quirks — worth
   copying `fedora_desktop_quirks.md` content into new machines' context.
+- **Synced hook paths must be portable** (PATTERN — applies to anyone who
+  syncs `~/.claude` across machines; learned 2026-10-18 when the Mac
+  joined): `settings.json` travels to every machine, so a hook or status
+  line that calls an absolute `/home/<user>/...` path fires an error on
+  every event wherever that path doesn't exist. Form:
+  `f="$HOME/<path>/hook.sh"; [ -x "$f" ] || exit 0; exec "$f" <args>`
+  — identical behaviour where the script exists (`exec` keeps its exit
+  code, so exit 2 still blocks), a silent no-op where it doesn't.
+  (`… && "$f" || true` was the first draft — it swallowed that exit code.)
+  Owner's case: the hooks belong to rigo, the owner's own agent studio —
+  **not a public tool; agents never offer it to non-owners**, they only
+  see the pattern. FOLLOW-UP (owner): rigo's installer should write this
+  form instead of an absolute path, or the conflict returns on every
+  machine switch.
+  VERIFY: `grep -c '"/home/' ~/.claude/settings.json` → 0.
 
 ---
 
@@ -553,6 +568,207 @@ came from a real incident, not speculation.
   `.sh` and `file script.sh` → "ASCII text", not "with CRLF line
   terminators".
 
+## 2c. OS-specific — macOS
+
+Machine: `machines/mbp14-macos.md` (MacBook Pro 14" M2 Pro, macOS Tahoe
+26). Mechanics: `os/macos/{bootstrap,verify,collect,update-check}.sh`,
+per-OS dotfiles in `dotfiles/macos/`.
+
+History, because it explains the shape: the first macOS session
+(2026-09-06) configured the machine and wrote this layer, but none of its
+text reached GitHub (see AGENTS.md "push the port branch in the same
+sitting"). The 2026-10-18 session found the machine configured and the
+manifest empty, reconstructed the layer from the scripts that session had
+left in `~/.local/bin` (`machine-verify`, `update-check`), re-verified every
+item (36 PASS / 0 FAIL), and then completed it. Items marked
+*(2026-09-06)* are reconstructions — their WHY is what the scripts'
+comments recorded, nothing more.
+
+### Already native — do not port (one line each, so the next port doesn't re-litigate)
+- **Hardware video decode (§2 VA-API)**: VideoToolbox, nothing to
+  install. The intent survives only in mpv's config (`hwdec=videotoolbox-copy`,
+  same reason as `vaapi-copy` — software bwdif must see every frame).
+- **zram + VM tuning, disk overflow swap, earlyoom (§2)**: macOS compresses
+  memory and grows encrypted swap on its own — the "hard wall" failure class
+  that justified all three doesn't exist here.
+- **Desktop slices / uresourced (§2)**: QoS classes in the scheduler;
+  nothing to tune, no measured starvation.
+- **snapper around package transactions (§2)**: no brew equivalent. The
+  closest thing — APFS local snapshots — comes with Time Machine, which has
+  no destination yet (§3b open items).
+- **GNOME theming discipline / GTK3 dark flag (§2)**: no equivalent
+  problem; the system appearance reaches every app.
+- **dnf `max_parallel_downloads` (§1)**: brew downloads in parallel already.
+- **Line endings (§2b)**: Windows-only; macOS defaults are right.
+- **mold (§1 Rust)**: mold has no Mach-O backend, and Apple's `ld_prime`
+  is already multithreaded — `~/.cargo/config.toml` stays ABSENT. verify
+  FAILs if mold rustflags ever appear there (they would break every build).
+
+### Homebrew is the package manager *(2026-09-06)*
+- Apple Silicon prefix `/opt/homebrew`; `brew shellenv` in `.zprofile` so
+  login shells and GUI-launched apps see it. Formulae for the CLI stack,
+  casks for apps (incl. `font-jetbrains-mono-nerd-font` for Ghostty), `mas`
+  for the App Store. APPS.md's native-vs-Flatpak policy collapses here:
+  every app is native, browsers are the vendor builds.
+- zsh plugins come from `$(brew --prefix)/share/…` instead of
+  `/usr/share/…` — that path is the only reason `dotfiles/macos/zshrc`
+  exists as its own file.
+  VERIFY: `brew --version`; `machine-verify` checks every CLI tool.
+
+### `~/.zshenv` — PATH for non-interactive shells
+- `dotfiles/macos/zshenv` prepends `~/.local/bin`, `~/.cargo/bin` and
+  `/opt/homebrew/{bin,sbin}` (static paths, `typeset -U` dedupes).
+  WHY: `ssh mra-mac <cmd>`, agent tool calls and some launchd jobs run zsh
+  non-interactively, and those read ONLY `~/.zshenv` — without it brew,
+  node, cargo and `~/.local/bin` (claude, agy) are invisible to remote
+  commands. On a machine whose main job is being reached over SSH, that is
+  the difference between `ssh mra-mac claude …` working or not. Static
+  rather than `eval "$(brew shellenv)"` so no subshell pays for a brew call.
+  (`.zprofile`/`.zshrc` still prepend too: `/etc/zprofile`'s `path_helper`
+  reorders PATH in login shells after `.zshenv` ran.)
+  VERIFY: `env -i HOME=$HOME zsh -c 'command -v brew node claude'` → three paths.
+
+### Node + agent CLIs
+- `node@24` from brew, `brew link --force` — the Active LTS line (22 is
+  maintenance-only since 2025-10; the Mac started on node@22 to mirror the
+  Fedora inventory's `nodejs22` and moved to 24 the same day). Fedora's
+  system Node should follow — check `dnf list --installed 'nodejs*'`.
+  nvm from its upstream script with `PROFILE=/dev/null` (the zshrc already
+  sources it) and `nvm alias default system`, so nvm never shadows the brew
+  node; pnpm from brew. `npm -g` lands under `/opt/homebrew` — visible to
+  non-interactive shells through `.zshenv`, unlike an nvm-managed global.
+- codex + opencode-ai via `npm -g`; agy via its official installer
+  (`curl -fsSL https://antigravity.google/cli/install.sh | bash` —
+  checksum-verified, `~/.local/bin/agy`, self-updates).
+  TRAP: agy's installer APPENDS `export PATH="$HOME/.local/bin:$PATH"` to
+  BOTH `.zshrc` and `.zprofile` — redundant here; snapshot both files
+  before and restore them after (bootstrap does).
+- The Fedora npm `allow-scripts` TRAP (§2 "Update cadence") applies here
+  too, with a version boundary worth knowing: the key exists only in
+  npm 11+ (node 24). Under node@22's npm 10 the same command fails with
+  "`allow-scripts` is not a valid npm option" and postinstalls just run —
+  so the setting is needed exactly when the Node line ships npm 11.
+  `npm config set allow-scripts=opencode-ai,protobufjs,re2 --location=user`.
+  VERIFY: `node --version` → v24.*; `npm config get allow-scripts` lists
+  opencode-ai; `codex --version`, `opencode --version`, `agy --version` answer.
+
+### Containers — podman machine, `docker` = alias *(2026-09-06 + 2026-10-18)*
+- podman runs in an `applehv` VM (`podman machine`); `DOCKER_HOST` points at
+  its API socket under `$(getconf DARWIN_USER_TEMP_DIR)` — resolves the
+  random `/var/folders` path without `sudo podman-mac-helper install`.
+- `alias docker=podman` replaces Fedora's `podman-docker` shim. Picked over
+  `brew install docker` (the real CLI against the socket): zero extra
+  package. LIMIT: an alias doesn't exist for non-interactive callers — if a
+  tool ever shells out to `docker` by name, switch to the real CLI.
+  VERIFY: `podman machine list` → running; the `DOCKER_HOST` socket exists.
+
+### Static hostname — same Chromium singleton-lock trap as §2 *(2026-09-06)*
+- `HostName`, `LocalHostName`, `ComputerName` = `mra-mac` (`sudo scutil --set …`).
+  With `HostName` unset, macOS derives the name from DHCP/Bonjour and it
+  can change under the apps — the §2 failure mode verbatim.
+  VERIFY: `scutil --get HostName` → mra-mac.
+
+### Touch ID for sudo *(2026-09-06)*
+- `/etc/pam.d/sudo_local` from `sudo_local.template` with the `pam_tid.so`
+  line uncommented — `sudo_local` survives OS updates, edits to
+  `/etc/pam.d/sudo` do not. Same quirk as the ThinkPad fingerprint: an
+  agent shell has no TTY, so sudo can't prompt there — hand the user a
+  `! sudo …` line instead (`mas install` needs sudo since mas 7, too).
+  VERIFY: `grep pam_tid /etc/pam.d/sudo_local` → uncommented.
+
+### IINA — the mpv front-end owns video and streams *(2026-09-06)*
+- IINA (mpv-based, native UI) is the default for `m3u8 mp4 mkv webm`
+  (`duti -s com.colliderli.iina <ext> all`) — the Fedora trap ".m3u8 falls
+  to the music app" reproduces on macOS verbatim (Music.app).
+  `defaults write com.colliderli.iina useUserDefinedConfDir -bool true`
+  makes IINA read `~/.config/mpv`, so one `dotfiles/macos/mpv.conf` drives
+  both IINA and the `mpv` CLI: same deinterlace reasoning as §1, with
+  `hwdec=videotoolbox-copy` and no Wayland context line.
+  VERIFY: `duti -x m3u8` → IINA; in the `mpv` CLI Shift+i shows videotoolbox-copy.
+
+### Update cadence — four channels, one ritual
+- Channels: brew (formulae + casks `--greedy`), `softwareupdate` (macOS and
+  firmware ride the same update), `npm -g`, `mas`. `upcheck`/`upall` live
+  in `dotfiles/macos/zshrc`; `sudo softwareupdate -i -a -R` stays a line
+  upall PRINTS (sudo + reboot — a human decision).
+- Notifier: LaunchAgent `com.machine-setup.update-check` (Sun 18:00;
+  `StartCalendarInterval` fires a missed run on wake — launchd's
+  `Persistent=true`) → `os/macos/update-check.sh`. *(2026-09-06)*
+  TRAP (found 2026-10-18): the first version sent every error to
+  `/dev/null` and counted lines with `grep -c`, so a FAILED check read as
+  "0". Five Sundays in a row said "Everything up to date" while 59 updates
+  — including the macOS 26.7.1 security release — were pending. Fixed: it
+  waits up to 5 min for the network after a wake, each channel records its
+  own failure, and the notification says "check FAILED: brew macOS …"
+  instead of a number. Rule for any notifier: a failed probe must never be
+  indistinguishable from a clean result.
+- macOS's own automatic install stays at the platform default on a normal
+  Mac. On the always-on server it is turned off — a ROLE decision, see §3b
+  "Updates on the server".
+- Major macOS releases follow the Fedora release rule: wait for x.1 /
+  2-3 weeks, and have a backup first. 2026-10-18: macOS 27.0.1 was out; the
+  Mac stayed on 26.x — Xcode 27.1 only needs 26.6, so nothing forced it.
+  VERIFY: `launchctl list | grep update-check`; the log line has no `FAILED=`.
+
+### Keyboard — Linux shortcut muscle memory on a Mac (Karabiner-Elements)
+- The macOS split: Cmd = app shortcuts, Ctrl = terminal control codes. It
+  is cleaner than Linux in a terminal (no Ctrl+Shift+C), but every app
+  shortcut moves to the thumb key. Options weighed 2026-10-18: (a) get used
+  to Cmd, (b) Karabiner rules scoped away from terminals, (c) swap
+  Ctrl↔Cmd in Settings → Keyboard → Modifier Keys — REJECTED (§4: it moves
+  the terminal's Ctrl+C to the thumb and every Cmd shortcut to the corner).
+  Chose (b) for the desk; (a) is what remote use gets anyway (VNC sends the
+  Linux Super key as Cmd, and Karabiner only touches physical keyboards).
+- `brew install --cask karabiner-elements` (pkg — needs sudo, so the user
+  runs it), open it once, approve Driver Extensions + Input Monitoring
+  (`karabiner_grabber`, `karabiner_observer`), keyboard type ANSI. Rules
+  live in `dotfiles/macos/karabiner-pc-style.json` (a complex-modifications
+  asset): merged into the selected profile of `~/.config/karabiner/karabiner.json`
+  with jq, and copied to `assets/complex_modifications/` so the UI shows them.
+  - Ctrl+A/C/F/L/N/O/P/R/S/T/V/W/X/Z (+Shift) → Cmd; Ctrl+Y → Cmd+Shift+Z.
+    Ctrl+Q left out on purpose — a slip would quit the app.
+  - Home/End → line start/end, Ctrl+Home/End → document start/end
+    (+Shift selects); Ctrl+←/→ → word jump; Ctrl+Backspace/Delete → delete
+    word. (Ctrl+←/→ were Mission Control's "switch Space" keys — outside
+    terminals the rule wins.)
+  - EXCLUDED apps get raw Ctrl: Ghostty, Terminal, iTerm2 (SIGINT, history
+    search, delete-word…) and Screen Sharing / UTM / Windows App / Parallels
+    (the remote OS decides).
+- VS Code is NOT excluded (editor shortcuts are the point), but Karabiner
+  can't tell its editor from its integrated terminal — there Ctrl+C would
+  arrive as Cmd+C. `dotfiles/macos/vscode-keybindings.json` → VS Code's
+  `keybindings.json` hands the shell its control codes back while the
+  terminal has focus: Cmd+C (no selection) → `^C`, Cmd+A/L/R/W/Z → `^A ^L
+  ^R ^W ^Z`. Settings Sync keeps keybindings per platform, so this never
+  reaches Fedora's VS Code.
+- Input sources: ABC (US) default, Turkish Q-PC second — matches the
+  keyboard's printed (US) layout.
+  VERIFY: `jq '.profiles[]|select(.selected)|.complex_modifications.rules|length' ~/.config/karabiner/karabiner.json`
+  → 3; in TextEdit Ctrl+C/V copy-paste, in Ghostty Ctrl+C interrupts `sleep 30`.
+
+### Claude Code on macOS — attaching `~/.claude` (owner)
+- Native installer as on Fedora. `~/.claude` already existed (first launch
+  creates it), so the private sync repo was attached IN PLACE: clone to a
+  scratch dir, move its `.git` into `~/.claude`, `git checkout -- .` (the
+  repo wins; the local `settings.json` was a subset). Sessions/history stay
+  untouched — the allowlist `.gitignore` never sees them.
+- Plugins: `extraKnownMarketplaces` is NOT registered automatically on a
+  fresh machine — `claude plugin install x@mralabs` fails with "not found
+  in marketplace". Register each first (`claude plugin marketplace add
+  <owner/repo>`), then run MIGRATION.md's install loop.
+  TRAP: `marketplace add` REWRITES `settings.json` — it reordered keys and
+  DROPPED `autoUpdate: true` from all seven marketplaces. Afterwards
+  `git -C ~/.claude checkout -- settings.json`; the registrations live in
+  `plugins/known_marketplaces.json` and survive the restore.
+- Sync: `dot-claude-sync` linked into `~/.local/bin`, run by hand before
+  leaving the Mac — no launchd timer (two machines auto-pushing only
+  multiplies rejected pushes; pulling stays deliberate per MIGRATION.md).
+- Project memories keyed `-home-mra-…` stay inert here (paths are
+  `/Users/mra/…`). Do NOT run MIGRATION.md's re-addressing while both
+  machines are live — it moves the directories and Fedora loses them.
+  VERIFY: `git -C ~/.claude remote get-url origin` → dot-claude-config;
+  `grep -c '"/home/' ~/.claude/settings.json` → 0 (§1 portable hooks).
+
 ## 3a. Hardware-specific — ThinkPad P14s Gen6 AMD (`thinkpad-p14s`)
 
 **Nothing here auto-ports. Re-evaluate each item on new hardware.**
@@ -666,6 +882,111 @@ came from a real incident, not speculation.
   spins up fast, ramps down slowly — a loud fan minutes after load ended is
   soak, not a problem.
 
+## 3b. Hardware-specific — MacBook Pro 14" M2 Pro (`mbp14`)
+
+**Nothing here auto-ports.** This machine has a ROLE as much as hardware:
+an always-on home server that is also a desk machine (own desk, monitor,
+Magic Keyboard + Magic Mouse). Remote jobs: SSH and Screen Sharing from the
+ThinkPad (usually on the same home LAN), iOS-simulator testing, overflow
+compute/RAM for agent sessions; a home-automation app stack comes later
+(not designed yet — no item here until it is). Items below are tagged
+*[role]* where they follow from being a server rather than from the
+hardware — if the Mac ever goes back to being a plain laptop, those are the
+ones to revisit.
+
+**[role] items are the OWNER's choice for THIS machine — never a default.**
+Agents don't offer them to non-owners or on the owner's other Macs unless
+the user describes the same role (always-on, reached remotely). Mechanics
+follow the same line: `os/macos/bootstrap.sh` applies them only with
+`--server`, which also writes `server` into `~/.config/machine-setup/roles`;
+`os/macos/verify.sh` checks them only where that marker exists, so a plain
+Mac never FAILs a server check.
+
+### Power — always on *(2026-09-06)*
+- *[role]* `sudo pmset -c sleep 0 womp 1`: never sleeps on AC, wakes for
+  network; the DISPLAY still sleeps (10 min) and the desk use is unaffected.
+  `autorestart` (power-loss restart) is an Intel-era SMC knob — Apple
+  Silicon doesn't expose it (`pmset -g cap`), and the battery rides through
+  short outages anyway.
+- Lid: with no external display attached, a closed lid still sleeps the
+  machine regardless of `sleep 0` — keep the lid open when the monitor is
+  unplugged.
+- Charge limit 80% (Settings → Battery → Charging) — the battery lives on
+  AC. No CLI read-back; verify by eye: on AC at 80% `pmset -g batt` says
+  "not charging".
+  VERIFY: `pmset -g custom` AC block → `sleep 0`, `womp 1`.
+
+### Remote access — LAN first, Tailscale when away
+- *[role]* **Remote Login (SSH) + Screen Sharing** on via Settings →
+  General → Sharing (the CLI route, `systemsetup -setremotelogin`, wants
+  Full Disk Access for the terminal — the toggle is one click). From the
+  ThinkPad on the same LAN: `ssh mra@mra-mac.local`; Screen Sharing from
+  Linux = any VNC client to `mra-mac.local:5900` with the macOS account.
+  (Remote keyboard: the Linux Super key arrives as Cmd — Super+C copies.
+  Karabiner rules (§2c) only touch the physical keyboard, not VNC input.)
+- *[role]* **Tailscale as a system daemon, not the app**: `brew install
+  tailscale` + `sudo brew services start tailscale` + `tailscale up
+  --hostname=mra-mac`. WHY: the formula's `tailscaled` is a LaunchDaemon —
+  up before anyone logs in. The app variant (`tailscale-app` cask) is a
+  login item, so after a reboot the box would be unreachable from outside
+  until someone logs in at the desk. Cost: no menu-bar icon; `tailscale`
+  CLI manages it.
+- *[role]* **FileVault + unattended reboots**: FileVault stays on; after a
+  reboot the Mac waits at the pre-boot unlock screen with no network
+  services. macOS 26 can unlock FileVault over SSH when Remote Login is on
+  (LAN only — Tailscale isn't up pre-boot). UNTESTED as of 2026-10-18 —
+  test at the next planned reboot (`ssh mra@mra-mac.local` while it sits at
+  the unlock screen). Known-good fallback for PLANNED restarts:
+  `sudo fdesetup authrestart` (one restart that skips the unlock prompt).
+- *[role]* **tmux** for every long remote session (Claude Code included):
+  an SSH drop kills the shell, not the tmux session — `tmux new -As main`.
+  VERIFY: `nc -z localhost 22` and `:5900` succeed; `tailscale status`
+  lists mra-mac online.
+
+### Updates on the server
+- *[role]* macOS automatic INSTALL off
+  (`sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate
+  AutomaticallyInstallMacOSUpdates -bool false`); Security Responses /
+  XProtect (`CriticalUpdateInstall`, `ConfigDataInstall`) stay automatic.
+  WHY: an unannounced restart is an outage on an always-on box (and lands
+  at the FileVault unlock screen), and one channel should own updates —
+  `upall`, the same decision as GNOME Software's `download-updates=false`
+  in §2. Rollback: the same command with `true`.
+  VERIFY: `AutomaticallyInstallMacOSUpdates` → 0, `CriticalUpdateInstall` → 1.
+
+### iOS app testing — Xcode + Simulator
+- *[role]* Xcode from the App Store (`sudo mas install 497799835` — mas 7
+  needs sudo, so the user runs it, or the App Store button), then
+  `sudo xcode-select -s /Applications/Xcode.app && sudo xcodebuild
+  -license accept && sudo xcodebuild -runFirstLaunch` (one line, silent
+  until "Install Succeeded"). Command Line Tools alone have no simulator.
+  Xcode 27.1 (2026-10-15) needs macOS 26.6 — no OS upgrade required.
+  TRAP: Xcode 27.1's first launch ALREADY brought the matching iOS 27.1
+  simulator runtime; the `xcodebuild -downloadPlatform iOS` run afterwards
+  fetched iOS 27.0 on top (+8 GB). Check `xcrun simctl list runtimes`
+  first and download only when it lists no iOS runtime.
+- Rust targets `aarch64-apple-ios` + `aarch64-apple-ios-sim` (cheap; Tauri
+  mobile / Rust-on-iOS testing).
+  VERIFY: `xcode-select -p` → `/Applications/Xcode.app/…`; `xcrun simctl
+  list runtimes` shows an iOS runtime.
+
+### Peripherals at this desk
+- **Magic Mouse secondary click**: off by default (`MouseButtonMode =
+  OneButton` — "right-click doesn't work"). `defaults write
+  com.apple.AppleMultitouchMouse MouseButtonMode -string TwoButton` (+ the
+  same key in `com.apple.driver.AppleBluetoothMultitouch.mouse`);
+  reconnect the mouse if it doesn't take at once.
+- **Scroll direction**: "natural" OFF — kept, it matches the Fedora mouse
+  habit. On macOS ONE switch (`com.apple.swipescrolldirection`) covers
+  mouse and trackpad; there is no per-device setting without extra tools.
+- No Logi Options+ (the MX Master stays at the ThinkPad desk).
+  VERIFY: `defaults read com.apple.AppleMultitouchMouse MouseButtonMode` → TwoButton.
+
+### Open items (decided to revisit, not forgotten)
+- **Time Machine**: no destination. Wanted before the macOS 27 upgrade at
+  the latest; needs an external disk or a NAS share.
+- **macOS 27**: wait for 27.1 (§2c "Update cadence").
+
 ---
 
 ## 4. Deliberately NOT done
@@ -687,3 +1008,18 @@ came from a real incident, not speculation.
   builds. Install ananicy-cpp only if that complaint actually appears.
 - **Power profile stays `balanced`**: power-saver would mask load problems
   instead of fixing them (the real fixes were VA-API + app-level).
+- **macOS application firewall (mbp14)**: left off (2026-10-18). The Mac
+  sits behind the home router's NAT and its whole job is accepting SSH /
+  Screen Sharing — the app firewall would only add allow-exceptions for
+  exactly those, protecting nothing else that is listening. Revisit if it
+  ever joins an untrusted network.
+- **Swapping Ctrl↔Cmd in System Settings (macOS)**: rejected for Linux
+  muscle memory — it moves the terminal's Ctrl+C onto the thumb key and
+  every macOS Cmd shortcut into the corner; both worlds break. Karabiner
+  rules scoped away from terminals do the job instead (§2c).
+- **Browser extensions on the Mac, by setup**: not installed by the agent —
+  Firefox Sync / the Google account bring them back on sign-in (APPS.md
+  stays the decision record).
+- **Steam, Logi Options+, PWAs on the Mac**: not wanted there (no gaming on
+  the server; Apple peripherals at that desk; PWAs set up by hand if ever
+  needed).

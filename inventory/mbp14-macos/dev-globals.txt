@@ -1,0 +1,9 @@
+# npm -g (brew node@24)
+codex
+corepack
+npm
+opencode-ai
+# rustup targets
+aarch64-apple-darwin
+aarch64-apple-ios
+aarch64-apple-ios-sim

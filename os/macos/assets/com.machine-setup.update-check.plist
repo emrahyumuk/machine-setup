@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The macOS equivalent of os/fedora/assets/update-check.{service,timer}.
+  Sunday 18:00, one notification summarising the four update channels.
+  StartCalendarInterval is launchd's Persistent=true equivalent: a missed run
+  (machine asleep/off at 18:00) fires as soon as the machine is awake again.
+  Installed to ~/Library/LaunchAgents/ by os/macos/bootstrap.sh, which
+  replaces __HOME__ with $HOME (launchd does not expand ~ or $HOME).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.machine-setup.update-check</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__HOME__/.local/bin/update-check</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key><integer>0</integer>
+    <key>Hour</key><integer>18</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-update-check.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-update-check.log</string>
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

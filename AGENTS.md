@@ -36,6 +36,15 @@ hardware:
   CLI stack, Rust/mold, and the OS layers (§2, §2b…) where assumptions
   hold. ("§3" below means the hardware layer: §3a, §3b… one per machine.)
 
+**Machine ROLES are not defaults.** Items tagged *[role]* (today: §3b's
+always-on home server — no sleep, remote access, Tailscale daemon,
+auto-update off, Xcode for iOS testing) exist because the owner gave ONE
+machine that job. Never offer them to someone else or on the owner's other
+machines by default; offer them only when the user describes the same role
+(always on, reached remotely…), and then ask item by item like everything
+else. Same for private tooling the manifest mentions in passing (rigo —
+the owner's agent studio, not public): it is context, never a setup item.
+
 ## Step 1 — Survey the machine (read-only)
 
 Detect before proposing: OS + version, package manager, desktop environment,
@@ -226,7 +235,14 @@ On the owner's laptop, Windows is the dual-boot slice described in
 HARDWARE.md — same hardware, so §3a items are in scope there too
 (translated: charge limit → vendor tool, WebHID app → Chrome on Windows,
 BIOS items already done and OS-independent). Commit the port on its own
-branch (e.g. `windows-port`) for review from the primary OS.
+branch (e.g. `windows-port`) for review from the primary OS — and **push
+that branch in the same sitting**. Lesson 2026-10-18: the first macOS
+session (2026-09-06) applied everything and wrote §2c/§3b plus
+`os/macos/`, but nothing reached GitHub; the next session found a fully
+configured Mac, no machine record, and an empty layer, and had to
+reconstruct it from the scripts left in `~/.local/bin`. Work that exists
+only on the target machine is not in the manifest. Before pushing, ask
+the owner (outward-facing step).
 
 ## Step 5 — Your own recommendations (beyond the manifest)
 

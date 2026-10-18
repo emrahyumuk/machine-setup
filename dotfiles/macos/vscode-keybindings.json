@@ -1,0 +1,53 @@
+// machine-setup dotfiles/macos/vscode-keybindings.json — SETUP.md §2c Keyboard.
+// Karabiner turns Ctrl+<key> into Cmd+<key> outside terminals; VS Code's integrated
+// terminal needs the raw control codes back (SIGINT, history search, delete word…).
+[
+  {
+    "key": "cmd+c",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u0003"
+    },
+    "when": "terminalFocus && !terminalTextSelected"
+  },
+  {
+    "key": "cmd+a",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u0001"
+    },
+    "when": "terminalFocus"
+  },
+  {
+    "key": "cmd+l",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\f"
+    },
+    "when": "terminalFocus"
+  },
+  {
+    "key": "cmd+r",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u0012"
+    },
+    "when": "terminalFocus"
+  },
+  {
+    "key": "cmd+w",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u0017"
+    },
+    "when": "terminalFocus"
+  },
+  {
+    "key": "cmd+z",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+      "text": "\u001a"
+    },
+    "when": "terminalFocus"
+  }
+]

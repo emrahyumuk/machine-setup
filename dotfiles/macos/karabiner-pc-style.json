@@ -1,0 +1,837 @@
+{
+  "title": "machine-setup: Linux/PC shortcuts on macOS (SETUP.md \u00a72c Keyboard)",
+  "rules": [
+    {
+      "description": "PC-style app shortcuts: Ctrl+A/C/F/L/N/O/P/R/S/T/V/W/X/Z (+Shift) \u2192 Cmd, Ctrl+Y \u2192 redo \u2014 not in terminals/remote desktops",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "a",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "a",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "c",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "c",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "f",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "f",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "l",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "l",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "n",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "n",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "o",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "o",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "p",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "p",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "r",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "r",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "s",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "s",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "t",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "t",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "v",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "v",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "w",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "w",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "x",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "x",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "z",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "z",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "y",
+            "modifiers": {
+              "optional": [],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "z",
+              "modifiers": [
+                "command",
+                "shift"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "description": "PC-style navigation: Home/End \u2192 line start/end, Ctrl+Home/End \u2192 document start/end (+Shift selects)",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "home",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "left_arrow",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "end",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "right_arrow",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "home",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "up_arrow",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "end",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "down_arrow",
+              "modifiers": [
+                "command"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "description": "PC-style word editing: Ctrl+\u2190/\u2192 \u2192 word jump, Ctrl+Backspace/Delete \u2192 delete word",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "left_arrow",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "left_arrow",
+              "modifiers": [
+                "option"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "right_arrow",
+            "modifiers": {
+              "optional": [
+                "shift"
+              ],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "right_arrow",
+              "modifiers": [
+                "option"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "delete_or_backspace",
+            "modifiers": {
+              "optional": [],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "delete_or_backspace",
+              "modifiers": [
+                "option"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "delete_forward",
+            "modifiers": {
+              "optional": [],
+              "mandatory": [
+                "control"
+              ]
+            }
+          },
+          "to": [
+            {
+              "key_code": "delete_forward",
+              "modifiers": [
+                "option"
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "type": "frontmost_application_unless",
+              "bundle_identifiers": [
+                "^com\\.mitchellh\\.ghostty$",
+                "^com\\.apple\\.Terminal$",
+                "^com\\.googlecode\\.iterm2$",
+                "^com\\.apple\\.ScreenSharing$",
+                "^com\\.utmapp\\.UTM$",
+                "^com\\.microsoft\\.rdc\\.macos$",
+                "^com\\.parallels\\.desktop\\.console$"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

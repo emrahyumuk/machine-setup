@@ -1,0 +1,6 @@
+# Read by EVERY zsh, including non-interactive ones (`ssh mra-mac <cmd>`, agent
+# tool calls, launchd jobs that exec zsh). .zprofile/.zshrc are not read there,
+# so without this brew, node, cargo and ~/.local/bin (claude, agy) are invisible
+# to remote commands. Static paths on purpose: no `brew shellenv` per subshell.
+typeset -U path PATH
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
