@@ -42,8 +42,8 @@ auto-update off, Xcode for iOS testing) exist because the owner gave ONE
 machine that job. Never offer them to someone else or on the owner's other
 machines by default; offer them only when the user describes the same role
 (always on, reached remotely…), and then ask item by item like everything
-else. Same for private tooling the manifest mentions in passing (rigo —
-the owner's agent studio, not public): it is context, never a setup item.
+else. Same for the owner's private tooling the manifest mentions in passing
+(unreleased, not public): it is context, never a setup item.
 
 ## Step 1 — Survey the machine (read-only)
 

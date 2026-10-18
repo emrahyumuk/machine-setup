@@ -166,11 +166,11 @@ mechanics live in `os/<os>/`, per-machine records in `machines/`):
   — identical behaviour where the script exists (`exec` keeps its exit
   code, so exit 2 still blocks), a silent no-op where it doesn't.
   (`… && "$f" || true` was the first draft — it swallowed that exit code.)
-  Owner's case: the hooks belong to rigo, the owner's own agent studio —
-  **not a public tool; agents never offer it to non-owners**, they only
-  see the pattern. FOLLOW-UP (owner): rigo's installer should write this
-  form instead of an absolute path, or the conflict returns on every
-  machine switch.
+  Owner's case: the hooks belong to the owner's private, unreleased
+  tooling — **not a public tool; agents never offer it to non-owners**,
+  they only see the pattern. FOLLOW-UP (owner): that tool's installer
+  should write this form instead of an absolute path, or the conflict
+  returns on every machine switch.
   VERIFY: `grep -c '"/home/' ~/.claude/settings.json` → 0.
 
 ---
@@ -284,7 +284,7 @@ freshness stamps; see HARDWARE.md / machines/README.md.)
   `/etc/uresourced.conf` `[SessionSlice] CPUWeight=`, not drop-ins.
 - FIELD STATUS 2026-08-12: the stock 500 is sufficient — 8-core build
   bursts no longer stutter the desktop. A 2026-08-10 stutter was initially
-  blamed on scheduling but coincided with a rigo main-loop leak eating a
+  blamed on scheduling but coincided with a private dev tool's main-loop leak eating a
   core; with that gone, no reproduction. A user drop-in raising it to 1000
   exists (`~/.config/systemd/user/session.slice.d/50-ui-priority.conf`) but
   uresourced overrides it — left as documentation of the escalation path.
