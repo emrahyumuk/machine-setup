@@ -88,7 +88,7 @@ fdesetup status 2>/dev/null | grep -q 'FileVault is On' && ok "FileVault on" || 
 KJ="$H/.config/karabiner/karabiner.json"
 if [ -d /Applications/Karabiner-Elements.app ]; then
   n=$(jq '[.profiles[] | select(.selected) | .complex_modifications.rules[]? | select(.description | startswith("PC-style"))] | length' "$KJ" 2>/dev/null)
-  [ "${n:-0}" = 3 ] && ok "Karabiner PC-style rules active (3)" || bad "Karabiner PC-style rules: ${n:-0}/3" "re-run the keyboard step of os/macos/bootstrap.sh"
+  [ "${n:-0}" = 4 ] && ok "Karabiner PC-style rules active (4)" || bad "Karabiner PC-style rules: ${n:-0}/4" "re-run the keyboard step of os/macos/bootstrap.sh"
 else bad "Karabiner-Elements not installed" "brew install --cask karabiner-elements"; fi
 grep -q 'terminal.sendSequence' "$H/Library/Application Support/Code/User/keybindings.json" 2>/dev/null \
   && ok "VS Code terminal gets raw Ctrl codes back" || bad "VS Code terminal keybindings missing" "cp dotfiles/macos/vscode-keybindings.json → VS Code User/keybindings.json"

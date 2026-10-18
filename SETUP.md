@@ -734,6 +734,11 @@ comments recorded, nothing more.
   - EXCLUDED apps get raw Ctrl: Ghostty, Terminal, iTerm2 (SIGINT, history
     search, delete-word…) and Screen Sharing / UTM / Windows App / Parallels
     (the remote OS decides).
+  - Terminals get the LINUX TERMINAL habit instead: Ctrl+Shift+C/V → copy/
+    paste, Ctrl+Shift+T/W → new/close tab (Ghostty on Fedora uses exactly
+    these). Added after the first test (2026-10-18): with terminals simply
+    excluded, Ctrl+C correctly interrupted but there was no Linux-style way
+    to copy — "works like before" read as "not working".
 - VS Code is NOT excluded (editor shortcuts are the point), but Karabiner
   can't tell its editor from its integrated terminal — there Ctrl+C would
   arrive as Cmd+C. `dotfiles/macos/vscode-keybindings.json` → VS Code's
@@ -744,7 +749,8 @@ comments recorded, nothing more.
 - Input sources: ABC (US) default, Turkish Q-PC second — matches the
   keyboard's printed (US) layout.
   VERIFY: `jq '.profiles[]|select(.selected)|.complex_modifications.rules|length' ~/.config/karabiner/karabiner.json`
-  → 3; in TextEdit Ctrl+C/V copy-paste, in Ghostty Ctrl+C interrupts `sleep 30`.
+  → 4; in TextEdit Ctrl+C/V copy-paste; in Ghostty Ctrl+C interrupts `sleep 30`
+  and Ctrl+Shift+C/V copy-paste.
 
 ### Claude Code on macOS — attaching `~/.claude` (owner)
 - Native installer as on Fedora. `~/.claude` already existed (first launch
