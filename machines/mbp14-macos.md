@@ -2,7 +2,7 @@ hardware: mbp14
 model: MacBook Pro (Mac14,9)
 os: macos
 hostname: mra-mac
-role: secondary — always-on home server + desk machine (remote via SSH / Screen Sharing / Tailscale, iOS simulator testing, overflow compute for agents; also used at its own desk with monitor, keyboard and mouse)
+role: secondary — always-on home server + desk machine (remote via SSH / Screen Sharing / Tailscale, iOS simulator testing, overflow compute for agents, Home Assistant OS in a UTM VM for the house's devices; also used at its own desk with monitor, keyboard and mouse)
 layers: SETUP.md §1, §2c (macOS), §3b (MacBook Pro 14" M2 Pro), §4
 inventory: inventory/mbp14-macos/
 scripts: os/macos/{bootstrap,verify,collect,update-check}.sh

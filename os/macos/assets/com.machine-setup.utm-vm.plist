@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  [role] SETUP.md §3b: start the UTM VM "Home Assistant" at login, like the
+  podman machine next to it. UTM is a user app, so this needs the console
+  session (an update restart logs in by itself; an unplanned one stops at
+  FileVault). Runs once per login (RunAtLoad, no KeepAlive); `utmctl start`
+  launches UTM itself and errors out harmlessly on a VM already running.
+  The first run asks once for Automation permission (utmctl → UTM) on the
+  Mac's screen.
+  Installed to ~/Library/LaunchAgents/ by os/macos/bootstrap.sh in server mode,
+  which replaces __HOME__ with $HOME (launchd does not expand ~ or $HOME).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.machine-setup.utm-vm</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Applications/UTM.app/Contents/MacOS/utmctl</string>
+    <string>start</string>
+    <string>Home Assistant</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-utm-vm.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-utm-vm.log</string>
+</dict>
+</plist>

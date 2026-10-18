@@ -913,8 +913,8 @@ comments recorded, nothing more.
 an always-on home server that is also a desk machine (own desk, monitor,
 Magic Keyboard + Magic Mouse). Remote jobs: SSH and Screen Sharing from the
 ThinkPad (usually on the same home LAN), iOS-simulator testing, overflow
-compute/RAM for agent sessions; a home-automation app stack comes later
-(not designed yet — no item here until it is). Items below are tagged
+compute/RAM for agent sessions, and Home Assistant OS in a UTM VM (the
+house's devices; "UTM VM at login" below). Items below are tagged
 *[role]* where they follow from being a server rather than from the
 hardware — if the Mac ever goes back to being a plain laptop, those are the
 ones to revisit.
@@ -991,8 +991,28 @@ Mac never FAILs a server check.
   TRAP: without that key launchd kills the job's whole process group when
   `podman machine start` exits — the VM included. The first version logged
   "started successfully" and left nothing running. Cost: the VM holds ~2 GB RAM + 5 vCPU
-  shares all the time — fine on 16 GB; containers (the coming home-automation
-  stack) come back with the box.
+  shares all the time — fine on 16 GB; containers come back with the box.
+- *[role]* **UTM VM at login** *(2026-10-18)*: Home Assistant OS
+  (`haos_generic-aarch64`, QEMU backend with the hypervisor — virtualized,
+  not emulated; UEFI, VirtIO disk, 4 GB RAM, 2 cores, no display) bridged to
+  `en0`. LaunchAgent `com.machine-setup.utm-vm` (`os/macos/assets/`) runs
+  `utmctl start "Home Assistant"` once per login; utmctl launches UTM
+  itself. A user app, so it needs the console session: an update restart
+  logs in by itself, an unplanned one waits at FileVault (and the heartbeat
+  alarms). Cost: 4 GB RAM next to podman's 2 GB.
+  TRAPS (measured): (1) a cask-installed UTM keeps its quarantine flag until
+  it is opened ONCE on the screen (Gatekeeper "Open"); until then every
+  AppleEvent to it — `utmctl`, `osascript` over SSH — hangs and ends in
+  "AppleEvent timed out (-1712)". (2) `utmctl` from the LaunchAgent and
+  `osascript` from an SSH session each ask once on the screen for
+  Automation permission (Privacy & Security → Automation). After those, the
+  VM can be created (`make new virtual machine` AppleScript), changed and
+  started entirely over SSH. (3) Bridged to Wi-Fi, macOS rewrites the
+  guest's MAC to the Mac's own on the air: the LAN sees both addresses with
+  one MAC, so a router DHCP reservation cannot single out the VM — the
+  guest takes a static address inside it instead.
+  The VM's own setup (address, backups, integrations) lives with its owner's
+  runbook, not here.
 - *[role]* **tmux** for every long remote session (Claude Code included):
   an SSH drop kills the shell, not the tmux session — `tmux new -As main`.
   VERIFY: `nc -z localhost 22` and `:5900` succeed; `tailscale status`
@@ -1072,8 +1092,8 @@ Mac never FAILs a server check.
 - *[role]* `os/macos/maintenance.sh`, Sunday 04:00, same daemon pattern:
   `simctl delete unavailable`, Xcode DerivedData folders untouched 30+ days,
   `brew cleanup -s --prune=30`, `podman image prune -f` (DANGLING images
-  only — never containers, volumes or tagged images: the home-automation
-  stack will live there). One line per run with GB freed; a failed step
+  only — never containers, volumes or tagged images: those may hold
+  someone's data). One line per run with GB freed; a failed step
   writes `FAILED=<step>`, which the health check turns into an alert.
   VERIFY: `tail -1 ~/Library/Logs/machine-setup-maintenance.log` → no `FAILED=`.
 
@@ -1082,10 +1102,10 @@ Mac never FAILs a server check.
   long one shuts the Mac down, and it stays at the FileVault screen —
   unlockable from the LAN only — until someone home unlocks it. The
   heartbeat makes that state visible instead of silent.
-- **No static IP yet**: SSH/Screen Sharing find the Mac by NAME
+- **No static IP for the Mac**: SSH/Screen Sharing find the Mac by NAME
   (`mra-mac.local`, Tailscale `mra-mac`), so an address change breaks
-  nothing today. Set a DHCP reservation on the router when the
-  home-automation devices need to reach it by IP.
+  nothing. The devices in the house talk to the Home Assistant VM, not to
+  the Mac, and the VM keeps a static address of its own (trap (3) above).
 - **Wi-Fi, not Ethernet**: no cable run to this desk. Measured 2026-10-18
   over 10 min (484 samples, 1 s apart): 2 single ping losses to the router
   (0.4 %), 0 DNS failures, channel 40 / 5 GHz throughout (no roam), signal
@@ -1096,8 +1116,8 @@ Mac never FAILs a server check.
 
 ### Open items (decided to revisit, not forgotten)
 - **Time Machine**: no destination. Wanted before the macOS 27 upgrade at
-  the latest (and before home-automation data lives here); waits for an
-  external disk.
+  the latest; waits for an external disk. (Home Assistant's data lives in
+  the VM and backs itself up off the Mac, so it does not wait on this.)
 - **macOS 27**: wait for 27.1 (§2c "Update cadence").
 
 ---

@@ -7,7 +7,7 @@
 #  - Xcode DerivedData folders untouched for 30+ days
 #  - Homebrew download cache older than 30 days
 #  - DANGLING podman images only — never containers, volumes or tagged
-#    images (the home-automation stack will live there)
+#    images (those may hold someone's data)
 #
 # One summary line per run → ~/Library/Logs/machine-setup-maintenance.log.
 # A failed step writes FAILED=<step>; health-check.sh turns that into an

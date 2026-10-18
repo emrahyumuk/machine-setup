@@ -160,6 +160,11 @@ launchctl list 2>/dev/null | grep -q 'com.machine-setup.podman-machine' \
   && ok "podman machine starts at login (LaunchAgent)" || bad "podman autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.podman-machine.plist"
 podman machine list --format '{{.Running}}' 2>/dev/null | grep -q true \
   && ok "podman machine running" || bad "podman machine not running on the server" "podman machine start; check ~/Library/Logs/machine-setup-podman-machine.log"
+launchctl list 2>/dev/null | grep -q 'com.machine-setup.utm-vm' \
+  && ok "UTM VM starts at login (LaunchAgent)" || bad "UTM autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.utm-vm.plist"
+# osascript, not utmctl: utmctl can hang on a missing Automation grant; this times out
+perl -e 'alarm 15; exec @ARGV' osascript -e 'tell application "UTM" to get status of virtual machine named "Home Assistant"' 2>/dev/null | grep -qx started \
+  && ok "UTM VM \"Home Assistant\" running" || bad "UTM VM \"Home Assistant\" not running" "utmctl start 'Home Assistant'; check ~/Library/Logs/machine-setup-utm-vm.log"
 for j in health-check maintenance; do
   [ -f /Library/LaunchDaemons/com.machine-setup.$j.plist ] && ok "$j LaunchDaemon installed" \
     || bad "$j LaunchDaemon missing" "bootstrap.sh --server (sudo section) — SETUP.md §3b Health"

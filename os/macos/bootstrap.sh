@@ -133,10 +133,13 @@ P=~/Library/LaunchAgents/com.machine-setup.update-check.plist
 sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.update-check.plist > "$P"
 load_agent "$P"
 
-if [ $SERVER = 1 ]; then   # [role] podman VM back after every reboot — no sudo needed
-  PM=~/Library/LaunchAgents/com.machine-setup.podman-machine.plist
-  sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.podman-machine.plist > "$PM"
-  load_agent "$PM"
+if [ $SERVER = 1 ]; then   # [role] podman VM + the UTM VM back after every reboot — no sudo needed
+  brew install --cask utm
+  for a in podman-machine utm-vm; do
+    PM=~/Library/LaunchAgents/com.machine-setup.$a.plist
+    sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.$a.plist > "$PM"
+    load_agent "$PM"
+  done
 fi
 
 echo
@@ -188,6 +191,9 @@ EOF
   - SSH keys only: other machine's key from `gh api user/keys` → authorized_keys,
     log in with it FIRST, then sshd_config.d/010-machine-setup.conf (§3b)
   - Settings → Battery → Charging: 80% limit (docked machine)
+  - UTM: open it ONCE on the screen (Gatekeeper), allow Automation for
+    utmctl and for SSH; then create the "Home Assistant" VM (§3b
+    "UTM VM at login")
   - heartbeat: an Uptime Kuma Push monitor (300 s, 1 retry; mra-mac: mra-server
     docs/49-mra-mac.md) or a healthchecks.io check (period 5 min / grace 10 min)
     → its push/ping URL into ~/.config/machine-setup/healthcheck-url
