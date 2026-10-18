@@ -51,6 +51,11 @@ if [ -f "$H/.claude/settings.json" ]; then
     && bad "settings.json has absolute /home/ paths (hooks fire errors on the Mac)" "use the \$HOME + existence-check form — SETUP.md §1 Claude Code" \
     || ok "Claude settings.json is path-portable"
 fi
+if [ -x "$H/.claude/bin/link-project-memory" ]; then
+  out=$("$H/.claude/bin/link-project-memory" --check 2>&1 | tail -1)
+  case "$out" in "0 unlinked, 0 conflict(s)") ok "project memory slugs linked to the other machine's";;
+    *) bad "link-project-memory --check: $out" "run link-project-memory after cloning projects";; esac
+fi
 
 sec "§2c macOS"
 command -v brew >/dev/null && ok "Homebrew: $(brew --version | head -1)" || bad "Homebrew missing"

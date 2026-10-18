@@ -769,11 +769,23 @@ comments recorded, nothing more.
 - Sync: `dot-claude-sync` linked into `~/.local/bin`, run by hand before
   leaving the Mac — no launchd timer (two machines auto-pushing only
   multiplies rejected pushes; pulling stays deliberate per MIGRATION.md).
-- Project memories keyed `-home-mra-…` stay inert here (paths are
-  `/Users/mra/…`). Do NOT run MIGRATION.md's re-addressing while both
-  machines are live — it moves the directories and Fedora loses them.
+- Project memory is keyed by absolute path (`-home-mra-Projects-X` on
+  Fedora, `-Users-mra-Projects-X` here), so without help each machine grows
+  its own diverging memory for the same project. Fix: clone projects at the
+  SAME path below `$HOME` (`~/Projects/<Fedora layout>`), then run
+  `link-project-memory` (in the synced `~/.claude/bin`, symmetric,
+  idempotent): it symlinks this machine's `<slug>/memory` to the other
+  machine's, so both share one copy. The links never enter the repo — the
+  allowlist's `!/projects/*/memory/` matches directories only and git sees
+  a symlink as a file (tested). Do NOT run MIGRATION.md's re-addressing
+  while both machines are live — it MOVES the directories and Fedora loses
+  them. TRAP from writing the script: slugs start with `-`, so `mkdir
+  "$slug"` parses as an option — pass `./$slug`; the first draft also
+  printed "25 linked" after 25 failures (a silent-failure twin of the
+  update-check one).
   VERIFY: `git -C ~/.claude remote get-url origin` → dot-claude-config;
-  `grep -c '"/home/' ~/.claude/settings.json` → 0 (§1 portable hooks).
+  `grep -c '"/home/' ~/.claude/settings.json` → 0 (§1 portable hooks);
+  `link-project-memory --check` → "0 unlinked, 0 conflict(s)".
 
 ## 3a. Hardware-specific — ThinkPad P14s Gen6 AMD (`thinkpad-p14s`)
 
