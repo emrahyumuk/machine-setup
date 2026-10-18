@@ -85,6 +85,7 @@ grep -q 'pam_tid.so' /etc/pam.d/sudo_local 2>/dev/null && ok "Touch ID for sudo"
   || bad "Touch ID not enabled for sudo" "sudo cp /etc/pam.d/sudo_local.template /etc/pam.d/sudo_local && uncomment the pam_tid line"
 launchctl list 2>/dev/null | grep -q 'com.machine-setup.update-check' \
   && ok "update-check agent loaded (Sun 18:00)" || bad "update-check LaunchAgent not loaded" "launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.update-check.plist"
+[ -L "$H/.local/bin/machine-verify" ] && ok "machine-verify is a symlink into the repo" || bad "machine-verify is a copy (goes stale)" "ln -sfn <repo>/os/macos/verify.sh ~/.local/bin/machine-verify"
 grep -q 'check FAILED' "$H/.local/bin/update-check" 2>/dev/null \
   && ok "update-check reports failed channels (not a silent 0)" || bad "update-check is the old silent-0 version" "install -m755 os/macos/update-check.sh ~/.local/bin/update-check"
 SU=/Library/Preferences/com.apple.SoftwareUpdate
@@ -144,6 +145,8 @@ fi
 if command -v tailscale >/dev/null; then
   tailscale status >/dev/null 2>&1 && ok "tailscale up ($(tailscale ip -4 2>/dev/null | head -1))" || bad "tailscale not connected" "sudo brew services start tailscale && tailscale up"
 else bad "tailscale missing" "brew install tailscale (the formula — daemon runs before login)"; fi
+launchctl list 2>/dev/null | grep -q 'com.machine-setup.podman-machine' \
+  && ok "podman machine starts at login (LaunchAgent)" || bad "podman autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.podman-machine.plist"
 case "$(xcode-select -p 2>/dev/null)" in
   /Applications/Xcode*.app/*) ok "xcode-select → full Xcode"
     xcrun simctl list runtimes 2>/dev/null | grep -q '^iOS' && ok "iOS simulator runtime installed" || bad "no iOS simulator runtime" "xcodebuild -downloadPlatform iOS";;

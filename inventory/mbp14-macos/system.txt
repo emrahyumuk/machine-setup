@@ -1,5 +1,5 @@
 collected: 2026-10-18
-os: macOS 26.6.2 (25G83)   # informational only
+os: macOS 26.7.1 (25G241)   # informational only
 model: MacBook Pro
 model-id: Mac14,9
 chip: Apple M2 Pro

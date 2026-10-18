@@ -115,8 +115,11 @@ podman machine start 2>/dev/null || true
 
 echo "== update notifier + drift check =="
 mkdir -p ~/.local/bin ~/Library/LaunchAgents ~/Library/Logs
-install -m755 $OSD/update-check.sh ~/.local/bin/update-check
-install -m755 $OSD/verify.sh       ~/.local/bin/machine-verify
+# symlinks, not copies: a copied verify went stale within weeks on Fedora
+# (2026-10-11), and the Mac's copies needed re-installing three times in the
+# 2026-10-18 session alone
+ln -sfn "$PWD/$OSD/update-check.sh" ~/.local/bin/update-check
+ln -sfn "$PWD/$OSD/verify.sh"       ~/.local/bin/machine-verify
 P=~/Library/LaunchAgents/com.machine-setup.update-check.plist
 sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.update-check.plist > "$P"
 launchctl bootout "gui/$(id -u)" "$P" 2>/dev/null || true
@@ -139,6 +142,11 @@ if [[ "$a" =~ ^[Yy]$ ]]; then
     sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticallyInstallMacOSUpdates -bool false
     # Tailscale as a LaunchDaemon: up before anyone logs in (the app variant is not)
     sudo brew services start tailscale
+    # podman VM back after every reboot (it stays stopped otherwise)
+    PM=~/Library/LaunchAgents/com.machine-setup.podman-machine.plist
+    sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.podman-machine.plist > "$PM"
+    launchctl bootout "gui/$(id -u)" "$PM" 2>/dev/null || true
+    launchctl bootstrap "gui/$(id -u)" "$PM"
     mkdir -p ~/.config/machine-setup && echo server > ~/.config/machine-setup/roles
   fi
   echo "Static hostname — current: $(scutil --get HostName 2>/dev/null || echo unset)"

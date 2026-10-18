@@ -1,2 +1,4 @@
 # firefox (name | id)
+## profile 1uc7qgri.default-release
+on  New Tab | newtab@mozilla.org
 # google-chrome (name | id)

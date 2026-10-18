@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  [role] SETUP.md §3b: start the podman VM at login, so containers come back
+  after every reboot of the always-on server (found 2026-10-18: after the
+  26.7.1 restart the machine stayed stopped and DOCKER_HOST had no socket).
+  Runs once per login (RunAtLoad, no KeepAlive) — `podman machine start` on an
+  already-running machine just errors out harmlessly.
+  Installed to ~/Library/LaunchAgents/ by os/macos/bootstrap.sh in server mode,
+  which replaces __HOME__ with $HOME (launchd does not expand ~ or $HOME).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.machine-setup.podman-machine</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/podman</string>
+    <string>machine</string>
+    <string>start</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <!-- `podman machine start` exits once the VM is up; without this, launchd
+       kills the job's whole process group on exit — the VM included. The
+       first version logged "started successfully" and left nothing running. -->
+  <key>AbandonProcessGroup</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-podman-machine.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/machine-setup-podman-machine.log</string>
+</dict>
+</plist>

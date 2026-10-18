@@ -974,11 +974,26 @@ Mac never FAILs a server check.
   CLI manages it.
 - *[role]* **FileVault + unattended reboots**: FileVault stays on; after a
   reboot the Mac waits at the pre-boot unlock screen with no network
-  services. macOS 26 can unlock FileVault over SSH when Remote Login is on
-  (LAN only — Tailscale isn't up pre-boot). UNTESTED as of 2026-10-18 —
-  test at the next planned reboot (`ssh mra@mra-mac.local` while it sits at
-  the unlock screen). Known-good fallback for PLANNED restarts:
-  `sudo fdesetup authrestart` (one restart that skips the unlock prompt).
+  services. macOS 26 unlocks FileVault over SSH when Remote Login is on —
+  TESTED 2026-10-18 on the 26.7.1 update restart: `ssh mra@mra-mac.local`
+  from the ThinkPad while the Mac sat at the unlock screen unlocked it.
+  LAN only (Tailscale isn't up pre-boot). Expect it to ask for the
+  account password rather than use the key: `~/.ssh/authorized_keys` and
+  the keys-only drop-in live on the encrypted volume (not recorded in the
+  test — note it on the next reboot). Fallback for planned restarts when away: `sudo fdesetup
+  authrestart` (one restart that skips the unlock prompt).
+- *[role]* **Tailscale field test** (2026-10-18): SSH worked from the
+  ThinkPad over the LAN, over Tailscale on the LAN, and over Tailscale with
+  the ThinkPad on a phone hotspot (outside the home network).
+- *[role]* **podman machine at login**: after the 26.7.1 restart the VM
+  stayed stopped (`DOCKER_HOST` had no socket). LaunchAgent
+  `com.machine-setup.podman-machine` (`os/macos/assets/`) runs `podman
+  machine start` once per login, with `AbandonProcessGroup=true`.
+  TRAP: without that key launchd kills the job's whole process group when
+  `podman machine start` exits — the VM included. The first version logged
+  "started successfully" and left nothing running. Cost: the VM holds ~2 GB RAM + 5 vCPU
+  shares all the time — fine on 16 GB; containers (the coming home-automation
+  stack) come back with the box.
 - *[role]* **tmux** for every long remote session (Claude Code included):
   an SSH drop kills the shell, not the tmux session — `tmux new -As main`.
   VERIFY: `nc -z localhost 22` and `:5900` succeed; `tailscale status`
