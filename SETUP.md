@@ -1040,12 +1040,17 @@ Mac never FAILs a server check.
 ### Health — heartbeat, memory, disk (the box can't report its own death)
 - *[role]* `os/macos/health-check.sh` every 5 min as a LaunchDaemon with
   `UserName` (runs with nobody logged in at the desk, from the moment
-  FileVault is unlocked). It pings a **healthchecks.io** check (period 5 min,
-  grace 10 min): when the pings STOP — machine off, frozen, offline, waiting
+  FileVault is unlocked). It pings a dead-man's-switch receiver — an **Uptime Kuma Push
+  monitor** (URL contains `/api/push/` → `status=up|down&msg=`) or a
+  **healthchecks.io** check (POST to URL / `URL/fail`); period 5 min, ~10 min
+  grace: when the pings STOP — machine off, frozen, offline, waiting
   at the FileVault screen — the service alerts the phone. Ping URL in
   `~/.config/machine-setup/healthcheck-url` (600; a token, never the repo).
   WHY an outside service: everything on the Mac — notifications included —
-  dies with the Mac, and at a headless box nobody sees a desktop toast.
+  dies with the Mac, and at a headless box nobody sees a desktop toast. A
+  plain push service (ntfy) is not enough on its own: it can only speak
+  while the Mac is alive; the receiver must notice SILENCE. It must also be
+  reachable from the Mac (a public `/api/push/` path or the tailnet).
 - Same run, trend + alerts: one line per run in
   `~/Library/Logs/machine-setup-health.log` (memory pressure level, free %,
   swap, disk free, Wi-Fi channel/signal, top-3 memory users; rotates at
@@ -1075,7 +1080,13 @@ Mac never FAILs a server check.
   (`mra-mac.local`, Tailscale `mra-mac`), so an address change breaks
   nothing today. Set a DHCP reservation on the router when the
   home-automation devices need to reach it by IP.
-- **Wi-Fi, not Ethernet**: no cable run to this desk.
+- **Wi-Fi, not Ethernet**: no cable run to this desk. Measured 2026-10-18
+  over 10 min (484 samples, 1 s apart): 2 single ping losses to the router
+  (0.4 %), 0 DNS failures, channel 40 / 5 GHz throughout (no roam), signal
+  -53…-61 dBm — clear of the -65 dBm bgscan threshold behind the Fedora
+  roam trap (§2). The health log records channel + signal every 5 min, so
+  a roaming or fading link shows up there long-term.
+  Reference test: `ping -c1 -t1 <router>` + `host github.com` once a second.
 
 ### Open items (decided to revisit, not forgotten)
 - **Time Machine**: no destination. Wanted before the macOS 27 upgrade at
