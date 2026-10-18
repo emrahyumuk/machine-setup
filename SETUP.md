@@ -663,10 +663,17 @@ comments recorded, nothing more.
   VERIFY: `podman machine list` → running; the `DOCKER_HOST` socket exists.
 
 ### Static hostname — same Chromium singleton-lock trap as §2 *(2026-09-06)*
-- `HostName`, `LocalHostName`, `ComputerName` = `mra-mac` (`sudo scutil --set …`).
-  With `HostName` unset, macOS derives the name from DHCP/Bonjour and it
-  can change under the apps — the §2 failure mode verbatim.
-  VERIFY: `scutil --get HostName` → mra-mac.
+- `HostName`, `LocalHostName`, `ComputerName` = `mra-mac` (`sudo scutil
+  --set …` for each). With `HostName` unset, macOS derives the name from
+  DHCP/Bonjour and it can change under the apps — the §2 failure mode
+  verbatim.
+  TRAP (2026-10-18): the 2026-09-06 session set only `HostName`.
+  `LocalHostName` — the Bonjour name behind `<name>.local` — stayed
+  `mRAs-MacBook-Pro`, so `ssh mra@mra-mac.local` from the ThinkPad didn't
+  resolve and the first key-login test went nowhere. The three are
+  separate settings; set and check all three.
+  VERIFY: all three `scutil --get` → mra-mac; `dscacheutil -q host -a name
+  mra-mac.local` answers.
 
 ### Touch ID for sudo *(2026-09-06)*
 - `/etc/pam.d/sudo_local` from `sudo_local.template` with the `pam_tid.so`
@@ -942,6 +949,22 @@ Mac never FAILs a server check.
   Linux = any VNC client to `mra-mac.local:5900` with the macOS account.
   (Remote keyboard: the Linux Super key arrives as Cmd — Super+C copies.
   Karabiner rules (§2c) only touch the physical keyboard, not VNC input.)
+- *[role]* **SSH: keys only.** The ThinkPad's public key came from GitHub
+  instead of a copy-paste between machines: `gh auth refresh -s
+  read:public_key`, then `gh api user/keys` shows each key's TITLE
+  (`curl github.com/<user>.keys` lists keys without titles) — only the key
+  titled `mra-fedora` went into `~/.ssh/authorized_keys` (700/600 perms).
+  An old "Gameflex Macbook M2" key on the account was deliberately NOT
+  authorized. Order matters: log in from the ThinkPad with the key FIRST,
+  then `/etc/ssh/sshd_config.d/010-machine-setup.conf` =
+  `PasswordAuthentication no` + `KbdInteractiveAuthentication no`, checked
+  with `sudo sshd -t`. `010-` because sshd keeps the FIRST value it reads
+  and includes `sshd_config.d/*` alphabetically — it must sort before
+  macOS's own `100-macos.conf`. No restart: launchd starts sshd per
+  connection. Desk login and Screen Sharing passwords are unaffected.
+  Rollback: delete the file.
+  VERIFY: `ssh -o PreferredAuthentications=password mra@mra-mac.local` from
+  another machine → "Permission denied (publickey)".
 - *[role]* **Tailscale as a system daemon, not the app**: `brew install
   tailscale` + `sudo brew services start tailscale` + `tailscale up
   --hostname=mra-mac`. WHY: the formula's `tailscaled` is a LaunchDaemon —

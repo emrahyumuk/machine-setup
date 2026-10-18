@@ -144,6 +144,7 @@ if [[ "$a" =~ ^[Yy]$ ]]; then
   echo "Static hostname — current: $(scutil --get HostName 2>/dev/null || echo unset)"
   read -r -p "  set HostName/LocalHostName/ComputerName to (empty = keep): " hn
   if [ -n "$hn" ]; then
+    # all three: LocalHostName is the Bonjour name behind <name>.local
     for k in HostName LocalHostName ComputerName; do sudo scutil --set "$k" "$hn"; done
   fi
 fi
@@ -159,6 +160,8 @@ EOF
   server role (§3b):
   - tailscale up --hostname=<name>
   - Settings → General → Sharing: Remote Login + Screen Sharing
+  - SSH keys only: other machine's key from `gh api user/keys` → authorized_keys,
+    log in with it FIRST, then sshd_config.d/010-machine-setup.conf (§3b)
   - Settings → Battery → Charging: 80% limit (docked machine)
   - App Store sign-in → sudo mas install 497799835 (Xcode) → §3b Xcode steps
     (first launch brings an iOS runtime — don't -downloadPlatform on top)

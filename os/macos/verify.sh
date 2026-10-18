@@ -59,8 +59,15 @@ fi
 
 sec "§2c macOS"
 command -v brew >/dev/null && ok "Homebrew: $(brew --version | head -1)" || bad "Homebrew missing"
-[ -n "$(scutil --get HostName 2>/dev/null)" ] && ok "static HostName: $(scutil --get HostName)" \
-  || bad "HostName unset" "sudo scutil --set HostName <name> (Chromium singleton-lock trap)"
+hn=$(scutil --get HostName 2>/dev/null)
+if [ -z "$hn" ]; then bad "HostName unset" "sudo scutil --set HostName <name> (Chromium singleton-lock trap)"
+else
+  # All three must agree: LocalHostName is the Bonjour name (<name>.local) —
+  # with only HostName set, ssh <name>.local does not resolve (2026-10-18).
+  lhn=$(scutil --get LocalHostName 2>/dev/null); cn=$(scutil --get ComputerName 2>/dev/null)
+  [ "$lhn" = "$hn" ] && [ "$cn" = "$hn" ] && ok "HostName = LocalHostName = ComputerName = $hn" \
+    || bad "names disagree: HostName=$hn LocalHostName=$lhn ComputerName=$cn" "sudo scutil --set LocalHostName $hn && sudo scutil --set ComputerName $hn"
+fi
 for t in starship zoxide fzf atuin eza bat duf btop lazygit delta nvim podman mas gh tmux jq node pnpm codex opencode agy; do
   command -v "$t" >/dev/null && ok "$t" || bad "$t missing"
 done
@@ -126,7 +133,7 @@ grep -qE '^ +womp +1' <<<"$ac" && ok "AC: wake for network" || bad "AC womp != 1
   && ok "macOS auto-install off (upall owns updates)" || bad "macOS updates auto-install (unannounced server restarts)" "sudo defaults write $SU AutomaticallyInstallMacOSUpdates -bool false"
 nc -z -G1 127.0.0.1 22 2>/dev/null && ok "Remote Login (SSH) listening" || bad "SSH not listening" "Settings → General → Sharing → Remote Login"
 nc -z -G1 127.0.0.1 5900 2>/dev/null && ok "Screen Sharing listening" || bad "Screen Sharing off" "Settings → General → Sharing → Screen Sharing"
-KO=/etc/ssh/sshd_config.d/100-machine-setup.conf
+KO=/etc/ssh/sshd_config.d/010-machine-setup.conf
 if [ ! -s "$H/.ssh/authorized_keys" ]; then
   skipc "SSH key-only login pending — no ~/.ssh/authorized_keys yet (add a key, test it, then $KO)"
 elif grep -qE '^PasswordAuthentication +no' "$KO" 2>/dev/null; then
