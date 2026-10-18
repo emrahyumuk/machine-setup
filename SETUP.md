@@ -999,7 +999,13 @@ Mac never FAILs a server check.
   `utmctl start "Home Assistant"` once per login; utmctl launches UTM
   itself. A user app, so it needs the console session: an update restart
   logs in by itself, an unplanned one waits at FileVault (and the heartbeat
-  alarms). Cost: 4 GB RAM next to podman's 2 GB.
+  alarms). TESTED 2026-10-18: `sudo fdesetup authrestart` skips the
+  FileVault screen but stops at the LOGIN WINDOW (no session, no VM until
+  someone logs in — desk or Screen Sharing); after the login the VM was
+  serving in ~20 s. Lock screen and display sleep keep the session, so
+  only a restart needs a login. Owner's choice: keep UTM and log in once
+  per restart, rather than a root QEMU LaunchDaemon that needs no login.
+  Cost: 4 GB RAM next to podman's 2 GB.
   TRAPS (measured): (1) a cask-installed UTM keeps its quarantine flag until
   it is opened ONCE on the screen (Gatekeeper "Open"); until then every
   AppleEvent to it — `utmctl`, `osascript` over SSH — hangs and ends in
