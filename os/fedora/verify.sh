@@ -29,6 +29,11 @@ grep -q '^show_notifications = false' "$H/.config/starship.toml" 2>/dev/null && 
 [ -n "$(asuser git config --global --get user.email 2>/dev/null)" ] && ok "git identity set" || bad "git user.email unset" "git config --global user.name/user.email"
 [ "$(asuser git config --global --get core.pager 2>/dev/null)" = delta ] && ok "git pager = delta" || bad "git core.pager (expect delta — dotfiles/gitconfig.template)"
 grep -q 'fuse-ld=mold' "$H/.cargo/config.toml" 2>/dev/null && ok "cargo → mold" || bad "~/.cargo/config.toml lacks mold"
+NODE_LINE=24   # APPS.md "Dev runtimes": one LTS line for /usr/bin/node and NVM's default
+sysn=$(/usr/bin/node -v 2>/dev/null); nvmd=$(cat "$H/.nvm/alias/default" 2>/dev/null); nvmd=${nvmd#v}
+[ "${sysn%%.*}" = "v$NODE_LINE" ] && ok "system node $sysn" \
+  || bad "system node ${sysn:-missing} — expect the $NODE_LINE line" "sudo dnf install --allowerasing nodejs$NODE_LINE nodejs$NODE_LINE-bin nodejs$NODE_LINE-npm-bin nodejs$NODE_LINE-full-i18n && sudo dnf remove 'nodejs22*'"
+[ "${nvmd%%.*}" = "$NODE_LINE" ] && ok "nvm default $nvmd" || bad "nvm default ${nvmd:-unset} — expect $NODE_LINE" "nvm alias default $NODE_LINE"
 n=$(asuser bash -lc 'which -a claude 2>/dev/null | sort -u | wc -l'); t=$(readlink -f "$H/.local/bin/claude" 2>/dev/null)
 [ "$n" = 1 ] && [[ "$t" == "$H/.local/share/claude/"* ]] && ok "claude: single native install" || bad "claude install" "which -a claude → $n entries; ~/.local/bin/claude → ${t:-missing}"
 grep -q 'allow-scripts=' "$H/.npmrc" 2>/dev/null && ok "npm allow-scripts set" || bad "~/.npmrc allow-scripts (postinstall trap)"

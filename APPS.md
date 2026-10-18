@@ -120,7 +120,17 @@ Wired together in `dotfiles/zshrc`:
 
 ## Dev runtimes
 
-- Node: nodejs22 (system) + NVM for per-project versions; pnpm via PNPM_HOME.
+- Node: ONE LTS line everywhere, currently **24** (Active LTS). The system `nodejs24` rpm
+  (`/usr/bin/node` — what GUI apps, systemd units and non-login shells get) and NVM's
+  `default` alias both point at it; NVM keeps other lines only for projects that pin them
+  in `.nvmrc`. Moved off nodejs22 2026-10-18: interactive shells ran NVM's 24 while
+  `/usr/bin/node` stayed 22, so the same script ran on a different major depending on how
+  it was launched. Switch: `sudo dnf install --allowerasing nodejs24 nodejs24-bin
+  nodejs24-npm-bin nodejs24-full-i18n && sudo dnf remove 'nodejs22*'` (the `-bin`
+  packages own `/usr/bin/node` and conflict across lines). Next move: Node 26 enters LTS
+  in late October 2026 — move system + NVM default (and the Mac's brew formula) together a
+  few weeks later, once pinned projects build on it. pnpm via PNPM_HOME.
+  VERIFY: `/usr/bin/node -v` and `cat ~/.nvm/alias/default` → both 24.x.
 - AI agent CLIs: codex, opencode-ai (npm), agy (`~/.local/bin`); claude-code is the native installer (see CLI stack).
 - Rust: rustup-managed; global cargo config only sets mold.
 
