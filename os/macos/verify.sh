@@ -165,7 +165,7 @@ for j in health-check maintenance; do
     || bad "$j LaunchDaemon missing" "bootstrap.sh --server (sudo section) — SETUP.md §3b Health"
 done
 [ -s "$H/.config/machine-setup/healthcheck-url" ] && ok "heartbeat URL configured" \
-  || bad "no heartbeat URL — nobody hears it if this Mac goes down" "healthchecks.io ping URL → ~/.config/machine-setup/healthcheck-url"
+  || bad "no heartbeat URL — nobody hears it if this Mac goes down" "Kuma push URL (mra-server docs/49-mra-mac.md) or healthchecks.io ping URL → ~/.config/machine-setup/healthcheck-url"
 HL="$H/Library/Logs/machine-setup-health.log"
 if [ -s "$HL" ]; then
   age=$(( $(date +%s) - $(stat -f %m "$HL") ))

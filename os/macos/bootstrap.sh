@@ -188,8 +188,10 @@ EOF
   - SSH keys only: other machine's key from `gh api user/keys` → authorized_keys,
     log in with it FIRST, then sshd_config.d/010-machine-setup.conf (§3b)
   - Settings → Battery → Charging: 80% limit (docked machine)
-  - healthchecks.io: check with period 5 min / grace 10 min → its ping URL into
-    ~/.config/machine-setup/healthcheck-url (chmod 600; never the repo)
+  - heartbeat: an Uptime Kuma Push monitor (300 s, 1 retry; mra-mac: mra-server
+    docs/49-mra-mac.md) or a healthchecks.io check (period 5 min / grace 10 min)
+    → its push/ping URL into ~/.config/machine-setup/healthcheck-url
+    (chmod 600; never the repo)
   - App Store sign-in → sudo mas install 497799835 (Xcode) → §3b Xcode steps
     (first launch brings an iOS runtime — don't -downloadPlatform on top)
 EOF

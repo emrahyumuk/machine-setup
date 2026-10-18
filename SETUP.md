@@ -1051,6 +1051,12 @@ Mac never FAILs a server check.
   plain push service (ntfy) is not enough on its own: it can only speak
   while the Mac is alive; the receiver must notice SILENCE. It must also be
   reachable from the Mac (a public `/api/push/` path or the tailnet).
+  **mra-mac's receiver (2026-10-18):** the Uptime Kuma on mra-server, Push
+  monitor `mra-mac` (300 s, 1 retry, alarms to the phone by ntfy and mRA OS),
+  through its public push path — not the tailnet, so the Mac's state is
+  known even when the box ↔ home link is down. Monitor, URL form, alarm
+  tests and what to do on an alarm: mra-server `docs/49-mra-mac.md` §3
+  (private repo).
 - Same run, trend + alerts: one line per run in
   `~/Library/Logs/machine-setup-health.log` (memory pressure level, free %,
   swap, disk free, Wi-Fi channel/signal, top-3 memory users; rotates at
