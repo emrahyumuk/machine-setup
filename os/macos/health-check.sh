@@ -4,16 +4,19 @@
 # LaunchDaemon running as the user, so it works with nobody logged in at the
 # desk). Three jobs:
 #
-#  1. Heartbeat: ping a healthchecks.io check. When the pings STOP (machine
-#     off, frozen, offline, stuck at the FileVault screen) the service alerts
-#     the phone — the one failure a machine can't report about itself.
+#  1. Heartbeat: ping a dead-man's-switch receiver — an Uptime Kuma Push
+#     monitor or a healthchecks.io check (SETUP.md §3b names this Mac's).
+#     When the pings STOP (machine off, frozen, offline, stuck at the
+#     FileVault screen) the receiver alerts the phone — the one failure a
+#     machine can't report about itself.
 #  2. Trend log: one line per run (memory pressure, free %, swap, disk free,
 #     Wi-Fi channel/signal, top memory users) → ~/Library/Logs/machine-setup-health.log.
 #  3. Alerts: memory pressure at warn+ for 3 runs in a row (15 min), disk free
-#     under the floor, or a failed weekly maintenance → the ping goes to /fail
-#     with the reason as its body, so the alert says WHY.
+#     under the floor, or a failed weekly maintenance → the ping reports DOWN
+#     (Kuma status=down, healthchecks.io URL/fail) with the reason as its
+#     message, so the alert says WHY.
 #
-# The check URL is a secret-ish token: it lives in
+# The push/ping URL is a secret-ish token: it lives in
 # ~/.config/machine-setup/healthcheck-url (chmod 600), never in the repo.
 # No URL yet → still logs, and says so in the log (verify FAILs on it).
 #
