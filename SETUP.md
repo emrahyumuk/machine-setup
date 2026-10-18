@@ -631,8 +631,8 @@ comments recorded, nothing more.
 ### Node + agent CLIs
 - `node@24` from brew, `brew link --force` — the Active LTS line (22 is
   maintenance-only since 2025-10; the Mac started on node@22 to mirror the
-  Fedora inventory's `nodejs22` and moved to 24 the same day). Fedora's
-  system Node should follow — check `dnf list --installed 'nodejs*'`.
+  Fedora inventory's `nodejs22` and moved to 24 the same day; Fedora
+  followed the same day — APPS.md "Dev runtimes": one LTS line everywhere).
   nvm from its upstream script with `PROFILE=/dev/null` (the zshrc already
   sources it) and `nvm alias default system`, so nvm never shadows the brew
   node; pnpm from brew. `npm -g` lands under `/opt/homebrew` — visible to

@@ -173,7 +173,7 @@ always-on home server — not a default for any other Mac.
 | Steam | — | Not on this Mac. |
 | mold | — (Apple `ld_prime`) | mold has no Mach-O backend. |
 | podman-docker shim | `alias docker=podman` | podman runs in `podman machine`. |
-| nodejs22 (dnf) | `node@24` (brew, force-linked) + nvm | Same shape: a system Node + nvm per project; 24 = Active LTS (Fedora's line should follow). |
+| nodejs24 (dnf) | `node@24` (brew, force-linked) + nvm | Same shape and the same ONE LTS line as Fedora (see Dev runtimes). |
 | — | **Karabiner-Elements** | Linux shortcut muscle memory on a Mac keyboard, scoped away from terminals. |
 | — | **gh**, **tmux**, **jq** | gh: auth for private repos (no SSH keys on the Mac); tmux: remote sessions survive SSH drops; jq: a Claude Code hook needs it. |
 | — | **Tailscale** (formula, system daemon) *[role]* | Reach the home server from outside; daemon so it's up before login. |
