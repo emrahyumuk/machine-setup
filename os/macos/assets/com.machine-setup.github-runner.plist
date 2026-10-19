@@ -9,6 +9,8 @@
   __HOME__ and __USER__ replaced (launchd expands neither ~ nor $HOME).
   launchd gives a daemon no HOME and a bare PATH: both are set here, and
   config.sh must run with the same PATH (it records it in .path).
+  The hook path must end in .sh: the runner refuses any other name ("is not a
+  valid path to a script") and fails the job.
   SessionCreate: a security session of the job's own, which security(1) and
   codesign need for a temporary keychain outside a login.
   KeepAlive only on a FAILED exit: run.sh loops by itself over updates and
@@ -38,7 +40,7 @@
     <key>LANG</key>
     <string>en_US.UTF-8</string>
     <key>ACTIONS_RUNNER_HOOK_JOB_COMPLETED</key>
-    <string>/usr/local/libexec/machine-setup/github-runner-job-completed</string>
+    <string>/usr/local/libexec/machine-setup/github-runner-job-completed.sh</string>
   </dict>
   <key>SessionCreate</key>
   <true/>
