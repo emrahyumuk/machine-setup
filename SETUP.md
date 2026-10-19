@@ -870,6 +870,15 @@ comments recorded, nothing more.
   "Device setup" line; `bluetoothctl list` shows a controller; MX Master
   reconnects (`journalctl -b | grep -c 'input: Logitech MX Master'`) stay
   in the 1-4/day band.
+- **MX Master stays disconnected after suspend (TRAP, 2026-10-19, twice)**:
+  on resume bluetoothd logs `Controller resume`, then either nothing or
+  gnome-shell's `Failed to connect device "MX Master 3S": Timeout was
+  reached` — no retry follows. `bluetoothctl power off; bluetoothctl power on`
+  (no sudo) brings it back first try. Local workaround on this machine, not a
+  setup item: a user unit watches logind `PrepareForSleep(false)` and does
+  that power-cycle when the mouse is not back after a few seconds. A
+  system-sleep hook is the wrong place — it would delay the thaw while it
+  waits. Drop the unit if a kernel/bluez update makes resume reconnect again.
 - **MT7925 Wi-Fi: 802.11r fast roaming is negotiated but fails** (2026-09-27,
   kernel 7.2.5, firmware 20260813): with the mesh advertising `FT/PSK`, the
   supplicant runs the FT auth and then logs `FT: Failed to set PTK to the
