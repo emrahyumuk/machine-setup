@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  [role] SETUP.md §3b "GitHub Actions runner". The self-hosted runner as a
+  LaunchDaemon running as its own unprivileged user (UserName), so it starts
+  as soon as FileVault is unlocked with nobody logged in. GitHub's svc.sh
+  installs a LaunchAgent instead, which runs only while someone is logged in.
+  Installed by hand to /Library/LaunchDaemons/ (root-owned, sudo), with
+  __HOME__ and __USER__ replaced (launchd expands neither ~ nor $HOME).
+  launchd gives a daemon no HOME and a bare PATH: both are set here, and
+  config.sh must run with the same PATH (it records it in .path).
+  SessionCreate: a security session of the job's own, which security(1) and
+  codesign need for a temporary keychain outside a login.
+  KeepAlive only on a FAILED exit: run.sh loops by itself over updates and
+  retryable errors, and exits 0 on a terminal one (registration deleted,
+  session conflict). Restarting that every 10 s would hide it from the health
+  check and fill _diag/ with logs; stopped, it raises the alarm.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.machine-setup.github-runner</string>
+  <key>UserName</key>
+  <string>__USER__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__HOME__/actions-runner/run.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>__HOME__/actions-runner</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>__HOME__</string>
+    <key>PATH</key>
+    <string>__HOME__/.cargo/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>LANG</key>
+    <string>en_US.UTF-8</string>
+    <key>ACTIONS_RUNNER_HOOK_JOB_COMPLETED</key>
+    <string>/usr/local/libexec/machine-setup/github-runner-job-completed</string>
+  </dict>
+  <key>SessionCreate</key>
+  <true/>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/github-runner.launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/github-runner.launchd.log</string>
+</dict>
+</plist>

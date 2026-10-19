@@ -916,8 +916,9 @@ comments recorded, nothing more.
 an always-on home server that is also a desk machine (own desk, monitor,
 Magic Keyboard + Magic Mouse). Remote jobs: SSH and Screen Sharing from the
 ThinkPad (usually on the same home LAN), iOS-simulator testing, overflow
-compute/RAM for agent sessions, and Home Assistant OS in a UTM VM (the
-house's devices; "UTM VM at login" below). Items below are tagged
+compute/RAM for agent sessions, Home Assistant OS in a UTM VM (the
+house's devices; "UTM VM at login" below), and a self-hosted GitHub
+Actions runner for headless macOS builds ("GitHub Actions runner" below). Items below are tagged
 *[role]* where they follow from being a server rather than from the
 hardware — if the Mac ever goes back to being a plain laptop, those are the
 ones to revisit.
@@ -1105,6 +1106,43 @@ Mac never FAILs a server check.
   someone's data). One line per run with GB freed; a failed step
   writes `FAILED=<step>`, which the health check turns into an alert.
   VERIFY: `tail -1 ~/Library/Logs/machine-setup-maintenance.log` → no `FAILED=`.
+
+### GitHub Actions runner *(2026-10-19)*
+- *[role]* A self-hosted runner (`actions/runner`, auto-update on) runs
+  headless macOS CI and release jobs here instead of on hosted macOS runners
+  (10× minutes for private repos). It runs as its own user, **`ghrunner`**:
+  not an admin, no sudo, no SecureToken (cannot unlock FileVault), a random
+  password nobody keeps, no SSH key, hidden from the login window. The owner's
+  home goes to `700`: macOS creates homes `750` with group `staff`, and every
+  new user is in `staff`, so a job could otherwise read `~/Projects`.
+- *[role]* LaunchDaemon `com.machine-setup.github-runner`
+  (`os/macos/assets/`, `UserName`, `SessionCreate`, `KeepAlive` on a failed
+  exit only — `run.sh` loops over updates itself and exits 0 on a terminal
+  error, which must stop and alarm, not restart every 10 s): up from the
+  moment FileVault is unlocked, nobody logged in. NOT GitHub's `svc.sh` — on
+  macOS it installs a LaunchAgent, which runs only during a login. The plist
+  sets `HOME`, `PATH` (rustup in `~/.cargo/bin`, Homebrew) and `LANG`, which
+  launchd does not; `config.sh` must run with the same `PATH` (it records it
+  in `.path`). `SessionCreate` gives jobs a security session, which
+  `security`/`codesign` need for a temporary keychain outside a login.
+- *[role]* Job-completed hook `os/macos/github-runner-job-completed.sh`
+  (`ACTIONS_RUNNER_HOOK_JOB_COMPLETED`), installed as a root-owned copy in
+  `/usr/local/libexec/machine-setup/` (the runner user cannot read the
+  owner's home): deletes the job's checkout, every non-login keychain, any
+  `.p12` (home and the user's `/tmp` files; launchd gives no `TMPDIR`), and
+  resets the default keychain. The tool cache stays.
+- *[role]* The health check (below) alarms `github runner not running` when
+  the daemon's plist is installed and no `Runner.Listener` process exists in
+  two runs in a row (a self-update restart can fall in one sample).
+- TRAP: on macOS every user can read every process's argv (`ps`). With a
+  second user on the machine, no token on a command line: the health check
+  gives curl its ping URL on stdin (`-K -`).
+- Not automated in `bootstrap.sh`: a one-time, interactive sudo setup with a
+  single-use registration token. This Mac's steps, the org it serves and its
+  security rules: mra-server `docs/52-mac-runner.md` (private repo).
+  VERIFY: `sudo launchctl print system/com.machine-setup.github-runner` →
+  `state = running`; `sysadminctl -secureTokenStatus ghrunner` → DISABLED;
+  `stat -f %Sp ~` → `drwx------`.
 
 ### Decided for now
 - **No UPS** (2026-10-18, accepted): the battery covers short outages; a

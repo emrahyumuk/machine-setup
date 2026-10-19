@@ -12,12 +12,16 @@
 #  2. Trend log: one line per run (memory pressure, free %, swap, disk free,
 #     Wi-Fi channel/signal, top memory users) → ~/Library/Logs/machine-setup-health.log.
 #  3. Alerts: memory pressure at warn+ for 3 runs in a row (15 min), disk free
-#     under the floor, or a failed weekly maintenance → the ping reports DOWN
+#     under the floor, a failed weekly maintenance, or a GitHub Actions runner
+#     that is installed but not running (§3b "GitHub Actions runner") → the
+#     ping reports DOWN
 #     (Kuma status=down, healthchecks.io URL/fail) with the reason as its
 #     message, so the alert says WHY.
 #
 # The push/ping URL is a secret-ish token: it lives in
-# ~/.config/machine-setup/healthcheck-url (chmod 600), never in the repo.
+# ~/.config/machine-setup/healthcheck-url (chmod 600), never in the repo, and
+# reaches curl on stdin (-K -), never in argv: other users on this Mac (the
+# GitHub runner's) can read every process's arguments with ps.
 # No URL yet → still logs, and says so in the log (verify FAILs on it).
 #
 # Rule carried over from update-check (2026-10-18): a failed probe must never
@@ -27,8 +31,10 @@ export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 CFG="$HOME/.config/machine-setup"
 LOG="$HOME/Library/Logs/machine-setup-health.log"
 STATE="$CFG/health.state"
+RSTATE="$CFG/runner.state"
 MLOG="$HOME/Library/Logs/machine-setup-maintenance.log"
 DISK_FLOOR_GB=${DISK_FLOOR_GB:-30}   # env override = a way to test the alert path
+RUNNER_PLIST=/Library/LaunchDaemons/com.machine-setup.github-runner.plist
 mkdir -p "$CFG" "$(dirname "$LOG")"
 
 # keep the trend log bounded (~5 MB ≈ 4 months of 5-minute lines)
@@ -53,6 +59,14 @@ problems=()
 [ "$hi" -ge 3 ] && problems+=("memory pressure level $lvl for $((hi * 5))+ min (free $free, swap $swap; top: $top)")
 [ -n "$disk" ] && [ "$disk" -lt "$DISK_FLOOR_GB" ] && problems+=("disk free ${disk} GB < ${DISK_FLOOR_GB} GB")
 [ -f "$MLOG" ] && tail -1 "$MLOG" | grep -q 'FAILED' && problems+=("last weekly maintenance FAILED: $(tail -1 "$MLOG" | cut -c1-120)")
+# Runner: "installed" is its daemon plist (this user cannot see inside the
+# runner user's home); pgrep -f sees every user's processes. Two misses in a
+# row: a self-update restarts the listener, and one sample can land in that gap.
+if [ -f "$RUNNER_PLIST" ] && ! pgrep -qf Runner.Listener; then
+  rmiss=$(( $(cat "$RSTATE" 2>/dev/null || echo 0) + 1 ))
+else rmiss=0; fi
+echo "$rmiss" > "$RSTATE"
+[ "$rmiss" -ge 2 ] && problems+=("github runner not running")
 
 line="mem=$lvl free=${free:-?} swap=${swap:-?} disk=${disk:-?}G wifi=${wifi:-?} top=[$top]"
 URL=$(cat "$CFG/healthcheck-url" 2>/dev/null | tr -d '[:space:]')
@@ -64,14 +78,14 @@ if [ -z "$URL" ]; then
 elif [[ "$URL" == */api/push/* ]]; then
   base="${URL%%\?*}"
   if [ ${#problems[@]} -gt 0 ]; then st=down; msg="${problems[*]}"; else st=up; msg="OK mem=$lvl disk=${disk}G"; fi
-  if curl -fsS -m 10 --retry 3 -G "$base" --data-urlencode "status=$st" --data-urlencode "msg=${msg:0:250}" --data-urlencode "ping=" >/dev/null 2>&1; then
+  if printf 'url = "%s"\n' "$base" | curl -fsS -m 10 --retry 3 -K - -G --data-urlencode "status=$st" --data-urlencode "msg=${msg:0:250}" --data-urlencode "ping=" >/dev/null 2>&1; then
     [ $st = up ] && ping="ok" || ping="fail-sent"
   else ping="PING-FAILED"; fi
 elif [ ${#problems[@]} -gt 0 ]; then
   body=$(printf '%s\n' "${problems[@]}")
-  curl -fsS -m 10 --retry 3 --data-raw "$body" "$URL/fail" >/dev/null 2>&1 && ping="fail-sent" || ping="PING-FAILED"
+  printf 'url = "%s/fail"\n' "$URL" | curl -fsS -m 10 --retry 3 -K - --data-raw "$body" >/dev/null 2>&1 && ping="fail-sent" || ping="PING-FAILED"
 else
-  curl -fsS -m 10 --retry 3 --data-raw "$line" "$URL" >/dev/null 2>&1 && ping="ok" || ping="PING-FAILED"
+  printf 'url = "%s"\n' "$URL" | curl -fsS -m 10 --retry 3 -K - --data-raw "$line" >/dev/null 2>&1 && ping="ok" || ping="PING-FAILED"
 fi
 
 echo "$(date '+%F %T') $line ping=$ping${problems[*]:+ PROBLEM: ${problems[*]}}" >> "$LOG"
