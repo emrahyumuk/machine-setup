@@ -11,6 +11,10 @@
 # the job log under "Complete runner". A non-zero exit fails the job: only a
 # leftover that could not be removed, or a signing identity still there, does.
 set -u
+# The runner runs a .sh hook as `bash -e -o pipefail`: a find that meets a
+# directory it may not read (other users' 700 dirs in /tmp) would then end the
+# hook silently with 1. This script judges failures itself (see the end).
+set +e +o pipefail
 
 # The job's repo directory, _work/<repo> (GITHUB_WORKSPACE is
 # _work/<repo>/<repo>). Never _work itself or the runner's own _tool, _temp,
