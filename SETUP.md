@@ -895,8 +895,11 @@ comments recorded, nothing more.
   without the ESP) or Lenovo's bootable BIOS-update USB; answer `n` to the
   fwupd prompt meanwhile. Firmware for other devices (fingerprint, dock,
   NVMe…) still goes through fwupd fine — only the system-firmware capsule
-  hits the limit. Skipped on purpose: 0.1.19 → 0.1.22 only touches a
-  touch-panel device list.
+  hits the limit. Read the WHOLE chain before skipping one: 0.1.22 alone
+  only touches a touch-panel list, but it is cumulative and the 0.1.21 it
+  carries is Urgency High with a security fix (2026-10-19: still on 0.1.19,
+  apply from Windows). Pending Secure Boot dbx updates ride along there too —
+  Windows Update applies them and keeps its own boot manager current first.
 - **Fingerprint reader**: enrolled for sudo. Quirk: sudo inside embedded
   terminals/AI sessions may lack a TTY for password fallback — run sudo
   commands in a real terminal window.
