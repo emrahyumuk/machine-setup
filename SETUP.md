@@ -1131,7 +1131,7 @@ Mac never FAILs a server check.
   owner's home): deletes the job's checkout, every non-login keychain, any
   `.p12` (home and the user's `/tmp` files; launchd gives no `TMPDIR`), and
   resets the default keychain. The tool cache stays.
-- *[role]* The health check (below) alarms `github runner not running` when
+- *[role]* The health check (§3b "Health", above) alarms `github runner not running` when
   the daemon's plist is installed and no `Runner.Listener` process exists in
   two runs in a row (a self-update restart can fall in one sample).
 - TRAP: on macOS every user can read every process's argv (`ps`). With a

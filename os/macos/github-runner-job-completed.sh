@@ -9,7 +9,7 @@
 # Installed as a root-owned copy (/usr/local/libexec/machine-setup/), not a
 # symlink: the runner user cannot read the owner's home. Its output lands in
 # the job log under "Complete runner". A non-zero exit fails the job: only a
-# leftover that could not be removed does that.
+# leftover that could not be removed, or a signing identity still there, does.
 set -u
 
 # The job's repo directory, _work/<repo> (GITHUB_WORKSPACE is
@@ -52,4 +52,10 @@ p12s() {
 }
 p12s | while IFS= read -r f; do rm -f "$f" && echo "p12: removed $f"; done
 left=$(p12s)
-[ -z "$left" ] || { echo "p12: FAILED to remove: $left"; exit 1; }
+[ -z "$left" ] || { echo "p12: FAILED to remove: $left"; fail=1; }
+
+# The point of it all: no code-signing identity outlives the job.
+ids=$(security find-identity -v -p codesigning | awk '/valid identities found/{print $1}')
+echo "keychain: $ids code-signing identities left"
+[ "$ids" = 0 ] || { echo "keychain: FAILED, a signing identity outlived the job"; fail=1; }
+exit "${fail:-0}"

@@ -60,9 +60,12 @@ problems=()
 [ -n "$disk" ] && [ "$disk" -lt "$DISK_FLOOR_GB" ] && problems+=("disk free ${disk} GB < ${DISK_FLOOR_GB} GB")
 [ -f "$MLOG" ] && tail -1 "$MLOG" | grep -q 'FAILED' && problems+=("last weekly maintenance FAILED: $(tail -1 "$MLOG" | cut -c1-120)")
 # Runner: "installed" is its daemon plist (this user cannot see inside the
-# runner user's home); pgrep -f sees every user's processes. Two misses in a
-# row: a self-update restarts the listener, and one sample can land in that gap.
-if [ -f "$RUNNER_PLIST" ] && ! pgrep -qf Runner.Listener; then
+# runner user's home); pgrep sees every user's processes, so it is held to the
+# plist's user and the listener's path (an editor on a file named like it must
+# not count). Two misses in a row: a self-update restarts the listener, and
+# one sample can land in that gap.
+if [ -f "$RUNNER_PLIST" ] && ! pgrep -q -u "$(/usr/libexec/PlistBuddy -c 'Print :UserName' "$RUNNER_PLIST")" \
+     -f '/actions-runner/bin/Runner\.Listener'; then
   rmiss=$(( $(cat "$RSTATE" 2>/dev/null || echo 0) + 1 ))
 else rmiss=0; fi
 echo "$rmiss" > "$RSTATE"
