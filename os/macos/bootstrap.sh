@@ -135,6 +135,8 @@ load_agent "$P"
 
 if [ $SERVER = 1 ]; then   # [role] podman VM + the UTM VM back after every reboot — no sudo needed
   brew install --cask utm
+  # VM state for the jobs that report or watch the VMs (SETUP.md §3b "UTM VM state")
+  ln -sfn "$PWD/$OSD/utm-vms.sh" ~/.local/bin/utm-vms
   for a in podman-machine utm-vm; do
     PM=~/Library/LaunchAgents/com.machine-setup.$a.plist
     sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.$a.plist > "$PM"

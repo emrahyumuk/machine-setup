@@ -166,6 +166,9 @@ launchctl list 2>/dev/null | grep -q 'com.machine-setup.utm-vm' \
 # pgrep first: telling UTM anything launches it, and a closed UTM runs no VM anyway
 pgrep -xq UTM && perl -e 'alarm 15; exec @ARGV' osascript -e 'tell application "UTM" to get status of virtual machine named "Home Assistant"' 2>/dev/null | grep -qx started \
   && ok "UTM VM \"Home Assistant\" running" || bad "UTM VM \"Home Assistant\" not running" "utmctl start 'Home Assistant'; check ~/Library/Logs/machine-setup-utm-vm.log"
+# the helper only reads; with UTM running it asks UTM, with UTM quit it does not
+[ -x "$H/.local/bin/utm-vms" ] && "$H/.local/bin/utm-vms" 2>/dev/null | grep -q $'^Home Assistant\t' \
+  && ok "utm-vms lists the VMs" || bad "utm-vms missing or failing" "bootstrap.sh --server; run utm-vms (SETUP.md §3b \"UTM VM state\")"
 for j in health-check maintenance; do
   [ -f /Library/LaunchDaemons/com.machine-setup.$j.plist ] && ok "$j LaunchDaemon installed" \
     || bad "$j LaunchDaemon missing" "bootstrap.sh --server (sudo section) — SETUP.md §3b Health"

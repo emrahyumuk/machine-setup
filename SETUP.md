@@ -1032,6 +1032,22 @@ Mac never FAILs a server check.
   guest takes a static address inside it instead.
   The VM's own setup (address, backups, integrations) lives with its owner's
   runbook, not here.
+- *[role]* **UTM VM state** *(2026-10-23)*: `os/macos/utm-vms.sh`, linked
+  as `~/.local/bin/utm-vms` by `bootstrap.sh --server`, prints one
+  tab-separated line per VM: `name  started|stopped|unknown  started_at`
+  (epoch of the VM's QEMU process, matched by its `/<name>.utm/` bundle path
+  in `ps`; stable across runs). It only reads. The names come from
+  `utmctl list` and are kept in `~/.cache/utm-vms/names`; with UTM quit
+  every VM is `stopped` and utmctl is never called (telling UTM anything
+  launches it); utmctl runs under a 15 s alarm, and a timeout prints
+  `unknown` and exits 1. TRAP (measured 2026-10-23): from a LaunchAgent,
+  macOS refuses to list UTM's container (`~/Library/Containers/
+  com.utmapp.UTM/…/Documents`: "Operation not permitted", App Data
+  protection) while the same `ls` over SSH works, so the bundle folder is
+  only the first-run fallback; utmctl itself works from a LaunchAgent.
+  Jobs that report or watch the VMs call it instead of talking to UTM each
+  their own way. VERIFY: `utm-vms` lists `Home Assistant  started  <epoch>`
+  (machine-verify checks it).
 - *[role]* **tmux** for every long remote session (Claude Code included):
   an SSH drop kills the shell, not the tmux session — `tmux new -As main`.
   VERIFY: `nc -z localhost 22` and `:5900` succeed; `tailscale status`
