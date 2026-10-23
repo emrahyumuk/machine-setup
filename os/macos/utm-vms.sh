@@ -48,7 +48,8 @@ fi
 names=()
 while IFS= read -r n; do [ -n "$n" ] && names+=("$n"); done \
   < <(awk 'NR > 1 { $1 = ""; $2 = ""; sub(/^ +/, ""); print }' <<<"$list")
-mkdir -p "$(dirname "$CACHE")" && printf '%s\n' "${names[@]}" > "$CACHE"
+# an empty list (UTM still starting) must not replace the known names
+[ ${#names[@]} -gt 0 ] && mkdir -p "$(dirname "$CACHE")" && printf '%s\n' "${names[@]}" > "$CACHE"
 
 procs=$(LC_ALL=C ps -axo lstart=,args= | grep '[Q]EMULauncher')
 
