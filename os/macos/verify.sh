@@ -160,8 +160,11 @@ launchctl list 2>/dev/null | grep -q 'com.machine-setup.podman-machine' \
   && ok "podman machine starts at login (LaunchAgent)" || bad "podman autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.podman-machine.plist"
 podman machine list --format '{{.Running}}' 2>/dev/null | grep -q true \
   && ok "podman machine running" || bad "podman machine not running on the server" "podman machine start; check ~/Library/Logs/machine-setup-podman-machine.log"
-launchctl list 2>/dev/null | grep -q 'com.machine-setup.utm-vm' \
-  && ok "UTM VM starts at login (LaunchAgent)" || bad "UTM autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.utm-vm.plist"
+# loaded with the 120 s interval: an agent from before 2026-10-23 starts the VM at login only
+launchctl print "gui/$(id -u)/com.machine-setup.utm-vm" 2>/dev/null | grep -q 'run interval = 120 seconds' \
+  && [ -x "$H/.local/bin/utm-ha-watchdog" ] \
+  && ok "UTM VM \"Home Assistant\" watched: started at login and within 2 min of stopping (LaunchAgent)" \
+  || bad "UTM watchdog agent not loaded, old, or its script missing" "bootstrap.sh --server (SETUP.md §3b \"UTM VM at login\")"
 # osascript, not utmctl: utmctl can hang on a missing Automation grant; this times out.
 # pgrep first: telling UTM anything launches it, and a closed UTM runs no VM anyway
 pgrep -xq UTM && perl -e 'alarm 15; exec @ARGV' osascript -e 'tell application "UTM" to get status of virtual machine named "Home Assistant"' 2>/dev/null | grep -qx started \

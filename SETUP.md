@@ -1009,8 +1009,17 @@ Mac never FAILs a server check.
   (`haos_generic-aarch64`, QEMU backend with the hypervisor — virtualized,
   not emulated; UEFI, VirtIO disk, 4 GB RAM, 2 cores, no display) bridged to
   `en0`. LaunchAgent `com.machine-setup.utm-vm` (`os/macos/assets/`) runs
-  `utmctl start "Home Assistant"` once per login; utmctl launches UTM
-  itself. A user app, so it needs the console session: an update restart
+  `os/macos/utm-ha-watchdog.sh` (linked as `~/.local/bin/utm-ha-watchdog`)
+  at login and every 120 s: when `utm-vms` says the VM is `stopped` (UTM
+  quit counts) or does not list it, `utmctl start "Home Assistant"`, which
+  launches UTM itself; `started`/`unknown` are left alone. It only ever
+  starts this one VM — never another VM, never a stop or a quit — and logs
+  each start to `~/Library/Logs/machine-setup-utm-vm.log`. Why the interval
+  *(2026-10-23)*: on 2026-10-22 UTM was quit by accident while the session
+  stayed logged in, and the login-only agent of the time left HA down until
+  someone started it by hand. A deliberate stop is undone within 2 minutes:
+  `launchctl bootout` the agent first. A user app, so it needs the console
+  session: an update restart
   logs in by itself, an unplanned one waits at FileVault (and the heartbeat
   alarms). TESTED 2026-10-18: `sudo fdesetup authrestart` skips the
   FileVault screen but stops at the LOGIN WINDOW (no session, no VM until
@@ -1030,6 +1039,9 @@ Mac never FAILs a server check.
   guest's MAC to the Mac's own on the air: the LAN sees both addresses with
   one MAC, so a router DHCP reservation cannot single out the VM — the
   guest takes a static address inside it instead.
+  VERIFY: the agent is loaded with `run interval = 120 seconds`
+  (`launchctl print gui/$UID/com.machine-setup.utm-vm`) and the VM is
+  `started` (machine-verify checks both).
   The VM's own setup (address, backups, integrations) lives with its owner's
   runbook, not here.
 - *[role]* **UTM VM state** *(2026-10-23)*: `os/macos/utm-vms.sh`, linked

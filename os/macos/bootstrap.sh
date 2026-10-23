@@ -137,6 +137,8 @@ if [ $SERVER = 1 ]; then   # [role] podman VM + the UTM VM back after every rebo
   brew install --cask utm
   # VM state for the jobs that report or watch the VMs (SETUP.md §3b "UTM VM state")
   ln -sfn "$PWD/$OSD/utm-vms.sh" ~/.local/bin/utm-vms
+  # run by the utm-vm agent: starts the HA VM at login and whenever it stops
+  ln -sfn "$PWD/$OSD/utm-ha-watchdog.sh" ~/.local/bin/utm-ha-watchdog
   for a in podman-machine utm-vm; do
     PM=~/Library/LaunchAgents/com.machine-setup.$a.plist
     sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.$a.plist > "$PM"
