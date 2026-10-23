@@ -1039,9 +1039,21 @@ Mac never FAILs a server check.
   guest's MAC to the Mac's own on the air: the LAN sees both addresses with
   one MAC, so a router DHCP reservation cannot single out the VM — the
   guest takes a static address inside it instead.
+  **Quitting UTM by accident** *(2026-10-23, read in UTM 5.0.8's
+  `AppDelegate.swift`)*: with VMs running, Quit follows "Running VMs on
+  quit" (`QuitRunningVirtualMachinesPolicy`); the default, Save State,
+  saves every VM and quits WITHOUT asking — the "Quitting UTM will kill all
+  running VMs" dialog shows only when saving fails. UTM has no setting that
+  asks first. So `bootstrap.sh --server` moves "Quit UTM" off ⌘Q to ⌃⌥⇧⌘Q
+  (`defaults write com.utmapp.UTM NSUserKeyEquivalents -dict-add "Quit UTM"
+  '@~^$q'`, the App Shortcuts setting; read at UTM's next launch); the menu
+  item still quits. Owner's choice over hiding the Dock icon
+  (`HideDockIcon`: no Dock icon, no menu bar, not in ⌘Tab — also stops ⌘Q,
+  but changes how UTM is reached).
   VERIFY: the agent is loaded with `run interval = 120 seconds`
-  (`launchctl print gui/$UID/com.machine-setup.utm-vm`) and the VM is
-  `started` (machine-verify checks both).
+  (`launchctl print gui/$UID/com.machine-setup.utm-vm`), the VM is
+  `started`, and `defaults read com.utmapp.UTM NSUserKeyEquivalents` shows
+  `"Quit UTM" = "@~^$q"` (machine-verify checks all three).
   The VM's own setup (address, backups, integrations) lives with its owner's
   runbook, not here.
 - *[role]* **UTM VM state** *(2026-10-23)*: `os/macos/utm-vms.sh`, linked

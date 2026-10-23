@@ -139,6 +139,10 @@ if [ $SERVER = 1 ]; then   # [role] podman VM + the UTM VM back after every rebo
   ln -sfn "$PWD/$OSD/utm-vms.sh" ~/.local/bin/utm-vms
   # run by the utm-vm agent: starts the HA VM at login and whenever it stops
   ln -sfn "$PWD/$OSD/utm-ha-watchdog.sh" ~/.local/bin/utm-ha-watchdog
+  # ⌘Q no longer quits UTM (it saves and quits every VM without asking): ⌃⌥⇧⌘Q does;
+  # read at UTM's next launch (SETUP.md §3b "UTM VM at login")
+  # shellcheck disable=SC2016  # '$' is the Shift modifier, not a variable
+  defaults write com.utmapp.UTM NSUserKeyEquivalents -dict-add "Quit UTM" '@~^$q'
   for a in podman-machine utm-vm; do
     PM=~/Library/LaunchAgents/com.machine-setup.$a.plist
     sed "s#__HOME__#$HOME#g" $OSD/assets/com.machine-setup.$a.plist > "$PM"

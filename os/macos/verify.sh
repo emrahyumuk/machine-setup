@@ -165,6 +165,9 @@ launchctl print "gui/$(id -u)/com.machine-setup.utm-vm" 2>/dev/null | grep -q 'r
   && [ -x "$H/.local/bin/utm-ha-watchdog" ] \
   && ok "UTM VM \"Home Assistant\" watched: started at login and within 2 min of stopping (LaunchAgent)" \
   || bad "UTM watchdog agent not loaded, old, or its script missing" "bootstrap.sh --server (SETUP.md §3b \"UTM VM at login\")"
+# shellcheck disable=SC2016  # '$' is the Shift modifier, not a variable
+defaults read com.utmapp.UTM NSUserKeyEquivalents 2>/dev/null | grep -qF '"Quit UTM" = "@~^$q"' \
+  && ok "UTM quits on ⌃⌥⇧⌘Q only, not ⌘Q" || bad "UTM still quits on ⌘Q" "defaults write com.utmapp.UTM NSUserKeyEquivalents -dict-add \"Quit UTM\" '@~^\$q', then relaunch UTM"
 # osascript, not utmctl: utmctl can hang on a missing Automation grant; this times out.
 # pgrep first: telling UTM anything launches it, and a closed UTM runs no VM anyway
 pgrep -xq UTM && perl -e 'alarm 15; exec @ARGV' osascript -e 'tell application "UTM" to get status of virtual machine named "Home Assistant"' 2>/dev/null | grep -qx started \
