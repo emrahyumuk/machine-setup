@@ -1011,7 +1011,8 @@ Mac never FAILs a server check.
   `en0`. LaunchAgent `com.machine-setup.utm-vm` (`os/macos/assets/`) runs
   `os/macos/utm-ha-watchdog.sh` (linked as `~/.local/bin/utm-ha-watchdog`)
   at login and every 120 s: when `utm-vms` says the VM is `stopped` (UTM
-  quit counts) or does not list it, `utmctl start "Home Assistant"`, which
+  quit counts), or does not list it while UTM is quit, `utmctl start "Home
+  Assistant"`, which
   launches UTM itself; `started`/`unknown` are left alone. It only ever
   starts this one VM — never another VM, never a stop or a quit — and logs
   each start to `~/Library/Logs/machine-setup-utm-vm.log`. Why the interval
