@@ -95,7 +95,8 @@ if (Test-Path $pt) {
   $j = Get-Content $pt -Raw | ConvertFrom-Json
   foreach ($k in $j.enabled.PSObject.Properties.Name) { $j.enabled.$k = ($k -eq 'Awake') }
   $j.download_updates_automatically = $false; $j.show_new_updates_toast_notification = $false
-  $j | ConvertTo-Json -Depth 10 -Compress | Set-Content $pt -Encoding utf8
+  # no BOM: PowerToys silently resets a settings.json it can't parse (PS 5.1 utf8 = BOM)
+  [IO.File]::WriteAllText($pt, ($j | ConvertTo-Json -Depth 10 -Compress), (New-Object Text.UTF8Encoding $false))
   Start-Process "$env:LOCALAPPDATA\PowerToys\PowerToys.exe"
 } else { 'PowerToys has no settings yet: start it once, then re-run bootstrap' }
 

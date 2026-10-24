@@ -689,6 +689,11 @@ the whole manifest, not a copy of this slice.
   `download-updates=false` in §2. Other GNOME extensions: Clipboard
   Indicator → Win+V (not wanted here), AppIndicator/Vitals/Blur/Dash to
   Dock → native or not needed, GSConnect → Phone Link (kept).
+  TRAP (2026-10-24): written with PS 5.1's `Set-Content -Encoding utf8`
+  (= with a BOM) the file looked right until the next PowerToys start, which
+  silently reset it to defaults (14 modules on). Write it BOM-less
+  (`[IO.File]::WriteAllText(..., New-Object Text.UTF8Encoding $false)`) with
+  PowerToys stopped; verified to survive two restarts.
   VERIFY: PowerToys `settings.json` → enabled = Awake only.
 
 ### Debloat — what was removed and why (2026-10-24)
@@ -730,9 +735,13 @@ the whole manifest, not a copy of this slice.
   opens Settings → Windows Update (installs + reboot stay a human click) →
   `machine-verify`. No weekly notifier task on this slice — occasional use.
 - First session state: the 2026-08-31 attempt had failed (`0x80240034`);
-  the 2026-08 cumulative (26200.9168) installed on 2026-10-24 and needed a
-  reboot; 2026-09/10 still pending. Order on this machine: Windows Update
-  BEFORE a BIOS flash (Secure Boot dbx updates ride Windows Update first).
+  on 2026-10-24 the 2026-08 and then the 2026-10 cumulative installed
+  (26200.9711 after one reboot — cumulative, so 09 was not needed
+  separately). Order on this machine: Windows Update BEFORE a BIOS flash
+  (Secure Boot dbx updates ride Windows Update first).
+- Feature update **26H2** was offered the same day and DEFERRED: the
+  release rule (wait for .1 / 2-3 weeks, as for Fedora and macOS) and disk
+  (~20 GB needed, ~10 GB free). Revisit with disk room and a restore point.
 
 ### Rust + MSVC — Windows release builds of Tauri apps (added 2026-10-24)
 - Came in late in the first session, for the owner's Tauri apps (dropped
@@ -757,12 +766,28 @@ the whole manifest, not a copy of this slice.
   info is far bigger than on Linux. With Windows Update installing at the
   same time the disk fell to 4 GB free ("low disk space"). Recovered
   without touching the running build: `target\release` (already installed),
-  `target\debug\incremental` (cache only, deleted while no cargo ran), the
-  VS installer payload cache (`C:\ProgramData\Microsoft\VisualStudio\Packages`,
-  1.3 GB) + policy `HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup`
-  `KeepDownloadedPayloads=0` so it doesn't refill. On a small partition,
-  build debug with `CARGO_PROFILE_DEV_DEBUG=line-tables-only` (a project
-  decision, not a machine one).
+  `target\debug\incremental` (cache only, deleted while no cargo ran), and
+  `DISM /Online /Cleanup-Image /StartComponentCleanup` after the cumulative
+  updates (+7.8 GB here). The debug target regrows with every test run
+  (17 GB an hour later) — on a small partition, build debug with
+  `CARGO_PROFILE_DEV_DEBUG=line-tables-only` and `cargo clean` after a test
+  session (a project decision, not a machine one).
+  TRAP — DO NOT hand-delete `C:\ProgramData\Microsoft\VisualStudio\Packages`
+  (2026-10-24, agent's mistake): `_Instances\<id>\state.json` in there IS
+  the installer's registration of the Build Tools instance. `Remove-Item
+  …\Packages\* -Recurse -Exclude _Instances` does not protect it (PS 5.1's
+  `-Exclude` with `-Recurse` is unreliable) — the folder stayed, its content
+  went. Afterwards `vswhere` lists nothing, `cl.exe` is still on disk, and
+  Rust fails: "please ensure that Visual Studio 2017 or later, or Build
+  Tools … were installed with the Visual C++ option" (rustc finds MSVC
+  through that registration, not by path). Repair can't help (no instance),
+  and the installer refuses a non-empty unknown folder: delete
+  `…\2022\BuildTools`, then `winget install --force` the same workload.
+  For the 1.3 GB payload cache use only the policy
+  `HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup KeepDownloadedPayloads=0`
+  (set here; the installer drops payloads itself from then on).
+  VERIFY: `vswhere -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64`
+  prints a path, and `cargo new t; cargo run` in it prints Hello, world!
 - Local release builds of a project that sets `createUpdaterArtifacts: true`
   fail at the end without the signing key: pass an overlay,
   `tauri build --bundles nsis --config <file with {"bundle":{"createUpdaterArtifacts":false}}>`
@@ -1148,6 +1173,17 @@ comments recorded, nothing more.
   `Rfs\Usb\BootX64.efi` + `ShellFlash64.efi`) → boot that USB (≥128 MB,
   gets wiped) on AC → flash from there; EC updates in the same run (several
   automatic restarts are normal). Do Windows Update first (dbx).
+  Windows Update tries the same route on its own: on 2026-10-24 it offered
+  "Lenovo Ltd. Firmware Driver Update (1.22.0.0)", reported it "installed",
+  and after the reboot the BIOS was still R2XET39W (1.19) — the System
+  Firmware device sat in Device Manager with problem code 10,
+  `LastAttemptStatus` 0xC0000058. Same ESP wall; a "successful" WU firmware
+  entry is NOT proof of a flash — check `Win32_BIOS.SMBIOSBIOSVersion`.
+  The package's own instructions (`Instruction US - BIOS flash USB memory
+  key.txt`): FAT32/FAT16 key (NTFS/exFAT unsupported), admin prompt in the
+  package folder, `mkusbkey.bat <drive>:`, then F12 → USB HDD on AC, and do
+  not power off through the restarts. Secure Boot can stay on (Lenovo-signed
+  loader). Status 2026-10-24: USB flash postponed by the owner.
   Firmware for other devices (fingerprint, dock,
   NVMe…) still goes through fwupd fine — only the system-firmware capsule
   hits the limit. Read the WHOLE chain before skipping one: 0.1.22 alone
