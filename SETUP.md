@@ -12,7 +12,7 @@ and verify each item with its VERIFY line."*
 Layers (one file on purpose — decisions read as one document; per-OS
 mechanics live in `os/<os>/`, per-machine records in `machines/`):
 1. [Personal](#1-personal--any-machine-any-os) — travels everywhere
-2. [OS: Fedora](#2-os-specific--fedora) · [OS: Windows](#2b-os-specific--windows) (§2b, first session pending) · [OS: macOS](#2c-os-specific--macos) (§2c) — further OS layers as §2d…
+2. [OS: Fedora](#2-os-specific--fedora) · [OS: Windows](#2b-os-specific--windows) (§2b) · [OS: macOS](#2c-os-specific--macos) (§2c) — further OS layers as §2d…
 3. [Hardware: ThinkPad P14s](#3a-hardware-specific--thinkpad-p14s-gen6-amd-thinkpad-p14s) — §3a · [Hardware: MacBook Pro 14" M2 Pro](#3b-hardware-specific--macbook-pro-14-m2-pro-mbp14) — §3b; §3c… per further machine; does NOT auto-port
 4. [Deliberately NOT done](#4-deliberately-not-done) — decisions against, with reasons
 
@@ -542,10 +542,72 @@ to this repo.
 
 ## 2b. OS-specific — Windows
 
-Status: the first Windows session (owner, the dual-boot slice — see
-`machines/thinkpad-p14s-windows.md`) has not run yet; it will fill this
-layer from what is actually applied. The item below predates it because it
-came from a real incident, not speculation.
+Machine: `machines/thinkpad-p14s-windows.md` (the factory Windows 11 Pro
+25H2 in the ~95 GB dual-boot slice). Mechanics:
+`os/windows/{bootstrap,verify,collect}.ps1`, per-OS dotfiles in
+`dotfiles/windows/`. Written from the first Windows session (2026-10-24,
+owner). ROLE of this slice: occasional use only — that is why the Rust
+toolchain, agent CLIs and the `~/.claude` sync were deliberately left out
+(see "Deliberately not done here" below), and why disk space (24.7 GB free
+at the start) drove several decisions.
+
+**Agents: the SELECTIONS in this layer are the owner's choices for a
+secondary, rarely-used slice — not Windows defaults.** What carries over to
+another Windows machine (the owner's main one, or someone else's) is the
+MECHANICS (package ids, traps, VERIFY lines, the Shift+Enter fix, the
+ESP/BIOS finding) and the WHY. The picks themselves — Chrome as default,
+no Rust/agent CLIs/`~/.claude` sync, the debloat list, Office kept — get
+re-asked: show the full menu from §1/APPS.md, recommend for THAT user's
+workload and disk, and expect a very different mindset (a Windows-primary
+developer wants WSL2, Rust, podman; a gamer keeps Xbox). Inspiration from
+the whole manifest, not a copy of this slice.
+
+### Already native — do not port (one line each)
+- **Hardware video decode (§2 VA-API)**: D3D11VA + the HEVC/AV1/VP9 Store
+  extensions (preinstalled by Lenovo). Intent survives in mpv's config only
+  (`hwdec=d3d11va-copy`, same reason as `vaapi-copy`).
+- **zram/VM tuning, disk overflow swap, earlyoom (§2)**: Windows compresses
+  memory and runs an auto-managed pagefile — leave it auto (4.75 GB here).
+- **uresourced / desktop slices (§2)**: no measured starvation, nothing to tune.
+- **dnf parallel downloads (§1)**: winget has no such knob; not needed.
+- **GTK3 dark flag / GNOME theming (§2)**: the system dark mode reaches apps.
+- **Static hostname (§2)**: already `MRA-WINDOWS` from an earlier visit.
+- **RTC**: Fedora keeps the RTC in local time because of this Windows, so
+  the two already agree — nothing to set (`RealTimeIsUniversal` stays unset).
+
+### Package manager — winget, and the browser is Chrome here
+- winget (ships with Windows; first-party beats scoop/choco — AGENTS.md
+  alternative-picking rule). Every package id in `bootstrap.ps1` was
+  re-checked with `winget show --exact` on 2026-10-24.
+- Browser on THIS slice: **Chrome is the default** (owner's choice
+  2026-10-24) — Firefox is not installed here. Chrome extensions come back
+  through the Google account (Claude, Qudelix, TheTab.Ninja, uBO Lite,
+  Bitwarden, Translate were already there). Windows refuses programmatic
+  default changes: Settings → Default apps → Google Chrome → "Set default".
+  VERIFY: `machine-verify` → "Chrome is the default browser" (ProgId ChromeHTML).
+
+### Hibernation OFF (= no Fast Startup) — dual-boot hygiene + 12 GB back
+- `powercfg /h off` (admin), plus `HiberbootEnabled=0` in
+  `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power` so a later
+  `powercfg /h on` doesn't silently bring Fast Startup back.
+  WHY: Fast Startup is a hybrid shutdown — it left the MT7925's Bluetooth
+  half-initialised for Fedora (§3a TRAP 2026-08-31) and leaves NTFS dirty
+  for the other OS. Was ON at the first session. `hiberfil.sys` was
+  **12.26 GB** of a 94 GB partition; nothing on this slice needs hibernate.
+  Rollback: `powercfg /h on` + `HiberbootEnabled=1`.
+  VERIFY: `HibernateEnabled` = 0 and `HiberbootEnabled` = 0 (machine-verify).
+
+### System Protection — the snapper decision, translated
+- `Enable-ComputerRestore C:\`, `vssadmin resize shadowstorage /for=C:
+  /on=C: /maxsize=5GB`, and `upall` takes a restore point (UAC) before
+  `winget upgrade --all`. WHY: §2's rule is "an undo point before every
+  package transaction"; restore points are Windows' package-level undo.
+  Same caveat as snapper: NOT a backup (same disk). 5 GB cap because of the
+  small partition — it is a ceiling, not a reservation. Was OFF (0 points).
+  Note: Windows allows one restore point per 24 h by default — weekly upall
+  is far inside that.
+  VERIFY: `RPSessionInterval` = 1 under `HKLM\…\Windows NT\CurrentVersion\SystemRestore`
+  (readable without admin; listing points needs admin: `Get-ComputerRestorePoint`).
 
 ### Git for Windows — line endings
 - `git config --global core.autocrlf input` and `git config --global
@@ -567,6 +629,117 @@ came from a real incident, not speculation.
   VERIFY: `git config --global core.autocrlf` → input; clone a repo with a
   `.sh` and `file script.sh` → "ASCII text", not "with CRLF line
   terminators".
+- Applied 2026-10-24 right after `winget install Git.Git`, then
+  `gitconfig.template` key by key with `git config --global` (so the line
+  endings already set stay), identity asked, and `gh auth login --web` +
+  `gh auth setup-git` — git authenticates through gh, no SSH key here.
+
+### Shell — PowerShell 7 + the same CLI stack (zsh has no native port)
+- Options weighed 2026-10-24 (agent's suggestion, owner chose (a)):
+  (a) PowerShell 7 with starship/zoxide/fzf/atuin — native; (b) Git Bash —
+  closer to zshrc, poor Windows integration; (c) WSL2 + the zsh dotfile
+  verbatim — 3-5 GB and a Windows feature, too much for this slice.
+- `dotfiles/windows/profile.ps1` → `$PROFILE` is the zshrc counterpart:
+  starship, zoxide, PSFzf (Ctrl+T; module from PSGallery), atuin on Ctrl+R
+  (`--disable-up-arrow`; atuin 18.24 ships a PowerShell init), PSReadLine
+  inline predictions = zsh-autosuggestions, eza/bat/duf/btop4win/lazygit/nvim
+  aliases. PowerShell's built-in `ls`/`cat`/`tree` aliases must be removed
+  before functions of the same name take effect.
+  TRAP: PSReadLine throws "predictive suggestion feature cannot be enabled…"
+  when output is redirected (every agent tool call) — the option is guarded
+  with `[Console]::IsOutputRedirected`.
+  TRAP: with OneDrive Known Folder Move (on here), `$PROFILE` lives in
+  `~\OneDrive\Belgeler\PowerShell\` — that folder is pinned always-local
+  (`attrib +P -U`) so a "free up space" never makes the profile online-only.
+- **Shift+Enter = new line, as in Ghostty.** Classic terminals send CR for
+  both Enter and Shift+Enter, so apps can't tell them apart (the owner had
+  been using PSReadLine's Ctrl+Shift+Enter). Two halves: Windows Terminal
+  maps `shift+enter` to `sendInput "\u001b\r"` (a distinct key for TUI apps
+  such as Claude Code), and the profile binds both `Shift+Enter` and
+  `Alt+Enter` (= what ESC CR arrives as) to `AddLine`.
+- **Windows Terminal instead of Ghostty** (no Windows build):
+  `dotfiles/windows/windows-terminal.json` — Catppuccin Mocha scheme
+  (terminal-only, same rule as §1), JetBrainsMono Nerd Font 12, padding
+  10/8, opacity 96, copy-on-select, default profile = PowerShell 7.
+  VERIFY: `machine-verify` checks profile, Shift+Enter binding, WT scheme/
+  font/keybinding and the font files.
+
+### Node — one LTS line, pinned
+- `OpenJS.NodeJS.LTS` (24.22.1) + `winget pin add --id OpenJS.NodeJS.LTS
+  --version 24.*`. WHY the pin: the LTS package id follows "current LTS";
+  Node 26 becomes LTS at the end of October 2026 and `winget upgrade --all`
+  would move this machine alone. APPS.md: all machines move together.
+  pnpm via `pnpm.pnpm`; npm `allow-scripts` as on Fedora/Mac (npm 11).
+  VERIFY: `node --version` → v24.*; `winget pin list` shows the pin.
+
+### mpv — the player, Windows mechanics
+- `shinchiro.mpv` (installs to `C:\Program Files\MPV Player`, registers
+  "MPV Player" with Default Apps but NOT `.m3u8`) + `dotfiles/windows/mpv.conf`
+  → `%APPDATA%\mpv\mpv.conf`: §1's deinterlace reasoning with
+  `hwdec=d3d11va-copy`, `gpu-api=d3d11`, no Wayland line. `.m3u8` gets
+  `mpv.file` under `HKCU\Software\Classes\.m3u8\OpenWithProgids`, so it
+  shows up in "Open with" — the final "Always" click is the user's (Windows
+  protects UserChoice from scripts, same as the browser default).
+  VERIFY: `.mp4` UserChoice ProgId contains mpv; Shift+I in mpv shows d3d11va-copy.
+
+### PowerToys — Awake only (the Caffeine counterpart)
+- Every module off except Awake; `download_updates_automatically=false` —
+  one update channel (`upall`), same decision as GNOME Software's
+  `download-updates=false` in §2. Other GNOME extensions: Clipboard
+  Indicator → Win+V (not wanted here), AppIndicator/Vitals/Blur/Dash to
+  Dock → native or not needed, GSConnect → Phone Link (kept).
+  VERIFY: PowerToys `settings.json` → enabled = Awake only.
+
+### Debloat — what was removed and why (2026-10-24)
+- Store apps removed for the current user (`Remove-AppxPackage`, list in
+  `bootstrap.ps1 -Debloat`): Xbox stack, Clipchamp, Solitaire, Bing News/
+  Weather, Widgets, Teams (personal), new Outlook + legacy Mail/Calendar
+  (Thunderbird instead), Power Automate, Dev Home, Maps, People, Feedback
+  Hub, Get Help, Microsoft 365 hub, To Do, Start Experiences, Groove/Films
+  & TV, Copilot. Desktop leftovers: Adobe Genuine Service (no Adobe app),
+  Logi Download Assistant (no Options+), BatteryBar (an orphan
+  "remove only" entry — files were already gone).
+- KEPT on purpose: Office LTSC 2024 (licensed; 4.8 GB, "for now"), Phone
+  Link + Cross Device, WinRAR, OneDrive (holds real files + KFM backup of
+  Desktop/Documents/Pictures), driver companions (AMD, Dolby, Realtek,
+  Synaptics, TrackPoint), Lenovo Vantage + System Update (BIOS, charge).
+- OneDrive "free up space" instead of removal: `attrib +U -P` on Resimler/
+  Belgeler (online-only, ~2 GB back), the PowerShell profile folder pinned.
+- Provisioned copies stay, so a new Windows user would get them again; a
+  feature update may also restore some — re-run `bootstrap.ps1 -Debloat`.
+
+### Sign-in — Microsoft account + Windows Hello
+- Found 2026-10-24: `Pc` was a LOCAL account with NO password → silent
+  auto-login ("anyone walks in"), while the owner's Microsoft account was
+  only signed into apps. And "only allow Windows Hello sign-in for Microsoft
+  accounts" (`DevicePasswordLessBuildVersion=2`) was already on. Fix (user,
+  GUI): Settings → Accounts → Your info → "Sign in with a Microsoft account
+  instead" (same profile folder, blank current password), then Sign-in
+  options → PIN, then Fingerprint (Synaptics reader works on Windows too).
+  The Hello-only setting then gives exactly fingerprint → PIN fallback.
+  VERIFY: `Get-LocalUser $env:USERNAME` → PrincipalSource MicrosoftAccount;
+  the lock screen asks for fingerprint/PIN after a restart.
+
+### Update cadence — `upcheck` / `upall` in the profile
+- Channels: winget (apps + Store source), npm -g, Windows Update, Lenovo
+  (Vantage — but BIOS via USB, §3a). `upcheck` lists all four (Windows
+  Update via the `Microsoft.Update.Session` COM searcher; a failed search
+  prints "check FAILED", never "none" — the Mac notifier lesson).
+  `upall`: restore point (UAC) → `winget upgrade --all` → `npm update -g` →
+  opens Settings → Windows Update (installs + reboot stay a human click) →
+  `machine-verify`. No weekly notifier task on this slice — occasional use.
+- First session state: the 2026-08-31 attempt had failed (`0x80240034`);
+  the 2026-08 cumulative (26200.9168) installed on 2026-10-24 and needed a
+  reboot; 2026-09/10 still pending. Order on this machine: Windows Update
+  BEFORE a BIOS flash (Secure Boot dbx updates ride Windows Update first).
+
+### Deliberately not done here (occasional-use slice, small disk)
+- Rust + MSVC Build Tools (~7 GB; mold has no PE/COFF backend — if Rust is
+  ever built here, use `rust-lld`/`lld-link` for the same multithreaded-link
+  intent), codex/opencode/agy, nvm-windows (fights the system Node), podman
+  (needs WSL2), gcloud, the `~/.claude` → dot-claude-config attach (`~/.claude`
+  stays local — no third machine pushing to the sync repo), Firefox +
+  firefoxpwa, Discord, Steam, Unity Hub, Beekeeper, Logi Options+, KDE Connect.
 
 ## 2c. OS-specific — macOS
 
@@ -805,6 +978,10 @@ comments recorded, nothing more.
   address ~13.8 GB dynamically (~17.8 GB total), so the local-LLM envelope
   survives. Revert is one BIOS visit if a runtime ever truly needs 8 GB
   dedicated.
+  UPDATE (owner, noted 2026-10-24): lowered again to **1 GB** for now — RAM
+  is the tighter resource; owner plans to return to it later. Windows then
+  sees 30.6 GB and reports 1024 MB adapter RAM (quick check of the current
+  value from either OS without a BIOS visit).
 - **Qudelix 5K DAC**: WebHID over USB (not Bluetooth) for the config app;
   needs a udev rule; pipewire profile analog-stereo. Listening-chain rules
   (all three found violated 2026-08-06, together = "sounds worse than the
@@ -845,6 +1022,12 @@ comments recorded, nothing more.
   at the cap is harmless (charge bypass). Avoid regular deep discharges below
   ~15-20%; a full 100→20→100 cycle every 2-3 months recalibrates the gauge.
   VERIFY: `cat /sys/class/power_supply/BAT0/charge_control_end_threshold` → 80.
+  Windows side (2026-10-24): the same firmware knobs are set from Lenovo
+  Vantage → Device → Power → Battery Charge Threshold, start 75 / stop 80
+  — matching the extension's Balanced, so whichever OS writes last writes
+  the same values (the 2026-08-31 "charged to 100%" visit predates it).
+  VERIFY (Windows): `HKLM\SOFTWARE\WOW6432Node\Lenovo\PWRMGRV\ConfKeys\Data\<battery-id>`
+  → `ChargeStopPercentage` 80, `ChargeStartPercentage` 75 (machine-verify).
 - **MT7925 Bluetooth dead after a Windows visit (TRAP, 2026-08-31)**: the
   Wi-Fi/BT combo chip's Bluetooth half is a USB function (`0e8d:e025`);
   on three consecutive warm boots its firmware handshake timed out —
@@ -856,7 +1039,8 @@ comments recorded, nothing more.
   visit also charged the battery to 100% past the 80% cap); the boots after
   the earlier Windows visits were clean, so the trigger is likely Windows'
   hybrid shutdown (Fast Startup) or a Windows BT driver update leaving the
-  chip half-initialised — keep Fast Startup OFF on the Windows side.
+  chip half-initialised — keep Fast Startup OFF on the Windows side
+  (it was still ON until 2026-10-24; now off via hibernation off, §2b).
   FIX: a **full power-off** (not a reboot) — after it the log shows
   `hci0: Device setup in … usecs` with no wmt line, and the controller
   registers first try. Reloading the driver
@@ -902,7 +1086,20 @@ comments recorded, nothing more.
   partitions right behind it — not worth it. Apply BIOS updates from the
   Windows side instead (Lenovo Vantage / System Update, which flashes
   without the ESP) or Lenovo's bootable BIOS-update USB; answer `n` to the
-  fwupd prompt meanwhile. Firmware for other devices (fingerprint, dock,
+  fwupd prompt meanwhile.
+  CORRECTION (2026-10-24, first Windows session): "Windows flashes without
+  the ESP" was WRONG for Vantage/System Update. Two attempts that day both
+  logged in `…\LenovoSystemUpdateAddin\session\Repository\r2xuj42w\Winuptp.log`:
+  `BIOS: R2XET39W -> R2XET42W, EC: R2XHT32W -> R2XHT33W` …
+  `Failed to update ThinkPad System Firmware (119)` / `Failed to save
+  capsule image to ESP failed.` — Lenovo's Windows tool ALSO stages the
+  capsule on the ESP, and the capsule (`$0AR2X00.SC1`) is 66.3 MB against
+  ~45 MB free. The route that works without touching partitions: the same
+  package's **"Copy system program to the USB drive"** option (it carries
+  `Rfs\Usb\BootX64.efi` + `ShellFlash64.efi`) → boot that USB (≥128 MB,
+  gets wiped) on AC → flash from there; EC updates in the same run (several
+  automatic restarts are normal). Do Windows Update first (dbx).
+  Firmware for other devices (fingerprint, dock,
   NVMe…) still goes through fwupd fine — only the system-firmware capsule
   hits the limit. Read the WHOLE chain before skipping one: 0.1.22 alone
   only touches a touch-panel list, but it is cumulative and the 0.1.21 it
