@@ -100,7 +100,7 @@ echo "== drift check (os/fedora/verify.sh → machine-verify; upall runs it) =="
 mkdir -p ~/.local/bin && ln -sfn "$(readlink -f $OSD/verify.sh)" ~/.local/bin/machine-verify   # symlink, not copy: a copy went stale within weeks (2026-10-11: 36 vs 37 checks)
 
 echo "== weekly update summary notifier (Sun 18:00) =="
-install -Dm755 $OSD/update-check.sh ~/.local/bin/update-check.sh
+ln -sfn "$(readlink -f $OSD/update-check.sh)" ~/.local/bin/update-check.sh   # symlink, not copy: the Aug copy still called the pre-move collect.sh in Oct (drift nudge silently dead)
 install -Dm644 $OSD/assets/update-check.service ~/.config/systemd/user/update-check.service
 install -Dm644 $OSD/assets/update-check.timer ~/.config/systemd/user/update-check.timer
 systemctl --user daemon-reload

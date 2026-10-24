@@ -8,7 +8,9 @@
 set -o pipefail
 
 dnf_n=$(dnf -q check-update 2>/dev/null | grep -Ec '^[[:alnum:]]') || true
-fp_n=$(flatpak remote-ls --updates --app 2>/dev/null | wc -l)
+# flatpak's own plan, declined with "n" (same as upcheck): remote-ls --updates
+# counts every app from an OCI remote (Fedora's) as outdated forever
+fp_n=$(echo n | timeout 120 flatpak update 2>/dev/null | grep -Ec '^ *[0-9]+\.') || true
 npm_n=$(npm outdated -g --parseable 2>/dev/null | wc -l)
 if fwupdmgr get-updates >/dev/null 2>&1; then fw="yes"; else fw="no"; fi
 
