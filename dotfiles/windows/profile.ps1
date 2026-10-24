@@ -1,8 +1,8 @@
-# PowerShell 7 profile — Windows counterpart of dotfiles/zshrc.
+# PowerShell 7 profile - Windows counterpart of dotfiles/zshrc.
 # Installed to $PROFILE (with OneDrive Known Folder Move that is
 # ~\OneDrive\<Documents>\PowerShell\Microsoft.PowerShell_profile.ps1).
 
-# PATH — ~/.local/bin first (claude, machine-verify)
+# PATH - ~/.local/bin first (claude, machine-verify)
 $env:Path = "$HOME\.local\bin;$env:Path"
 $env:EDITOR = 'nvim'; $env:VISUAL = 'nvim'
 
@@ -28,7 +28,7 @@ if (Get-Module -ListAvailable PSFzf) {
   Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t'
 }
 
-# Aliases — PowerShell ships built-in aliases for ls/cat/... that must go first
+# Aliases - PowerShell ships built-in aliases for ls/cat/... that must go first
 foreach ($a in 'ls','cat','tree') { Remove-Item "Alias:$a" -Force -ErrorAction SilentlyContinue }
 function ls   { eza --icons @args }
 function ll   { eza -la --icons --git @args }
@@ -39,12 +39,12 @@ function lg   { lazygit @args }
 function top  { btop4win @args }
 Set-Alias vim nvim
 
-# atuin (Ctrl+R history search) — last, it rebinds Ctrl+R
+# atuin (Ctrl+R history search) - last, it rebinds Ctrl+R
 if (Get-Command atuin -ErrorAction SilentlyContinue) {
   Invoke-Expression (atuin init powershell --disable-up-arrow | Out-String)
 }
 
-# Update ritual (see machine-setup SETUP.md §2b "Update cadence")
+# Update ritual (see machine-setup SETUP.md section 2b "Update cadence")
 function upcheck {
   Write-Host '== winget (apps + Store) =='
   winget upgrade --include-unknown --accept-source-agreements --disable-interactivity
@@ -56,7 +56,7 @@ function upcheck {
     if ($r.Updates.Count) { $r.Updates | ForEach-Object { "  $($_.Title)" } } else { 'none' }
   } catch { "check FAILED: $($_.Exception.Message)" }
   Write-Host '== firmware =='
-  'Lenovo Vantage -> System Update. BIOS capsules do NOT fit the 100 MB ESP: flash BIOS from USB (SETUP.md §3a).'
+  'Lenovo Vantage -> System Update. BIOS capsules do NOT fit the 100 MB ESP: flash BIOS from USB (SETUP.md section 3a).'
   ''
   '-- apply --------------------------------'
   '  everything : upall'
@@ -65,17 +65,17 @@ function upcheck {
   '  (then: reboot)'
 }
 function upall {
-  $sep = '─' * 41
-  $sep; '▶ restore point (UAC)'
+  $sep = '-' * 41
+  $sep; '> restore point (UAC)'
   Start-Process powershell.exe -Verb RunAs -Wait -ArgumentList '-NoProfile -Command Checkpoint-Computer -Description ''machine-setup: upall'' -RestorePointType MODIFY_SETTINGS'
-  $sep; '▶ winget — apps (Node is pinned to 24.*)'
+  $sep; '> winget - apps (Node is pinned to 24.*)'
   winget upgrade --all --accept-package-agreements --accept-source-agreements
-  $sep; '▶ npm -g'
+  $sep; '> npm -g'
   npm update -g
-  $sep; '▶ Windows Update — opening Settings'
+  $sep; '> Windows Update - opening Settings'
   Start-Process 'ms-settings:windowsupdate-action'
   $sep
-  '>> done — reboot after Windows Update finishes'
+  '>> done - reboot after Windows Update finishes'
   if (Test-Path "$HOME\.local\bin\machine-verify.ps1") { $sep; machine-verify }
 }
 function machine-verify { & "$HOME\.local\bin\machine-verify.ps1" @args }

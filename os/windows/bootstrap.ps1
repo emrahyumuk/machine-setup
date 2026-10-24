@@ -1,14 +1,17 @@
-# bootstrap (Windows) — the judgment-free part of SETUP.md §2b, written from
+# bootstrap (Windows) - the judgment-free part of SETUP.md section 2b, written from
 # the first Windows session (2026-10-24, thinkpad-p14s dual-boot slice).
 # Run from the repo root in Windows PowerShell 5.1 or pwsh, NOT elevated:
 #   powershell -ExecutionPolicy Bypass -File os\windows\bootstrap.ps1 [-System] [-Debloat]
 # -System  : also the admin items (one UAC prompt): hibernation off, System
 #            Protection on C: (5 GB cap) + a restore point.
 # -Debloat : remove the Store apps the owner removed on 2026-10-24 (current user).
+# -Rust    : rustup (minimal, msvc, sha256-checked) + VS Build Tools C++ workload
+#            (UAC, ~6.5 GB). Smart App Control must be turned OFF by hand to run
+#            local builds - a one-way switch, so never scripted (section 2b).
 # Overwrites its config files unconditionally (backs up WT/PowerToys/profile
-# first). Not covered (GUI or identity — see §2b): Chrome/mpv defaults, Vantage
+# first). Not covered (GUI or identity - see section 2b): Chrome/mpv defaults, Vantage
 # charge threshold, git user.name/email, gh auth login, Windows Hello, BIOS.
-param([switch]$System, [switch]$Debloat)
+param([switch]$System, [switch]$Debloat, [switch]$Rust)
 $ErrorActionPreference = 'Stop'
 $repo = Resolve-Path "$PSScriptRoot\..\.."
 function Refresh-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') }
@@ -25,7 +28,7 @@ Checkpoint-Computer -Description 'machine-setup: bootstrap' -RestorePointType MO
   Start-Process powershell.exe -Verb RunAs -Wait -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$f`""
 }
 
-# --- packages (winget; first-party package manager — §2b)
+# --- packages (winget; first-party package manager - section 2b)
 $ids = 'Git.Git','Microsoft.PowerShell','GitHub.cli','dandavison.delta','JesseDuffield.lazygit',
        'Starship.Starship','ajeetdsouza.zoxide','junegunn.fzf','Atuinsh.Atuin','eza-community.eza',
        'sharkdp.bat','muesli.duf','aristocratos.btop4win','Neovim.Neovim','DEVCOM.JetBrainsMonoNerdFont',
@@ -37,6 +40,20 @@ foreach ($i in $ids) {
 }
 winget pin add --id OpenJS.NodeJS.LTS --version '24.*' --accept-source-agreements --disable-interactivity | Out-Null
 Refresh-Path
+
+if ($Rust) {
+  winget install --id Microsoft.VisualStudio.2022.BuildTools --exact --accept-package-agreements --accept-source-agreements --disable-interactivity `
+    --override '--wait --passive --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
+  $base = 'https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe'
+  $ri = Join-Path $env:TEMP 'rustup-init.exe'
+  Invoke-WebRequest -Uri $base -OutFile $ri -UseBasicParsing
+  # rustup-init is not Authenticode-signed; check the published sha256 (octet-stream -> bytes in PS 5.1)
+  $r = Invoke-WebRequest -Uri "$base.sha256" -UseBasicParsing
+  $txt = if ($r.Content -is [byte[]]) { [Text.Encoding]::ASCII.GetString($r.Content) } else { $r.Content }
+  if ((($txt.Trim() -split '\s+')[0]) -ne (Get-FileHash $ri -Algorithm SHA256).Hash.ToLower()) { throw 'rustup-init sha256 mismatch' }
+  & $ri -y --profile minimal --default-toolchain stable --default-host x86_64-pc-windows-msvc
+  Refresh-Path
+}
 
 # --- git (line endings BEFORE the first clone; identity is asked, never here)
 git config --global core.autocrlf input
@@ -50,7 +67,7 @@ git config --global merge.conflictstyle zdiff3
 git config --global init.defaultBranch main
 git config --global pull.rebase true
 
-# --- npm postinstall policy (npm 11+, SETUP.md §2 TRAP)
+# --- npm postinstall policy (npm 11+, SETUP.md section 2 TRAP)
 npm config set allow-scripts=opencode-ai,protobufjs,re2 --location=user
 
 # --- shell: PS7 profile (+ PSFzf), starship, Windows Terminal
@@ -101,4 +118,4 @@ if (Test-Path $rec) {
   # UTF-8 without BOM, LF (PS 5.1's Set-Content -Encoding utf8 writes a BOM)
   [IO.File]::WriteAllText($rec, (($lines -join "`n") + "`n"), (New-Object Text.UTF8Encoding $false))
 }
-'bootstrap done — GUI steps left: see SETUP.md §2b. Run: machine-verify'
+'bootstrap done - GUI steps left: see SETUP.md section 2b. Run: machine-verify'

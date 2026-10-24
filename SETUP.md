@@ -546,17 +546,18 @@ Machine: `machines/thinkpad-p14s-windows.md` (the factory Windows 11 Pro
 25H2 in the ~95 GB dual-boot slice). Mechanics:
 `os/windows/{bootstrap,verify,collect}.ps1`, per-OS dotfiles in
 `dotfiles/windows/`. Written from the first Windows session (2026-10-24,
-owner). ROLE of this slice: occasional use only — that is why the Rust
-toolchain, agent CLIs and the `~/.claude` sync were deliberately left out
-(see "Deliberately not done here" below), and why disk space (24.7 GB free
-at the start) drove several decisions.
+owner). ROLE of this slice: occasional use, plus Windows release builds of
+the owner's Tauri apps — that is why agent CLIs and the `~/.claude` sync
+were deliberately left out (see "Deliberately not done here" below), why
+the Rust toolchain came in late the same day ("Rust + MSVC" below), and why
+disk space (24.7 GB free at the start) drove several decisions.
 
 **Agents: the SELECTIONS in this layer are the owner's choices for a
 secondary, rarely-used slice — not Windows defaults.** What carries over to
 another Windows machine (the owner's main one, or someone else's) is the
 MECHANICS (package ids, traps, VERIFY lines, the Shift+Enter fix, the
 ESP/BIOS finding) and the WHY. The picks themselves — Chrome as default,
-no Rust/agent CLIs/`~/.claude` sync, the debloat list, Office kept — get
+no agent CLIs/`~/.claude` sync, the debloat list, Office kept — get
 re-asked: show the full menu from §1/APPS.md, recommend for THAT user's
 workload and disk, and expect a very different mindset (a Windows-primary
 developer wants WSL2, Rust, podman; a gamer keeps Xbox). Inspiration from
@@ -733,10 +734,47 @@ the whole manifest, not a copy of this slice.
   reboot; 2026-09/10 still pending. Order on this machine: Windows Update
   BEFORE a BIOS flash (Secure Boot dbx updates ride Windows Update first).
 
+### Rust + MSVC — Windows release builds of Tauri apps (added 2026-10-24)
+- Came in late in the first session, for the owner's Tauri apps (dropped
+  earlier for disk, then needed). `rustup-init.exe` from
+  static.rust-lang.org, `-y --profile minimal --default-toolchain stable
+  --default-host x86_64-pc-windows-msvc`. TRAP: rustup-init is NOT
+  Authenticode-signed (`Get-AuthenticodeSignature` → NotSigned is normal);
+  verify the published `.sha256` instead — and decode it: PS 5.1's
+  `Invoke-WebRequest` returns that octet-stream as a byte array, so a naive
+  compare reads "48" (the first byte) and fails.
+- Visual Studio Build Tools 2022, C++ workload: `winget install --id
+  Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive
+  --norestart --add Microsoft.VisualStudio.Workload.VCTools
+  --includeRecommended"` (UAC; brings MSVC + Windows SDK 10.0.26100). WHY:
+  Rust's msvc target links with `link.exe` against the Windows SDK — Tauri's
+  official Windows prerequisite; the GNU target isn't supported by Tauri.
+  It asks for a restart; the first build worked without one.
+- Cost measured: ~6.5 GB for both; a Tauri release `target/` ~2.9 GB;
+  first release build 14.5 min on this machine. WebView2 ships with Windows.
+- Local release builds of a project that sets `createUpdaterArtifacts: true`
+  fail at the end without the signing key: pass an overlay,
+  `tauri build --bundles nsis --config <file with {"bundle":{"createUpdaterArtifacts":false}}>`
+  — nothing in the project changes. pnpm (winget's 12.x) honours a
+  project's `packageManager` pin and switches itself.
+- mold has no PE/COFF backend — `~/.cargo/config.toml` stays absent here
+  (MSVC `link.exe` is fine at this build rate; `rust-lld` is the option if
+  link time ever matters).
+- **Smart App Control was ON and blocked every locally built exe**
+  ("An Application Control policy has blocked this file"; CodeIntegrity
+  event 3077, "did not meet the Enterprise signing level requirements").
+  It has no "Run anyway" (that is SmartScreen, for downloaded files) and no
+  self-signed escape — the only switch is OFF, and OFF is one-way (turning
+  it back on needs a Windows reset). Owner turned it OFF 2026-10-24
+  (Windows Security → App & browser control → Smart App Control); Defender,
+  SmartScreen and the firewall stay on. Any Windows machine that builds its
+  own binaries needs this decision — ask, never flip it silently.
+  VERIFY: `VerifiedAndReputablePolicyState` = 0 under
+  `HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy`; `rustc --version`;
+  `vswhere -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64` prints a path.
+
 ### Deliberately not done here (occasional-use slice, small disk)
-- Rust + MSVC Build Tools (~7 GB; mold has no PE/COFF backend — if Rust is
-  ever built here, use `rust-lld`/`lld-link` for the same multithreaded-link
-  intent), codex/opencode/agy, nvm-windows (fights the system Node), podman
+- codex/opencode/agy, nvm-windows (fights the system Node), podman
   (needs WSL2), gcloud, the `~/.claude` → dot-claude-config attach (`~/.claude`
   stays local — no third machine pushing to the sync repo), Firefox +
   firefoxpwa, Discord, Steam, Unity Hub, Beekeeper, Logi Options+, KDE Connect.

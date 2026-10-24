@@ -9,4 +9,4 @@ scripts: os/windows/  (bootstrap.ps1 / verify.ps1 / collect.ps1)
 last-applied: 2026-10-24
 last-collected: 2026-10-24
 last-verified: never
-notes: The factory Windows 11 Pro 25H2 in the ~95 GB dual-boot slice (hardware/thinkpad-p14s.md). Occasional-use slice — no Rust, no agent CLIs, no ~/.claude sync on purpose (SETUP.md §2b "Deliberately not done here"). Chrome is the default browser here.
+notes: The factory Windows 11 Pro 25H2 in the ~95 GB dual-boot slice (hardware/thinkpad-p14s.md). Occasional-use slice + Windows release builds of Tauri apps (Rust/MSVC, Smart App Control OFF) — no agent CLIs, no ~/.claude sync on purpose (SETUP.md §2b "Deliberately not done here"). Chrome is the default browser here.

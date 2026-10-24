@@ -199,7 +199,8 @@ Occasional-use slice, small partition: only the rows below were installed
 | GSConnect | **Phone Link** (preinstalled, kept) | |
 | Solaar | — | Logi Options+ not wanted on this slice. |
 | nodejs24 (dnf) | `OpenJS.NodeJS.LTS` pinned to `24.*` | Keeps the ONE LTS line when winget's LTS moves to 26. |
-| Rust/mold, codex/opencode/agy, podman, gcloud, Steam, Discord, Unity Hub, Beekeeper, Flatpak tools | — | Not on this slice (occasional use, disk). |
+| Rust + mold | **Rust** (rustup minimal, msvc) + **VS Build Tools 2022** C++ workload; no mold | Tauri release builds here (added 2026-10-24); mold has no PE/COFF backend, MSVC `link.exe` links. |
+| codex/opencode/agy, podman, gcloud, Steam, Discord, Unity Hub, Beekeeper, Flatpak tools | — | Not on this slice (occasional use, disk). |
 
 ## Removed on purpose
 
