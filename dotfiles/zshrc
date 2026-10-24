@@ -41,7 +41,13 @@ command -v atuin >/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 # Update ritual (see machine-setup SETUP.md "Update cadence")
 upcheck() {
   echo "== dnf ==";      dnf -q check-update || true
-  echo "== flatpak ==";  flatpak remote-ls --updates --app
+  # flatpak's own plan, declined with "n": `remote-ls --updates` reports every app from an
+  # OCI remote (Fedora's) as outdated forever (2026-10-19 false alarm on org.gnome.Extensions)
+  echo "== flatpak =="
+  { flatpak list --app --columns=application; echo --; echo n | timeout 120 flatpak update 2>/dev/null; } |
+    awk '$0 == "--" {plan = 1; next} !plan {app[$1] = 1; next}
+         /^ *[0-9]+\./ {if ($2 in app) {print "  " $2, "(" $5 ")"; n++} else r++}
+         END {if (r) print "  + " r " runtimes/extensions"; if (!n && !r) print "none"}'
   echo "== npm -g ==";   npm outdated -g || true
   echo "== firmware =="
   fwupdmgr get-updates >/dev/null 2>&1 && echo "updates available (fwupdmgr update)" || echo "none"
