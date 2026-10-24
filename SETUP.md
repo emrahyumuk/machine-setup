@@ -752,6 +752,17 @@ the whole manifest, not a copy of this slice.
   It asks for a restart; the first build worked without one.
 - Cost measured: ~6.5 GB for both; a Tauri release `target/` ~2.9 GB;
   first release build 14.5 min on this machine. WebView2 ships with Windows.
+  TRAP (same day): a Tauri DEBUG `target/` (e2e test build) grew to
+  **12.4 GB** — 7 GB `deps`, 3.9 GB `incremental`, a 400 MB PDB; MSVC debug
+  info is far bigger than on Linux. With Windows Update installing at the
+  same time the disk fell to 4 GB free ("low disk space"). Recovered
+  without touching the running build: `target\release` (already installed),
+  `target\debug\incremental` (cache only, deleted while no cargo ran), the
+  VS installer payload cache (`C:\ProgramData\Microsoft\VisualStudio\Packages`,
+  1.3 GB) + policy `HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup`
+  `KeepDownloadedPayloads=0` so it doesn't refill. On a small partition,
+  build debug with `CARGO_PROFILE_DEV_DEBUG=line-tables-only` (a project
+  decision, not a machine one).
 - Local release builds of a project that sets `createUpdaterArtifacts: true`
   fail at the end without the signing key: pass an overlay,
   `tauri build --bundles nsis --config <file with {"bundle":{"createUpdaterArtifacts":false}}>`
