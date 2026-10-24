@@ -1,0 +1,42 @@
+Atuin
+bat
+BatteryBar (remove only)
+Bitwarden
+btop4win
+delta
+duf
+eza
+fzf
+Git
+GitHub CLI
+Google Chrome
+JetBrainsMono Nerd Font
+lazygit
+Lenovo Service Bridge
+Lenovo System Update
+Lenovo Vantage Service
+Microsoft Edge
+Microsoft Edge WebView2 Çalışma Zamanı
+Microsoft Office LTSC Professional Plus 2024 - tr-tr
+Microsoft OneDrive
+Microsoft Update Health Tools
+Microsoft Visual C++ 2013 x64 Minimum Runtime - 12.0.21005
+Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.42.34438
+Microsoft Visual C++ 2022 X64 Additional Runtime - 14.42.34438
+Microsoft Visual C++ 2022 X64 Minimum Runtime - 14.42.34438
+Microsoft Visual Studio Code (User)
+Microsoft Windows Application Compatibility Fix Database
+Mozilla Maintenance Service
+Mozilla Thunderbird (x64 en-US)
+MPV Player
+Neovim
+Node.js
+Office 16 Click-to-Run Extensibility Component
+Office 16 Click-to-Run Licensing Component
+pnpm
+PowerToys (Preview)
+PowerToys (Preview) x64
+Spotify
+starship
+WinRAR 7.01 (64 bit)
+zoxide

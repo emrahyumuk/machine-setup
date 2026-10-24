@@ -181,6 +181,26 @@ always-on home server — not a default for any other Mac.
 | — | **Xcode** (App Store) *[role]* | iOS simulator testing. |
 | — | **agy** (Antigravity CLI) | On Fedora too (`~/.local/bin`); first recorded here. |
 
+## Windows (`thinkpad-p14s` dual-boot slice) — where it differs
+
+Occasional-use slice, small partition: only the rows below were installed
+(winget, 2026-10-24). Details in SETUP.md §2b.
+
+| Fedora row | On Windows | Why |
+|------------|------------|-----|
+| zsh + plugins | **PowerShell 7** + PSReadLine predictions + PSFzf | No native zsh; same tools wired in `dotfiles/windows/profile.ps1`. |
+| Ghostty | **Windows Terminal** (preinstalled) | No Ghostty build; Catppuccin Mocha + JetBrainsMono Nerd Font in its own config. |
+| btop | **btop4win** | Windows port, same author. |
+| mpv (RPM Fusion) | **mpv** (`shinchiro.mpv`) | `hwdec=d3d11va-copy`. |
+| Firefox (daily driver) | — **Chrome is the default here** | Owner's choice for this slice; extensions sync via the Google account. |
+| WhatsApp Chrome PWA | **WhatsApp** native (Store, preinstalled) | Native app exists here, as on the Mac. |
+| Battery Health Charging | **Lenovo Vantage** charge threshold 75/80 | Same firmware knobs. |
+| Caffeine | **PowerToys** (Awake only) | Every other module off. |
+| GSConnect | **Phone Link** (preinstalled, kept) | |
+| Solaar | — | Logi Options+ not wanted on this slice. |
+| nodejs24 (dnf) | `OpenJS.NodeJS.LTS` pinned to `24.*` | Keeps the ONE LTS line when winget's LTS moves to 26. |
+| Rust/mold, codex/opencode/agy, podman, gcloud, Steam, Discord, Unity Hub, Beekeeper, Flatpak tools | — | Not on this slice (occasional use, disk). |
+
 ## Removed on purpose
 
 - **karere** (WhatsApp wrapper flatpak) → replaced by the Firefox PWA

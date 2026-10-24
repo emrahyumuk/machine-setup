@@ -7,7 +7,7 @@ The physical layer. One file per machine under `hardware/`, one record per
 
 | Short name | Machine | OSes (see `machines/`) | Details |
 |------------|---------|------------------------|---------|
-| `thinkpad-p14s` | Lenovo ThinkPad P14s Gen 6 AMD | fedora (primary), windows (dual-boot slice, not yet set up) | [hardware/thinkpad-p14s.md](hardware/thinkpad-p14s.md) |
+| `thinkpad-p14s` | Lenovo ThinkPad P14s Gen 6 AMD | fedora (primary), windows (dual-boot slice, set up 2026-10-24) | [hardware/thinkpad-p14s.md](hardware/thinkpad-p14s.md) |
 | `mbp14` | Apple MacBook Pro 14" M2 Pro (Mac14,9) | macos (always-on home server + desk machine) | [hardware/mbp14.md](hardware/mbp14.md) |
 
 Naming: `<hardware>-<os>` everywhere (machine records, inventory dirs,

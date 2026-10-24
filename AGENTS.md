@@ -45,6 +45,15 @@ machines by default; offer them only when the user describes the same role
 else. Same for the owner's private tooling the manifest mentions in passing
 (unreleased, not public): it is context, never a setup item.
 
+**Choices made for a secondary machine are not defaults either.** Some OS
+layers record what the owner picked for a rarely-used machine (§2b: the
+Windows dual-boot slice skipped Rust, agent CLIs and the `~/.claude` sync,
+made Chrome the default, removed a list of Store apps). Reuse those layers'
+mechanics and traps, but re-ask every selection: for someone else — or the
+owner on a machine with another job — recommend from the whole manifest and
+the user's own workload, and assume they may think about it completely
+differently.
+
 ## Step 1 — Survey the machine (read-only)
 
 Detect before proposing: OS + version, package manager, desktop environment,
