@@ -978,12 +978,33 @@ Mac never FAILs a server check.
   VERIFY: `ssh -o PreferredAuthentications=password mra@mra-mac.local` from
   another machine → "Permission denied (publickey)".
 - *[role]* **Tailscale as a system daemon, not the app**: `brew install
-  tailscale` + `sudo brew services start tailscale` + `tailscale up
-  --hostname=mra-mac`. WHY: the formula's `tailscaled` is a LaunchDaemon —
+  tailscale` + `sudo brew services start tailscale` + `tailscale
+  --socket=/var/run/tailscaled.socket up --hostname=mra-mac`. WHY: the formula's `tailscaled` is a LaunchDaemon —
   up before anyone logs in. The app variant (`tailscale-app` cask) is a
   login item, so after a reboot the box would be unreachable from outside
   until someone logs in at the desk. Cost: no menu-bar icon; `tailscale`
   CLI manages it.
+- *[role]* **Brew's `tailscaled` is the only Tailscale on this Mac**
+  *(2026-10-24)*: no Tailscale.app, no app that embeds its own
+  `tailscaled`. WHY: on 2026-10-24 the Mac ran three — brew's (the
+  tailnet, utun0), Tailscale.app's network extension (installed
+  2026-10-20 to test Pylix's Full VPN mode) and Pylix's embedded daemon
+  (a root LaunchDaemon, RunAtLoad + KeepAlive). Each extra one runs a
+  real utun in the same 100.64.0.0/10, so a test that connects it can
+  take the routes the Mac is reached by from outside, and no alarm would
+  say so (the heartbeat takes the public path). With the app installed
+  the plain `tailscale` CLI also talked to the app's daemon, so
+  `machine-verify` FAILed "tailscale not connected" on a healthy
+  tailnet. Both were removed through their own uninstall (Pylix: its
+  user agent, app, root daemon and support folders; Tailscale.app:
+  dragged to the Trash, which removes the network extension at the next
+  restart). Testing an app that brings its own Tailscale happens in a
+  macOS VM, never on the host. Scripts never rely on the CLI's default
+  socket: they pass `--socket=/var/run/tailscaled.socket` (brew's).
+  VERIFY: `machine-verify` → "tailscale up (100.x)" and "no other
+  Tailscale on this Mac" (any `tailscaled` not under
+  `$(brew --prefix)/opt/tailscale`, a Tailscale.app process, or an
+  activated `io.tailscale.*` system extension FAILs).
 - *[role]* **FileVault + unattended reboots**: FileVault stays on; after a
   reboot the Mac waits at the pre-boot unlock screen with no network
   services. macOS 26 unlocks FileVault over SSH when Remote Login is on —
@@ -1075,8 +1096,8 @@ Mac never FAILs a server check.
   (machine-verify checks it).
 - *[role]* **tmux** for every long remote session (Claude Code included):
   an SSH drop kills the shell, not the tmux session — `tmux new -As main`.
-  VERIFY: `nc -z localhost 22` and `:5900` succeed; `tailscale status`
-  lists mra-mac online.
+  VERIFY: `nc -z localhost 22` and `:5900` succeed; `tailscale
+  --socket=/var/run/tailscaled.socket status` lists mra-mac online.
 
 ### Updates on the server
 - *[role]* macOS automatic INSTALL off
@@ -1122,7 +1143,7 @@ Mac never FAILs a server check.
   `UserName` (runs with nobody logged in at the desk, from the moment
   FileVault is unlocked). It pings a dead-man's-switch receiver — an **Uptime Kuma Push
   monitor** (URL contains `/api/push/` → `status=up|down&msg=`) or a
-  **healthchecks.io** check (POST to URL / `URL/fail`); period 5 min, ~10 min
+  **healthchecks.io** check (POST to URL / `URL/fail`); period 5 min, ~10.5 min
   grace: when the pings STOP — machine off, frozen, offline, waiting
   at the FileVault screen — the service alerts the phone. Ping URL in
   `~/.config/machine-setup/healthcheck-url` (600; a token, never the repo).
@@ -1132,7 +1153,9 @@ Mac never FAILs a server check.
   while the Mac is alive; the receiver must notice SILENCE. It must also be
   reachable from the Mac (a public `/api/push/` path or the tailnet).
   **mra-mac's receiver (2026-10-18):** the Uptime Kuma on mra-server, Push
-  monitor `mra-mac` (300 s, 1 retry, alarms to the phone by ntfy and mRA OS),
+  monitor `mra-mac` (330 s — the 5-minute period + 30 s, since Kuma re-arms
+  its check at last push + interval + 1 s; 1 retry; alarms to the phone by
+  ntfy and mRA OS),
   through its public push path — not the tailnet, so the Mac's state is
   known even when the box ↔ home link is down. Monitor, URL form, alarm
   tests and what to do on an alarm: mra-server `docs/49-mra-mac.md` §3
@@ -1141,7 +1164,10 @@ Mac never FAILs a server check.
   `~/Library/Logs/machine-setup-health.log` (memory pressure level, free %,
   swap, disk free, Wi-Fi channel/signal, top-3 memory users; rotates at
   5 MB). Memory pressure at warn+ (`kern.memorystatus_vm_pressure_level` ≥ 2)
-  for 3 runs in a row, disk free < 30 GB, or a FAILED weekly maintenance →
+  for 3 runs in a row, disk free < 30 GB, a FAILED weekly maintenance, or
+  brew's `tailscaled` not Running (`tailnet down (<BackendState>)`, asked
+  on its socket; the receiver's retry is the debounce: one bad run →
+  PENDING, two → DOWN) →
   the ping goes to `/fail` with the reason as body, so the alert says WHY.
   Judge memory by PRESSURE, never by "used" or swap size — the §2 zram rule
   holds here too. `DISK_FLOOR_GB=1000 health-check` exercises the alert path.

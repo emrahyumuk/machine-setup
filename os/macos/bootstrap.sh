@@ -194,7 +194,7 @@ Done. By hand (SETUP.md says why):
 EOF
 [ $SERVER = 1 ] && cat <<'EOF'
   server role (§3b):
-  - tailscale up --hostname=<name>
+  - tailscale --socket=/var/run/tailscaled.socket up --hostname=<name>
   - Settings → General → Sharing: Remote Login + Screen Sharing
   - SSH keys only: other machine's key from `gh api user/keys` → authorized_keys,
     log in with it FIRST, then sshd_config.d/010-machine-setup.conf (§3b)

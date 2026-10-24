@@ -13,8 +13,9 @@
 #     Wi-Fi channel/signal, top memory users) → ~/Library/Logs/machine-setup-health.log.
 #  3. Alerts: memory pressure at warn+ for 3 runs in a row (15 min), disk free
 #     under the floor, a failed weekly maintenance, or a GitHub Actions runner
-#     that is installed but not running (§3b "GitHub Actions runner") → the
-#     ping reports DOWN
+#     that is installed but not running (§3b "GitHub Actions runner"), or
+#     brew's tailscaled not Running ("tailnet down": nothing else would say
+#     so, the ping takes the public path) → the ping reports DOWN
 #     (Kuma status=down, healthchecks.io URL/fail) with the reason as its
 #     message, so the alert says WHY.
 #
@@ -70,6 +71,14 @@ if [ -f "$RUNNER_PLIST" ] && ! pgrep -q -u "$(/usr/libexec/PlistBuddy -c 'Print 
 else rmiss=0; fi
 echo "$rmiss" > "$RSTATE"
 [ "$rmiss" -ge 2 ] && problems+=("github runner not running")
+# Tailnet: brew's tailscaled, by its socket (another Tailscale would answer the
+# CLI's default one; SETUP.md §3b). No miss counter: the receiver's retry is
+# the debounce (Kuma: one bad run PENDING, two DOWN).
+if command -v tailscale >/dev/null; then
+  ts=$(tailscale --socket=/var/run/tailscaled.socket status --json 2>/dev/null \
+    | sed -n 's/^ *"BackendState": *"\([A-Za-z]*\)".*/\1/p')
+  [ "$ts" = Running ] || problems+=("tailnet down (${ts:-tailscaled not answering})")
+fi
 
 line="mem=$lvl free=${free:-?} swap=${swap:-?} disk=${disk:-?}G wifi=${wifi:-?} top=[$top]"
 URL=$(cat "$CFG/healthcheck-url" 2>/dev/null | tr -d '[:space:]')

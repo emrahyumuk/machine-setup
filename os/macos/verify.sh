@@ -152,9 +152,21 @@ elif grep -qE '^PasswordAuthentication +no' "$KO" 2>/dev/null && grep -qE '^KbdI
 else
   bad "authorized_keys present but SSH still accepts passwords" "write $KO — SETUP.md §3b"
 fi
+# brew's tailscaled by its socket: another Tailscale on the Mac would answer the CLI's default one
+TS_SOCKET=/var/run/tailscaled.socket
 if command -v tailscale >/dev/null; then
-  tailscale status >/dev/null 2>&1 && ok "tailscale up ($(tailscale ip -4 2>/dev/null | head -1))" || bad "tailscale not connected" "sudo brew services start tailscale && tailscale up"
+  ts=$(tailscale --socket=$TS_SOCKET status --json 2>/dev/null | sed -n 's/^ *"BackendState": *"\([A-Za-z]*\)".*/\1/p')
+  [ "$ts" = Running ] && ok "tailscale up ($(tailscale --socket=$TS_SOCKET ip -4 2>/dev/null | head -1))" \
+    || bad "tailscale not connected (${ts:-no answer on $TS_SOCKET})" "sudo brew services start tailscale && tailscale --socket=$TS_SOCKET up"
 else bad "tailscale missing" "brew install tailscale (the formula — daemon runs before login)"; fi
+# Any other Tailscale (the app, its network extension, an app's embedded tailscaled) runs its own
+# utun in the same 100.64.0.0/10 and can take the routes this Mac is reached by
+# (pgrep first, the filter after: a grep running beside it would match its own pattern)
+other=$(pgrep -lf 'tailscaled|io\.tailscale\.ipn|/Tailscale\.app/')
+other=$(grep -Ev "^[0-9]+ $BREW_PREFIX/(opt/tailscale/)?bin/tailscaled?( |$)" <<<"$other")
+other+=${other:+$'\n'}$(systemextensionsctl list 2>/dev/null | grep 'io\.tailscale\.' | grep '\[activated' | sed 's/^/ext /')
+[ -z "$other" ] && ok "no other Tailscale on this Mac" \
+  || bad "another Tailscale runs: $(head -1 <<<"$other" | cut -c1-120)" "brew's tailscaled must be the only one — remove the other through its own uninstall (SETUP.md §3b \"Tailscale as a system daemon\")"
 # loaded is not enough: the first agent "started successfully" and left no VM
 launchctl list 2>/dev/null | grep -q 'com.machine-setup.podman-machine' \
   && ok "podman machine starts at login (LaunchAgent)" || bad "podman autostart agent not loaded" "bootstrap.sh --server, or launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/com.machine-setup.podman-machine.plist"
