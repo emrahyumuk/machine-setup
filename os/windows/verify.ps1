@@ -1,4 +1,4 @@
-# machine-verify (Windows) — every VERIFY line of SETUP.md §2b (+ §3a items
+# machine-verify (Windows) - every VERIFY line of SETUP.md section 2b (+ section 3a items
 # translated for the dual-boot slice) as PASS/FAIL. Read-only; no admin needed.
 # Installed by bootstrap.ps1 as ~/.local/bin/machine-verify.ps1.
 $ErrorActionPreference = 'Continue'
@@ -10,7 +10,7 @@ function Check([string]$name, [scriptblock]$test) {
 }
 $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
 
-# --- §3a translated: dual-boot hygiene + battery
+# --- section 3a translated: dual-boot hygiene + battery
 Check 'hibernation off (no Fast Startup, no hiberfil.sys)' {
   (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Power').HibernateEnabled -eq 0 -and
   (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power').HiberbootEnabled -eq 0
@@ -21,11 +21,11 @@ Check 'charge threshold set in Vantage (stop 80)' {
   [bool]$hit
 }
 
-# --- §2b safety layer
+# --- section 2b safety layer
 # (restore-point listing needs admin; RPSessionInterval flips 0 -> 1 when protection is on)
 Check 'System Protection on' { (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore').RPSessionInterval -eq 1 }
 
-# --- §2b Git
+# --- section 2b Git
 Check 'git core.autocrlf = input' { (git config --global core.autocrlf) -eq 'input' }
 Check 'git core.eol = lf'         { (git config --global core.eol) -eq 'lf' }
 Check 'git user.email set'        { [bool](git config --global --get user.email) }
@@ -35,6 +35,13 @@ Check 'gh authenticated'          { gh auth status *> $null; $LASTEXITCODE -eq 0
 # --- CLI stack
 foreach ($t in 'pwsh','git','gh','delta','lazygit','starship','zoxide','fzf','atuin','eza','bat','duf','btop4win','nvim','node','pnpm','code') {
   Check "command: $t" { [bool](Get-Command $t -ErrorAction SilentlyContinue) }
+}
+Check 'rustc (msvc host)' { (& "$HOME\.cargo\bin\rustc.exe" -vV | Select-String '^host:') -match 'pc-windows-msvc' }
+Check 'MSVC build tools present' {
+  [bool](& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
+}
+Check 'Smart App Control off (local builds can run)' {
+  (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy').VerifiedAndReputablePolicyState -eq 0
 }
 Check 'node is 24.x (one LTS line, APPS.md)' { (node --version) -like 'v24.*' }
 Check 'winget pin keeps Node on 24.*'        { [bool](winget pin list --disable-interactivity | Select-String 'OpenJS.NodeJS.LTS') }

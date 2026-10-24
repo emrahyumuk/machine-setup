@@ -1,13 +1,13 @@
-# collect (Windows) — inventory + dotfiles back into the repo + machine-record
+# collect (Windows) - inventory + dotfiles back into the repo + machine-record
 # stamps. Run from the repo root (not elevated):
 #   powershell -ExecutionPolicy Bypass -File os\windows\collect.ps1
-# Writes inventory/thinkpad-p14s-windows/. Config only — no identities: the git
+# Writes inventory/thinkpad-p14s-windows/. Config only - no identities: the git
 # [user] block and anything under ~/.claude stay out (README privacy rule).
 $repo = Resolve-Path "$PSScriptRoot\..\.."
 $inv = "$repo\inventory\thinkpad-p14s-windows"
 New-Item -ItemType Directory -Force $inv | Out-Null
 $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
-# UTF-8 without BOM, LF — PS 5.1's Set-Content -Encoding utf8 writes a BOM
+# UTF-8 without BOM, LF - PS 5.1's Set-Content -Encoding utf8 writes a BOM
 $utf8 = New-Object Text.UTF8Encoding $false
 function Write-Utf8([string]$path) { [IO.File]::WriteAllText($path, (($input | Out-String -Stream) -join "`n") + "`n", $utf8) }
 
@@ -51,6 +51,6 @@ $today = Get-Date -Format yyyy-MM-dd
 $rec = "$repo\machines\thinkpad-p14s-windows.md"
 $lines = (Get-Content $rec -Encoding utf8) -replace '^last-collected: .*', "last-collected: $today"
 & pwsh -NoProfile -File "$HOME\.local\bin\machine-verify.ps1" | Out-Null
-if ($LASTEXITCODE -eq 0) { $lines = $lines -replace '^last-verified: .*', "last-verified: $today" } else { 'verify has FAILs — last-verified not stamped' }
+if ($LASTEXITCODE -eq 0) { $lines = $lines -replace '^last-verified: .*', "last-verified: $today" } else { 'verify has FAILs - last-verified not stamped' }
 $lines | Write-Utf8 $rec
 "collected into $inv"
