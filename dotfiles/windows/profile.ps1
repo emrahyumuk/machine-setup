@@ -56,7 +56,7 @@ function upcheck {
     if ($r.Updates.Count) { $r.Updates | ForEach-Object { "  $($_.Title)" } } else { 'none' }
   } catch { "check FAILED: $($_.Exception.Message)" }
   Write-Host '== firmware =='
-  'Lenovo Vantage -> System Update. BIOS capsules do NOT fit the 100 MB ESP: flash BIOS from USB (SETUP.md section 3a).'
+  'Lenovo Vantage -> System Update. BIOS: plug in a FAT32 USB key (>=128 MB free) BEFORE running the Windows updater - the capsule does not fit the 100 MB ESP and is staged on the key (SETUP.md section 3a).'
   ''
   '-- apply --------------------------------'
   '  everything : upall'
@@ -64,10 +64,32 @@ function upcheck {
   '  npm -g     : npm update -g'
   '  (then: reboot)'
 }
+# Restore point in an elevated Windows PowerShell (UAC). Returns 0 = a NEW point,
+# 2 = none made (Windows allows one per 24 h by default), 1 = failed / UAC declined.
+function New-MachineRestorePoint([string]$desc) {
+  $s = @'
+$ErrorActionPreference = 'Stop'
+try {
+  $b = (Get-ComputerRestorePoint | Measure-Object SequenceNumber -Maximum).Maximum
+  Checkpoint-Computer -Description 'DESC' -RestorePointType MODIFY_SETTINGS -WarningAction SilentlyContinue
+  $a = (Get-ComputerRestorePoint | Measure-Object SequenceNumber -Maximum).Maximum
+  if ($a -gt $b) { exit 0 } else { exit 2 }
+} catch { Write-Host "restore point FAILED: $_"; Start-Sleep 5; exit 1 }
+'@ -replace 'DESC', $desc
+  $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($s))
+  try {
+    $p = Start-Process powershell.exe -Verb RunAs -PassThru -ErrorAction Stop -ArgumentList "-NoProfile -EncodedCommand $enc"
+    $null = $p.Handle; $p.WaitForExit(); $p.ExitCode
+  } catch { 1 }
+}
 function upall {
   $sep = '-' * 41
   $sep; '> restore point (UAC)'
-  Start-Process powershell.exe -Verb RunAs -Wait -ArgumentList '-NoProfile -Command Checkpoint-Computer -Description ''machine-setup: upall'' -RestorePointType MODIFY_SETTINGS'
+  $rc = New-MachineRestorePoint 'machine-setup: upall'
+  if ($rc -ne 0) {
+    Write-Warning $(if ($rc -eq 2) { 'no NEW restore point: Windows allows one per 24 h by default (the last one is less than a day old)' } else { 'restore point FAILED or UAC was declined' })
+    if ((Read-Host 'run winget upgrade --all WITHOUT a new undo point? [y/N]') -notmatch '^(y|yes)$') { 'stopped - nothing upgraded'; return }
+  }
   $sep; '> winget - apps (Node is pinned to 24.*)'
   winget upgrade --all --accept-package-agreements --accept-source-agreements
   $sep; '> npm -g'
