@@ -71,6 +71,14 @@ Check 'npm allow-scripts lists opencode-ai'  { (npm config get allow-scripts) -m
 $prof = & pwsh -NoProfile -Command '$PROFILE'
 Check 'PS7 profile installed' { (Test-Path $prof) -and (Select-String -Path $prof -Pattern 'starship init powershell' -Quiet) }
 Check 'Shift+Enter = AddLine in profile' { Select-String -Path $prof -Pattern "Shift\+Enter' -Function AddLine" -Quiet }
+Check 'profile defines upcheck/upall (update cadence)' {
+  (Select-String -Path $prof -Pattern '^function upcheck' -Quiet) -and (Select-String -Path $prof -Pattern '^function upall' -Quiet)
+}
+# OneDrive Known Folder Move: the profile folder must stay local (FILE_ATTRIBUTE_PINNED)
+$pdir = Split-Path $prof
+if ($pdir -match '\\OneDrive') {
+  Check 'PS profile folder pinned always-local' { ([int64](Get-Item $pdir -Force -ErrorAction Stop).Attributes -band 0x80000) -ne 0 }
+} else { Skip 'PS profile folder pin (profile not under OneDrive)' }
 Check 'starship.toml present' { Test-Path "$HOME\.config\starship.toml" }
 $wt = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 Check 'Windows Terminal: Catppuccin Mocha + Nerd Font + Shift+Enter sendInput' {
@@ -99,9 +107,29 @@ Check 'mpv is the .mp4 default' {
 Check 'Chrome is the default browser' {
   (Get-ProgId 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https') -eq 'ChromeHTML'
 }
+$ptj = Get-Content "$env:LOCALAPPDATA\Microsoft\PowerToys\settings.json" -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json
 Check 'PowerToys: only Awake enabled' {
-  $e = (Get-Content "$env:LOCALAPPDATA\Microsoft\PowerToys\settings.json" -Raw | ConvertFrom-Json).enabled
-  (($e.PSObject.Properties | Where-Object Value | ForEach-Object Name) -join ',') -eq 'Awake'
+  (($ptj.enabled.PSObject.Properties | Where-Object Value | ForEach-Object Name) -join ',') -eq 'Awake'
+}
+Check 'PowerToys: no auto-download (updates via upall)' { $ptj.download_updates_automatically -eq $false }
+
+# --- debloat (same list as bootstrap.ps1 -Debloat - keep the two in sync; a
+# feature update may bring some back)
+Check 'debloat list absent (current user)' {
+  $apps = 'Microsoft.GamingApp','Microsoft.XboxGameOverlay','Microsoft.XboxGamingOverlay','Microsoft.XboxIdentityProvider',
+          'Microsoft.XboxSpeechToTextOverlay','Microsoft.Xbox.TCUI','Clipchamp.Clipchamp','Microsoft.MicrosoftSolitaireCollection',
+          'Microsoft.BingNews','Microsoft.BingWeather','MicrosoftWindows.Client.WebExperience','MSTeams',
+          'Microsoft.OutlookForWindows','microsoft.windowscommunicationsapps','Microsoft.PowerAutomateDesktop',
+          'Microsoft.Windows.DevHome','Microsoft.WindowsMaps','Microsoft.People','Microsoft.WindowsFeedbackHub',
+          'Microsoft.GetHelp','Microsoft.MicrosoftOfficeHub','Microsoft.Todos','Microsoft.StartExperiencesApp',
+          'Microsoft.ZuneMusic','Microsoft.ZuneVideo','Microsoft.Copilot'
+  # Appx cmdlets are not native in pwsh 7: ask Windows PowerShell 5.1
+  $global:LASTEXITCODE = 1
+  $names = @(powershell.exe -NoProfile -Command "`$ErrorActionPreference='Stop'; Get-AppxPackage | ForEach-Object Name")
+  if ($global:LASTEXITCODE -ne 0 -or -not $names) { throw 'Get-AppxPackage failed' }
+  $left = @($names | Where-Object { $apps -contains $_ } | Sort-Object -Unique)
+  if ($left) { Write-Host "  still installed: $($left -join ', ')" }
+  $left.Count -eq 0
 }
 
 # --- sign-in (Windows Hello)
