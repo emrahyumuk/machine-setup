@@ -4,4 +4,3 @@ bios: R2XET42W (1.22 )
 cpu: AMD Ryzen AI 7 PRO 350 w/ Radeon 860M
 gpu: AMD Radeon(TM) 860M Graphics driver 32.0.22024.19001
 ram-visible-gb: 30.6
-c-free-gb: 25.3
