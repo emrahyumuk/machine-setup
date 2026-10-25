@@ -1183,7 +1183,15 @@ comments recorded, nothing more.
   key.txt`): FAT32/FAT16 key (NTFS/exFAT unsupported), admin prompt in the
   package folder, `mkusbkey.bat <drive>:`, then F12 → USB HDD on AC, and do
   not power off through the restarts. Secure Boot can stay on (Lenovo-signed
-  loader). Status 2026-10-24: USB flash postponed by the owner.
+  loader). TRAP: `mkusbkey.bat` 1.01 in r2xuj42w aborts after the first
+  file ("Related file was not able to be copied") - it copies
+  `Rfs\Usb\SHELLFLASH.EFI` but the package ships `Rfs\Usb\ShellFlash64.efi`.
+  Do its steps by hand: `EFI\Boot\BootX64.efi`; into `Flash\`:
+  ShellFlash64.efi (also as SHELLFLASH.EFI), `Rfs\Bcp\Japan\ThinkPad\BCP.evs`,
+  `Rfs\Bin\Japan\X64\*.PAT`, and `Rfs\Fw\*` recursively (the 66.3 MB
+  `R2XSG22W\$0AR2X00.SC1`); hash-check against the package. Copy the package
+  out of Vantage's `session\Repository` cache first - Vantage may purge it.
+  Status 2026-10-25: key prepared, flash pending a reboot window.
   Firmware for other devices (fingerprint, dock,
   NVMe…) still goes through fwupd fine — only the system-firmware capsule
   hits the limit. Read the WHOLE chain before skipping one: 0.1.22 alone
