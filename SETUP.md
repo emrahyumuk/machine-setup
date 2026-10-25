@@ -198,8 +198,15 @@ freshness stamps; see HARDWARE.md / machines/README.md.)
 - `/etc/systemd/zram-generator.conf`:
   ```ini
   [zram0]
-  zram-size = min(ram / 2, 12288)
+  zram-size = ram
+  compression-algorithm = zstd
   ```
+  (Was `min(ram / 2, 12288)` with lzo-rle until 2026-10-22: the cap counts
+  UNCOMPRESSED data, so on 2026-10-13 a full 12G zram held only 4.7 GB of
+  RAM while the box was out of memory. zstd compresses ~4:1 here (measured
+  2026-10-25: 2.3G data in 561M) vs lzo-rle's
+  2.75:1 for a little more CPU; with a cap of `ram` zram stops being the
+  wall and the disk tier below stays the overflow.)
 - `/etc/sysctl.d/99-zram-tuning.conf`:
   ```ini
   vm.swappiness = 150
@@ -215,7 +222,7 @@ freshness stamps; see HARDWARE.md / machines/README.md.)
   cheap); page-cluster=3 is rotational-disk batching, waste on zram;
   watermark_scale=125 makes kswapd start early and calm — this is the knob that
   kills the burst-allocation stall. zram cap raise costs nothing until used
-  (DISKSIZE is a cap, not a reservation; measured lzo-rle ratio 2.75:1).
+  (DISKSIZE is a cap, not a reservation).
   Field result: fan stays off in normal use; full-core rustc build with mem PSI
   and swap traffic both zero.
   ASSUMES: zram as the PRIMARY swap tier (since 2026-08-06 a low-priority

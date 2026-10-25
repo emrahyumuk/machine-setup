@@ -47,7 +47,8 @@ grep -q '^max_parallel_downloads=10' /etc/dnf/dnf.conf && ok "dnf max_parallel_d
 rpm -q mesa-va-drivers-freeworld >/dev/null 2>&1 && ok "mesa-va-drivers-freeworld" || bad "freeworld VA driver missing"
 c=$(asuser vainfo 2>/dev/null | grep -c H264); [ "${c:-0}" -gt 0 ] && ok "vainfo H264 profiles: $c" || bad "vainfo shows no H264 (needs relogin after install?)"
 rpm -q ffmpeg >/dev/null 2>&1 && ! rpm -q ffmpeg-free >/dev/null 2>&1 && ok "full ffmpeg (not ffmpeg-free)" || bad "ffmpeg: expected full ffmpeg, not ffmpeg-free"
-z=$(zramctl --output DISKSIZE --noheadings 2>/dev/null | head -1 | tr -d " "); [[ "$z" == 12G* ]] && ok "zram 12G" || bad "zram size $z (expect 12G = min(ram/2,12288))"
+read -r zb za <<<"$(zramctl --bytes --output DISKSIZE,ALGORITHM --noheadings 2>/dev/null | head -1)"; mt=$(awk '/^MemTotal/{print $2*1024}' /proc/meminfo)
+[ -n "$zb" ] && [ "$za" = zstd ] && [ $((zb * 100 / mt)) -ge 95 ] && [ $((zb * 100 / mt)) -le 105 ] && ok "zram = RAM ($((zb >> 30))G), zstd" || bad "zram ${zb:-missing} bytes / ${za:-?} (expect zram-size = ram, zstd)"
 for kv in vm.swappiness=150 vm.page-cluster=0 vm.watermark_boost_factor=0 vm.watermark_scale_factor=125; do
   k=${kv%=*}; v=${kv#*=}; [ "$(sysctl -n $k 2>/dev/null)" = "$v" ] && ok "$kv" || bad "$k=$(sysctl -n $k) (expect $v)"
 done

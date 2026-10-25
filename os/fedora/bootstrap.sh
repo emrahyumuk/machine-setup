@@ -50,7 +50,8 @@ systemctl --user enable --now earlyoom-notify.service
 echo "== zram config =="
 sudo tee /etc/systemd/zram-generator.conf >/dev/null <<'EOF'
 [zram0]
-zram-size = min(ram / 2, 12288)
+zram-size = ram
+compression-algorithm = zstd
 EOF
 
 echo "== VM tuning (see SETUP.md for rationale; ASSUMES zram, no hibernate) =="
@@ -138,7 +139,7 @@ M=machines/thinkpad-p14s-fedora.md
 echo
 echo "Done. Verification:"
 echo "  vainfo | grep -c H264       -> must be > 0 (needs relogin/reboot if 0)"
-echo "  swapon --show               -> zram size per min(ram/2, 12288) after reboot; /swap/swapfile pri 10"
+echo "  swapon --show               -> zram size = RAM (zstd) after reboot; /swap/swapfile pri 10"
 echo "  sudo snapper list           -> pre/post pair per dnf transaction (after the next one)"
 echo "  sysctl vm.swappiness        -> 150"
 echo "  journalctl -u earlyoom -b | grep SIGTERM  -> 10%/10% thresholds"
