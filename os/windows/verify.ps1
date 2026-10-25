@@ -2,11 +2,22 @@
 # translated for the dual-boot slice) as PASS/FAIL. Read-only; no admin needed.
 # Installed by bootstrap.ps1 as ~/.local/bin/machine-verify.ps1.
 $ErrorActionPreference = 'Continue'
-$script:pass = 0; $script:fail = 0
+$script:pass = 0; $script:fail = 0; $script:skip = 0
+# A probe that throws is a FAIL, never a PASS: tests compare against the wanted
+# value (-eq), and probes whose silence would read as "fine" use -ErrorAction Stop.
 function Check([string]$name, [scriptblock]$test) {
   $ok = $false
   try { $ok = [bool](& $test) } catch { $ok = $false }
   if ($ok) { $script:pass++; "PASS  $name" } else { $script:fail++; "FAIL  $name" }
+}
+function Skip([string]$name) { $script:skip++; "SKIP  $name" }
+# Default-app ProgId: Windows 11 24H2+ writes UserChoiceLatest (ProgId in a
+# subkey of the same name), older builds UserChoice - read the new one first.
+function Get-ProgId([string]$base) {
+  foreach ($p in "$base\UserChoiceLatest\ProgId", "$base\UserChoiceLatest", "$base\UserChoice") {
+    $v = (Get-ItemProperty $p -Name ProgId -ErrorAction SilentlyContinue).ProgId
+    if ($v) { return $v }
+  }
 }
 $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
 
@@ -15,9 +26,9 @@ Check 'hibernation off (no Fast Startup, no hiberfil.sys)' {
   (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Power').HibernateEnabled -eq 0 -and
   (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power').HiberbootEnabled -eq 0
 }
-Check 'charge threshold set in Vantage (stop 80)' {
+Check 'charge threshold set in Vantage (start 75 / stop 80)' {
   $hit = Get-ChildItem 'HKLM:\SOFTWARE\WOW6432Node\Lenovo\PWRMGRV\ConfKeys\Data','HKLM:\SOFTWARE\Lenovo\PWRMGRV\ConfKeys\Data' -Recurse -ErrorAction SilentlyContinue |
-    Get-ItemProperty -ErrorAction SilentlyContinue | Where-Object { $_.ChargeStopPercentage -eq 80 }
+    Get-ItemProperty -ErrorAction SilentlyContinue | Where-Object { $_.ChargeStopPercentage -eq 80 -and $_.ChargeStartPercentage -eq 75 }
   [bool]$hit
 }
 
@@ -36,15 +47,24 @@ Check 'gh authenticated'          { gh auth status *> $null; $LASTEXITCODE -eq 0
 foreach ($t in 'pwsh','git','gh','delta','lazygit','starship','zoxide','fzf','atuin','eza','bat','duf','btop4win','nvim','node','pnpm','code') {
   Check "command: $t" { [bool](Get-Command $t -ErrorAction SilentlyContinue) }
 }
-Check 'rustc (msvc host)' { (& "$HOME\.cargo\bin\rustc.exe" -vV | Select-String '^host:') -match 'pc-windows-msvc' }
-Check 'MSVC build tools present' {
-  [bool](& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
-}
-Check 'Smart App Control off (local builds can run)' {
-  (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy').VerifiedAndReputablePolicyState -eq 0
-}
+# [role] Rust/MSVC builds (section 2b "Rust + MSVC"): checked only where rustup is installed
+if (Test-Path "$HOME\.cargo\bin\rustup.exe") {
+  Check 'rustc (msvc host)' { (& "$HOME\.cargo\bin\rustc.exe" -vV | Select-String '^host:') -match 'pc-windows-msvc' }
+  Check 'MSVC build tools present' {
+    [bool](& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)
+  }
+  Check 'VS installer keeps no payload cache (KeepDownloadedPayloads=0)' {
+    (Get-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\VisualStudio\Setup' -ErrorAction Stop).KeepDownloadedPayloads -eq 0
+  }
+  Check 'Smart App Control off (local builds can run)' {
+    (Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy' -ErrorAction Stop).VerifiedAndReputablePolicyState -eq 0
+  }
+} else { Skip 'Rust/MSVC/Smart App Control (role item; rustup not installed)' }
 Check 'node is 24.x (one LTS line, APPS.md)' { (node --version) -like 'v24.*' }
-Check 'winget pin keeps Node on 24.*'        { [bool](winget pin list --disable-interactivity | Select-String 'OpenJS.NodeJS.LTS') }
+Check 'winget pin keeps Node on 24.*' {
+  $l = winget pin list --disable-interactivity | Select-String 'OpenJS\.NodeJS\.LTS' | Select-Object -First 1
+  [bool]$l -and ($l.Line -match '\s24\.\*(\s|$)')
+}
 Check 'npm allow-scripts lists opencode-ai'  { (npm config get allow-scripts) -match 'opencode-ai' }
 
 # --- shell + terminal wiring
@@ -54,10 +74,13 @@ Check 'Shift+Enter = AddLine in profile' { Select-String -Path $prof -Pattern "S
 Check 'starship.toml present' { Test-Path "$HOME\.config\starship.toml" }
 $wt = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 Check 'Windows Terminal: Catppuccin Mocha + Nerd Font + Shift+Enter sendInput' {
-  $j = Get-Content $wt -Raw | ConvertFrom-Json
+  $j = Get-Content $wt -Raw -ErrorAction Stop | ConvertFrom-Json
+  # the keybinding only names an action id; the action must be sendInput ESC CR
+  $ids = @($j.keybindings | Where-Object { $_.keys -eq 'shift+enter' } | ForEach-Object id)
+  $act = @($j.actions | Where-Object { $ids -contains $_.id -and $_.command.action -eq 'sendInput' -and $_.command.input -eq "$([char]27)`r" })
   $j.profiles.defaults.colorScheme -eq 'Catppuccin Mocha' -and
   $j.profiles.defaults.font.face -eq 'JetBrainsMono Nerd Font' -and
-  [bool]($j.keybindings | Where-Object { $_.keys -eq 'shift+enter' })
+  $act.Count -gt 0
 }
 Check 'JetBrainsMono Nerd Font installed' {
   [bool](Get-ChildItem "$env:LOCALAPPDATA\Microsoft\Windows\Fonts","$env:WINDIR\Fonts" -Filter 'JetBrainsMonoNerdFont*' -ErrorAction SilentlyContinue)
@@ -69,12 +92,12 @@ Check 'mpv.conf with d3d11va-copy + deinterlace' {
   $c -match 'hwdec=d3d11va-copy' -and $c -match 'deinterlace=yes'
 }
 Check 'mpv is the .mp4 default' {
-  (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.mp4\UserChoice').ProgId -match 'mpv'
+  (Get-ProgId 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.mp4') -match 'mpv'
 }
 
 # --- defaults / PowerToys
 Check 'Chrome is the default browser' {
-  (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice').ProgId -eq 'ChromeHTML'
+  (Get-ProgId 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https') -eq 'ChromeHTML'
 }
 Check 'PowerToys: only Awake enabled' {
   $e = (Get-Content "$env:LOCALAPPDATA\Microsoft\PowerToys\settings.json" -Raw | ConvertFrom-Json).enabled
@@ -82,10 +105,14 @@ Check 'PowerToys: only Awake enabled' {
 }
 
 # --- sign-in (Windows Hello)
-Check 'account has a sign-in secret (not passwordless auto-login)' {
-  (Get-LocalUser -Name $env:USERNAME).PrincipalSource -ne 'Local' -or (Get-LocalUser -Name $env:USERNAME).PasswordRequired
+Check 'Microsoft account sign-in, no auto-login' {
+  $u = Get-LocalUser -Name $env:USERNAME -ErrorAction Stop
+  $wl = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction Stop
+  # string compare: PS 7 may hand back a deserialized LocalUser (WinCompat), where
+  # PrincipalSource is a string; an absent AutoAdminLogon counts as off
+  "$($u.PrincipalSource)" -eq 'MicrosoftAccount' -and "$($wl.AutoAdminLogon)" -ne '1'
 }
 
 ''
-"$script:pass PASS / $script:fail FAIL"
+"$script:pass PASS / $script:fail FAIL / $script:skip SKIP"
 if ($script:fail) { exit 1 }
