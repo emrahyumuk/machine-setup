@@ -262,7 +262,7 @@ freshness stamps; see HARDWARE.md / machines/README.md.)
   reclaim (+4-6 GB) was considered and DECLINED at the time — the 8 GB
   iGPU reserve stayed for local-LLM plans; the swapfile alone removed the
   wall. (Reversed 2026-08-20: UMA lowered to 4 GB after a week of OOM
-  storms — see the hardware section.)
+  storms, then to 1 GB on 2026-10-25 — see the hardware section.)
   ASSUMES: btrfs (mkswapfile handles NOCOW/compression); LUKS cost is
   per-page AES-NI, negligible at trickle rates.
   VERIFY: `swapon --show` → two rows, zram pri 100, /swap/swapfile pri
@@ -542,15 +542,16 @@ to this repo.
 
 ## 2b. OS-specific — Windows
 
-Machine: `machines/thinkpad-p14s-windows.md` (the factory Windows 11 Pro
-25H2 in the ~95 GB dual-boot slice). Mechanics:
+Machine: `machines/thinkpad-p14s-windows.md` (the factory Windows 11 Pro,
+26H2 since 2026-10-25, in the ~95 GB dual-boot slice). Mechanics:
 `os/windows/{bootstrap,verify,collect}.ps1`, per-OS dotfiles in
 `dotfiles/windows/`. Written from the first Windows session (2026-10-24,
 owner). ROLE of this slice: occasional use, plus Windows release builds of
 the owner's Tauri apps — that is why agent CLIs and the `~/.claude` sync
 were deliberately left out (see "Deliberately not done here" below), why
-the Rust toolchain came in late the same day ("Rust + MSVC" below), and why
-disk space (24.7 GB free at the start) drove several decisions.
+the Rust toolchain came in late the same day ("Rust + MSVC" below — those
+items are tagged *[role]*: only for a machine that builds Windows binaries),
+and why disk space (24.7 GB free at the start) drove several decisions.
 
 **Agents: the SELECTIONS in this layer are the owner's choices for a
 secondary, rarely-used slice — not Windows defaults.** What carries over to
@@ -605,8 +606,12 @@ the whole manifest, not a copy of this slice.
   package transaction"; restore points are Windows' package-level undo.
   Same caveat as snapper: NOT a backup (same disk). 5 GB cap because of the
   small partition — it is a ceiling, not a reservation. Was OFF (0 points).
-  Note: Windows allows one restore point per 24 h by default — weekly upall
-  is far inside that.
+  Note: Windows makes at most one restore point per 24 h by default (a
+  second `Checkpoint-Computer` only warns), so an `upall` within a day of
+  another point — e.g. right after `bootstrap.ps1 -System` — gets none.
+  `upall` and `bootstrap.ps1 -System` compare the newest point before and
+  after; with no new point (or a failed/declined UAC step) they warn and ask
+  before `winget` touches anything.
   VERIFY: `RPSessionInterval` = 1 under `HKLM\…\Windows NT\CurrentVersion\SystemRestore`
   (readable without admin; listing points needs admin: `Get-ComputerRestorePoint`).
 
@@ -641,7 +646,10 @@ the whole manifest, not a copy of this slice.
   closer to zshrc, poor Windows integration; (c) WSL2 + the zsh dotfile
   verbatim — 3-5 GB and a Windows feature, too much for this slice.
 - `dotfiles/windows/profile.ps1` → `$PROFILE` is the zshrc counterpart:
-  starship, zoxide, PSFzf (Ctrl+T; module from PSGallery), atuin on Ctrl+R
+  starship, zoxide, PSFzf (Ctrl+T; module from PSGallery via
+  `Install-Module -Force` — PSGallery itself stays Untrusted; an earlier
+  bootstrap set it Trusted, `Set-PSRepository PSGallery -InstallationPolicy
+  Untrusted` undoes that), atuin on Ctrl+R
   (`--disable-up-arrow`; atuin 18.24 ships a PowerShell init), PSReadLine
   inline predictions = zsh-autosuggestions, eza/bat/duf/btop4win/lazygit/nvim
   aliases. PowerShell's built-in `ls`/`cat`/`tree` aliases must be removed
@@ -671,7 +679,7 @@ the whole manifest, not a copy of this slice.
   Node 26 becomes LTS at the end of October 2026 and `winget upgrade --all`
   would move this machine alone. APPS.md: all machines move together.
   pnpm via `pnpm.pnpm`; npm `allow-scripts` as on Fedora/Mac (npm 11).
-  VERIFY: `node --version` → v24.*; `winget pin list` shows the pin.
+  VERIFY: `node --version` → v24.*; `winget pin list` shows the 24.* pin.
 
 ### mpv — the player, Windows mechanics
 - `shinchiro.mpv` (installs to `C:\Program Files\MPV Player`, registers
@@ -705,103 +713,112 @@ the whole manifest, not a copy of this slice.
   & TV, Copilot. Desktop leftovers: Adobe Genuine Service (no Adobe app),
   Logi Download Assistant (no Options+), BatteryBar (an orphan
   "remove only" entry — files were already gone).
-- KEPT on purpose: Office LTSC 2024 (licensed; 4.8 GB, "for now"), Phone
+- KEPT on purpose: Office LTSC 2024 (4.8 GB, "for now"), Phone
   Link + Cross Device, WinRAR, OneDrive (holds real files + KFM backup of
   Desktop/Documents/Pictures), driver companions (AMD, Dolby, Realtek,
   Synaptics, TrackPoint), Lenovo Vantage + System Update (BIOS, charge).
 - OneDrive "free up space" instead of removal: `attrib +U -P` on Resimler/
   Belgeler (online-only, ~2 GB back), the PowerShell profile folder pinned.
+  VERIFY: `attrib` on the `$PROFILE` folder shows `P` (machine-verify:
+  "PS profile folder pinned always-local"; SKIP when it is not under OneDrive).
 - Provisioned copies stay, so a new Windows user would get them again; a
-  feature update may also restore some — re-run `bootstrap.ps1 -Debloat`.
+  feature update may also restore some — re-run `bootstrap.ps1 -Debloat`
+  (in Windows PowerShell 5.1: the Appx cmdlets are not native in pwsh 7).
+  VERIFY: `machine-verify` → "debloat list absent" (`Get-AppxPackage` finds
+  none of the `-Debloat` names for the current user).
 
 ### Sign-in — Microsoft account + Windows Hello
-- Found 2026-10-24: `Pc` was a LOCAL account with NO password → silent
-  auto-login ("anyone walks in"), while the owner's Microsoft account was
-  only signed into apps. And "only allow Windows Hello sign-in for Microsoft
-  accounts" (`DevicePasswordLessBuildVersion=2`) was already on. Fix (user,
-  GUI): Settings → Accounts → Your info → "Sign in with a Microsoft account
+- Fixed 2026-10-24: the local account (passwordless auto-login — anyone who
+  opened the lid was in) was converted to the owner's Microsoft account +
+  PIN + fingerprint. Before, the Microsoft account was only signed into
+  apps, while "only allow Windows Hello sign-in for Microsoft accounts"
+  (`DevicePasswordLessBuildVersion=2`) was already on. Route (user, GUI):
+  Settings → Accounts → Your info → "Sign in with a Microsoft account
   instead" (same profile folder, blank current password), then Sign-in
-  options → PIN, then Fingerprint (Synaptics reader works on Windows too).
-  The Hello-only setting then gives exactly fingerprint → PIN fallback.
-  VERIFY: `Get-LocalUser $env:USERNAME` → PrincipalSource MicrosoftAccount;
-  the lock screen asks for fingerprint/PIN after a restart.
+  options → PIN, then Fingerprint (the Synaptics reader works on Windows
+  too). The Hello-only setting then gives exactly fingerprint → PIN
+  fallback; the lock screen asks for fingerprint/PIN (confirmed 2026-10-25).
+  VERIFY: `Get-LocalUser $env:USERNAME` → PrincipalSource MicrosoftAccount,
+  and `AutoAdminLogon` under `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`
+  absent or not 1 (machine-verify); the lock screen asks for fingerprint/PIN
+  after a restart.
 
 ### Update cadence — `upcheck` / `upall` in the profile
 - Channels: winget (apps + Store source), npm -g, Windows Update, Lenovo
-  (Vantage — but BIOS via USB, §3a). `upcheck` lists all four (Windows
-  Update via the `Microsoft.Update.Session` COM searcher; a failed search
-  prints "check FAILED", never "none" — the Mac notifier lesson).
-  `upall`: restore point (UAC) → `winget upgrade --all` → `npm update -g` →
+  (Vantage; the BIOS only with a FAT32 USB key plugged in, §3a). `upcheck`
+  lists all four (Windows Update via the `Microsoft.Update.Session` COM
+  searcher; a failed search prints "check FAILED", never "none" — the Mac
+  notifier lesson). `upall`: restore point (UAC; with no NEW point it asks
+  before going on) → `winget upgrade --all` → `npm update -g` →
   opens Settings → Windows Update (installs + reboot stay a human click) →
   `machine-verify`. No weekly notifier task on this slice — occasional use.
+  VERIFY: `machine-verify` → "profile defines upcheck/upall", "PowerToys:
+  no auto-download" and the Node pin; `upcheck` prints all four channels and
+  no "check FAILED".
 - First session state: the 2026-08-31 attempt had failed (`0x80240034`);
   on 2026-10-24 the 2026-08 and then the 2026-10 cumulative installed
   (26200.9711 after one reboot — cumulative, so 09 was not needed
   separately). Order on this machine: Windows Update BEFORE a BIOS flash
   (Secure Boot dbx updates ride Windows Update first).
-- Feature update **26H2** was offered the same day and DEFERRED: the
-  release rule (wait for .1 / 2-3 weeks, as for Fedora and macOS) and disk
-  (~20 GB needed, ~10 GB free). Revisit with disk room and a restore point.
-  CORRECTION 2026-10-25: 26H2 from 25H2 is an enablement package, not a
-  full upgrade - it was already staged as the pending reboot of the 2026-10
-  cumulative and landed on the next restart (26300.9711, no `Windows.old`,
-  no disk change). "Deferring" it means not restarting; the ~20 GB estimate
-  was wrong. Pause updates before a restart you need to stay on 25H2.
+- Feature update **26H2** (landed 2026-10-25): from 25H2 it is an
+  enablement package, not a full upgrade — it was already staged as the
+  pending reboot of the 2026-10 cumulative and arrived with the next restart
+  (26300.9711, no `Windows.old`, no disk change). So the release rule (wait
+  for .1 / 2-3 weeks, as for Fedora and macOS) means NOT restarting: pause
+  updates before a restart that must stay on the old version. TRAP: it was
+  first "deferred" for ~20 GB of disk — that estimate is for a full
+  upgrade, not an enablement package.
 
 ### Rust + MSVC — Windows release builds of Tauri apps (added 2026-10-24)
-- Came in late in the first session, for the owner's Tauri apps (dropped
-  earlier for disk, then needed). `rustup-init.exe` from
-  static.rust-lang.org, `-y --profile minimal --default-toolchain stable
-  --default-host x86_64-pc-windows-msvc`. TRAP: rustup-init is NOT
-  Authenticode-signed (`Get-AuthenticodeSignature` → NotSigned is normal);
-  verify the published `.sha256` instead — and decode it: PS 5.1's
-  `Invoke-WebRequest` returns that octet-stream as a byte array, so a naive
-  compare reads "48" (the first byte) and fails.
-- Visual Studio Build Tools 2022, C++ workload: `winget install --id
+*[role]* items: they exist because this slice builds the owner's Tauri apps
+for Windows. Offer them only to a machine with that job (`bootstrap.ps1
+-Rust`; machine-verify checks them only where rustup is installed).
+- *[role]* `rustup-init.exe` from static.rust-lang.org, `-y --profile minimal
+  --default-toolchain stable --default-host x86_64-pc-windows-msvc` (came in
+  late in the first session — dropped earlier for disk, then needed). TRAP:
+  rustup-init is NOT Authenticode-signed (`NotSigned` is normal); check the
+  published `.sha256` — PS 5.1's `Invoke-WebRequest` returns it as a byte
+  array, so decode it first (a naive compare reads "48", the first byte).
+- *[role]* Visual Studio Build Tools 2022, C++ workload: `winget install --id
   Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive
   --norestart --add Microsoft.VisualStudio.Workload.VCTools
   --includeRecommended"` (UAC; brings MSVC + Windows SDK 10.0.26100). WHY:
   Rust's msvc target links with `link.exe` against the Windows SDK — Tauri's
   official Windows prerequisite; the GNU target isn't supported by Tauri.
-  It asks for a restart; the first build worked without one.
-- Cost measured: ~6.5 GB for both; a Tauri release `target/` ~2.9 GB;
-  first release build 14.5 min on this machine. WebView2 ships with Windows.
-  TRAP (same day): a Tauri DEBUG `target/` (e2e test build) grew to
-  **12.4 GB** — 7 GB `deps`, 3.9 GB `incremental`, a 400 MB PDB; MSVC debug
-  info is far bigger than on Linux. With Windows Update installing at the
-  same time the disk fell to 4 GB free ("low disk space"). Recovered
-  without touching the running build: `target\release` (already installed),
-  `target\debug\incremental` (cache only, deleted while no cargo ran), and
-  `DISM /Online /Cleanup-Image /StartComponentCleanup` after the cumulative
-  updates (+7.8 GB here). The debug target regrows with every test run
-  (17 GB an hour later) — on a small partition, build debug with
+  It asks for a restart; the first build worked without one. Payload cache
+  (1.3 GB): only via the policy
+  `HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup KeepDownloadedPayloads=0`
+  (`bootstrap.ps1 -Rust` sets it; the installer drops payloads itself).
+  TRAP — never hand-delete `C:\ProgramData\Microsoft\VisualStudio\Packages`
+  (2026-10-24, agent's mistake; PS 5.1's `-Exclude` with `-Recurse` did not
+  spare `_Instances`): `_Instances\<id>\state.json` is the installer's
+  registration of the Build Tools. Without it `vswhere` lists nothing and
+  rustc fails ("please ensure that Visual Studio 2017 or later … Visual C++
+  option") with `cl.exe` still on disk. Recovery: delete `…\2022\BuildTools`,
+  then `winget install --force` the same workload (repair needs the
+  instance; the installer refuses a non-empty unknown folder).
+  VERIFY: `vswhere -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64`
+  prints a path; `KeepDownloadedPayloads` = 0; `cargo new t; cargo run` in
+  it prints Hello, world!
+- *[role]* Cost measured: ~6.5 GB for both; a Tauri release `target/` ~2.9 GB;
+  first release build 14.5 min here. WebView2 ships with Windows.
+  TRAP (2026-10-24): a Tauri DEBUG `target/` reached 12.4 GB (17 GB an hour
+  later — MSVC debug info is far bigger than on Linux) and, with Windows
+  Update installing, the disk fell to 4 GB free. Safe to drop:
+  `target\release` once installed, `target\debug\incremental` while no cargo
+  runs, and `DISM /Online /Cleanup-Image /StartComponentCleanup` after
+  cumulative updates (+7.8 GB here). On a small partition build debug with
   `CARGO_PROFILE_DEV_DEBUG=line-tables-only` and `cargo clean` after a test
   session (a project decision, not a machine one).
-  TRAP — DO NOT hand-delete `C:\ProgramData\Microsoft\VisualStudio\Packages`
-  (2026-10-24, agent's mistake): `_Instances\<id>\state.json` in there IS
-  the installer's registration of the Build Tools instance. `Remove-Item
-  …\Packages\* -Recurse -Exclude _Instances` does not protect it (PS 5.1's
-  `-Exclude` with `-Recurse` is unreliable) — the folder stayed, its content
-  went. Afterwards `vswhere` lists nothing, `cl.exe` is still on disk, and
-  Rust fails: "please ensure that Visual Studio 2017 or later, or Build
-  Tools … were installed with the Visual C++ option" (rustc finds MSVC
-  through that registration, not by path). Repair can't help (no instance),
-  and the installer refuses a non-empty unknown folder: delete
-  `…\2022\BuildTools`, then `winget install --force` the same workload.
-  For the 1.3 GB payload cache use only the policy
-  `HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup KeepDownloadedPayloads=0`
-  (set here; the installer drops payloads itself from then on).
-  VERIFY: `vswhere -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64`
-  prints a path, and `cargo new t; cargo run` in it prints Hello, world!
-- Local release builds of a project that sets `createUpdaterArtifacts: true`
+- *[role]* Local release builds of a project that sets `createUpdaterArtifacts: true`
   fail at the end without the signing key: pass an overlay,
   `tauri build --bundles nsis --config <file with {"bundle":{"createUpdaterArtifacts":false}}>`
   — nothing in the project changes. pnpm (winget's 12.x) honours a
   project's `packageManager` pin and switches itself.
-- mold has no PE/COFF backend — `~/.cargo/config.toml` stays absent here
+- *[role]* mold has no PE/COFF backend — `~/.cargo/config.toml` stays absent here
   (MSVC `link.exe` is fine at this build rate; `rust-lld` is the option if
   link time ever matters).
-- **Smart App Control was ON and blocked every locally built exe**
+- *[role]* **Smart App Control was ON and blocked every locally built exe**
   ("An Application Control policy has blocked this file"; CodeIntegrity
   event 3077, "did not meet the Enterprise signing level requirements").
   It has no "Run anyway" (that is SmartScreen, for downloaded files) and no
@@ -1050,17 +1067,22 @@ comments recorded, nothing more.
 
 **Nothing here auto-ports. Re-evaluate each item on new hardware.**
 
-- **BIOS UMA frame buffer: 4 GB to iGPU** (Config → Display → Total
-  Graphics Memory). Was 8 GB for local-LLM headroom; halved 2026-08-20
-  after a week of memory storms (38 earlyoom kills in 12h at the worst) —
-  the +4 GB of system RAM wins every day, while GTT still lets the iGPU
-  address ~13.8 GB dynamically (~17.8 GB total), so the local-LLM envelope
-  survives. Revert is one BIOS visit if a runtime ever truly needs 8 GB
-  dedicated.
-  UPDATE (owner, noted 2026-10-24): lowered again to **1 GB** for now — RAM
-  is the tighter resource; owner plans to return to it later. Windows then
-  sees 30.6 GB and reports 1024 MB adapter RAM (quick check of the current
-  value from either OS without a BIOS visit).
+- **BIOS UMA frame buffer: 1 GB to iGPU** (Config → Display → Total
+  Graphics Memory). History: 8 GB for local-LLM headroom → 4 GB on
+  2026-08-20 after a week of memory storms (38 earlyoom kills in 12h at the
+  worst) → 1 GB on 2026-10-25 (RAM is the tighter resource). WHY a small
+  carve-out: AMD's ROCm "RDNA3.5 system optimization" guide
+  (rocm.docs.amd.com → how-to/system-optimization/rdna3-5) recommends
+  keeping the BIOS VRAM reservation small (its example: 0.5 GB) and raising
+  the shared GTT limit instead — the reservation "provides little benefit
+  for most workloads while permanently reducing available system memory",
+  while GTT allocations are dynamic and the OS reclaims them when the GPU
+  is idle. GTT still lets the iGPU map ~15 GB here (default ≈ half of RAM),
+  so the local-LLM envelope survives. Fedora now sees ~30 GiB (MemTotal),
+  Windows 30.6 GB with 1024 MB adapter RAM. Revert is one BIOS visit if a
+  runtime ever truly needs dedicated memory.
+  VERIFY: `cat /sys/class/drm/card1/device/mem_info_vram_total` →
+  1073741824 (machine-verify); Windows: adapter RAM 1024 MB.
 - **Qudelix 5K DAC**: WebHID over USB (not Bluetooth) for the config app;
   needs a udev rule; pipewire profile analog-stereo. Listening-chain rules
   (all three found violated 2026-08-06, together = "sounds worse than the
@@ -1120,6 +1142,9 @@ comments recorded, nothing more.
   hybrid shutdown (Fast Startup) or a Windows BT driver update leaving the
   chip half-initialised — keep Fast Startup OFF on the Windows side
   (it was still ON until 2026-10-24; now off via hibernation off, §2b).
+  2026-10-25: the same timeout followed a BIOS flash from Windows with Fast
+  Startup already OFF — a firmware flash is a trigger too; the full
+  power-off fixed it.
   FIX: a **full power-off** (not a reboot) — after it the log shows
   `hci0: Device setup in … usecs` with no wmt line, and the controller
   registers first try. Reloading the driver
@@ -1156,65 +1181,42 @@ comments recorded, nothing more.
   roams still happening, roams have become carrier-preserving and the DoH
   workaround can be reconsidered. Still failing on every roam at kernel 7.2.9
   (2026-10-13: 59 roams, 59 failures).
-- **BIOS updates via fwupd/LVFS FAIL on this disk layout (TRAP, 2026-09-28)**:
-  the ESP is the 100 MB one Windows created at the factory
-  (`nvme0n1p1`, ~45 MB free); a UEFI capsule update needs ~140 MB there —
-  `fwupdmgr update` says "/boot/efi does not have sufficient space" and
-  leaves the device in `Update State: Failed`, and `upall` re-offers it every
-  week. Enlarging the ESP means moving the Microsoft reserved + Windows
-  partitions right behind it — not worth it. Apply BIOS updates from the
-  Windows side instead (Lenovo Vantage / System Update, which flashes
-  without the ESP) or Lenovo's bootable BIOS-update USB; answer `n` to the
-  fwupd prompt meanwhile.
-  CORRECTION (2026-10-24, first Windows session): "Windows flashes without
-  the ESP" was WRONG for Vantage/System Update. Two attempts that day both
-  logged in `…\LenovoSystemUpdateAddin\session\Repository\r2xuj42w\Winuptp.log`:
-  `BIOS: R2XET39W -> R2XET42W, EC: R2XHT32W -> R2XHT33W` …
-  `Failed to update ThinkPad System Firmware (119)` / `Failed to save
-  capsule image to ESP failed.` — Lenovo's Windows tool ALSO stages the
-  capsule on the ESP, and the capsule (`$0AR2X00.SC1`) is 66.3 MB against
-  ~45 MB free. The route that works without touching partitions: the same
-  package's **"Copy system program to the USB drive"** option (it carries
-  `Rfs\Usb\BootX64.efi` + `ShellFlash64.efi`) → boot that USB (≥128 MB,
-  gets wiped) on AC → flash from there; EC updates in the same run (several
-  automatic restarts are normal). Do Windows Update first (dbx).
-  Windows Update tries the same route on its own: on 2026-10-24 it offered
-  "Lenovo Ltd. Firmware Driver Update (1.22.0.0)", reported it "installed",
-  and after the reboot the BIOS was still R2XET39W (1.19) — the System
-  Firmware device sat in Device Manager with problem code 10,
-  `LastAttemptStatus` 0xC0000058. Same ESP wall; a "successful" WU firmware
-  entry is NOT proof of a flash — check `Win32_BIOS.SMBIOSBIOSVersion`.
-  The package's own instructions (`Instruction US - BIOS flash USB memory
-  key.txt`): FAT32/FAT16 key (NTFS/exFAT unsupported), admin prompt in the
-  package folder, `mkusbkey.bat <drive>:`, then F12 → USB HDD on AC, and do
-  not power off through the restarts. Secure Boot can stay on (Lenovo-signed
-  loader). TRAP: `mkusbkey.bat` 1.01 in r2xuj42w aborts after the first
-  file ("Related file was not able to be copied") - it copies
-  `Rfs\Usb\SHELLFLASH.EFI` but the package ships `Rfs\Usb\ShellFlash64.efi`.
-  Do its steps by hand: `EFI\Boot\BootX64.efi`; into `Flash\`:
-  ShellFlash64.efi (also as SHELLFLASH.EFI), `Rfs\Bcp\Japan\ThinkPad\BCP.evs`,
-  `Rfs\Bin\Japan\X64\*.PAT`, and `Rfs\Fw\*` recursively (the 66.3 MB
-  `R2XSG22W\$0AR2X00.SC1`); hash-check against the package. Copy the package
-  out of Vantage's `session\Repository` cache first - Vantage may purge it.
-  OUTCOME 2026-10-25: booting that hand-made key (F12 → USB HDD) ended in a
-  generic red error, nothing flashed. What WORKED: the FAT32 key still
-  plugged in, the Windows-side package run again (Vantage → BIOS update →
-  restart) - it staged the capsule on the KEY instead of the full ESP: the
-  key's FAT then held a deleted `EFI\Capsule\BIOS.CAP` of 69,570,640 bytes
-  (= `$0AR2X00.SC1`) written at the click, removed by the firmware after
-  the flash. Nothing of the hand-made key's own files was used, so any
-  FAT32 key with room should do (untested). The restart flashed with no
-  boot menu: BIOS R2XET42W (1.22), EC 1.12, System Firmware device OK,
-  `LastAttemptStatus` 0. ESP untouched (44.5 MB free), firmware boot order
-  unchanged (Fedora first), Secure Boot state unchanged. So on a 100 MB ESP:
-  plug in a FAT32 key with ≥128 MB free, then run the Windows updater.
-  Firmware for other devices (fingerprint, dock,
-  NVMe…) still goes through fwupd fine — only the system-firmware capsule
-  hits the limit. Read the WHOLE chain before skipping one: 0.1.22 alone
-  only touches a touch-panel list, but it is cumulative and the 0.1.21 it
-  carries is Urgency High with a security fix (2026-10-19: still on 0.1.19,
-  apply from Windows). Pending Secure Boot dbx updates ride along there too —
-  Windows Update applies them and keeps its own boot manager current first.
+- **BIOS updates on the 100 MB ESP: plug in a FAT32 USB key, then run the
+  Windows updater** (worked 2026-10-25, 1.19 → 1.22). The ESP is the 100 MB
+  one Windows created at the factory (`nvme0n1p1`, ~45 MB free) and the
+  system-firmware capsule (66.3 MB) does not fit. Recipe: Windows Update
+  first (Secure Boot dbx updates ride it), then a FAT32 key with ≥128 MB
+  free plugged in, on AC, Vantage → System Update → BIOS update → restart.
+  With the key present the updater stages the capsule on the KEY
+  (`EFI\Capsule\BIOS.CAP`, 69,570,640 bytes = the package's
+  `$0AR2X00.SC1`, deleted by the firmware after the flash); the restart
+  flashes with no boot menu — BIOS R2XET42W (1.22), EC 1.12 in the same
+  run; several automatic restarts are normal, don't power off. ESP (44.5 MB
+  free), firmware boot order (Fedora first) and Secure Boot state stayed
+  untouched. The key used was a hand-made flash key whose own files were
+  not used, so any FAT32 key with room should do (untested).
+  VERIFY (Windows): `(Get-CimInstance Win32_BIOS).SMBIOSBIOSVersion` shows
+  the new version and the System Firmware device has no problem code
+  (`LastAttemptStatus` 0) — never the Windows Update history (TRAP below).
+  TRAP (2026-09-28): `fwupdmgr update` → "/boot/efi does not have
+  sufficient space", device left `Update State: Failed`, re-offered by
+  `upall` weekly — answer `n`. Enlarging the ESP means moving the MSR +
+  Windows partitions: not worth it.
+  TRAP (2026-10-24): Vantage/System Update WITHOUT a key → `Failed to save
+  capsule image to ESP failed.` (`Winuptp.log` in the package folder under
+  `…\LenovoSystemUpdateAddin\session\Repository\`).
+  TRAP (2026-10-24): Windows Update's "Lenovo Ltd. Firmware Driver Update
+  (1.22.0.0)" reported "installed" and flashed nothing (problem code 10,
+  `LastAttemptStatus` 0xC0000058).
+  TRAP (2026-10-25): booting Lenovo's BIOS-flash USB key (F12 → USB HDD)
+  ended in a generic red error, nothing flashed; its `mkusbkey.bat` 1.01
+  also aborts after the first file (it copies `SHELLFLASH.EFI`, the package
+  ships `ShellFlash64.efi`).
+  Firmware for other devices (fingerprint, dock, NVMe…) still goes through
+  fwupd fine — only the system-firmware capsule hits the limit. Read the
+  WHOLE chain before skipping one: 0.1.22 alone only touches a touch-panel
+  list, but it is cumulative and the 0.1.21 it carries is Urgency High with
+  a security fix.
 - **Fingerprint reader**: enrolled for sudo. Quirk: sudo inside embedded
   terminals/AI sessions may lack a TTY for password fallback — run sudo
   commands in a real terminal window.

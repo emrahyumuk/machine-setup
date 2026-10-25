@@ -38,7 +38,8 @@ hardware:
 
 **Machine ROLES are not defaults.** Items tagged *[role]* (today: §3b's
 always-on home server — no sleep, remote access, Tailscale daemon,
-auto-update off, Xcode for iOS testing) exist because the owner gave ONE
+auto-update off, Xcode for iOS testing; §2b's Windows release builds —
+Rust/MSVC, Smart App Control off) exist because the owner gave ONE
 machine that job. Never offer them to someone else or on the owner's other
 machines by default; offer them only when the user describes the same role
 (always on, reached remotely…), and then ask item by item like everything
@@ -47,8 +48,9 @@ else. Same for the owner's private tooling the manifest mentions in passing
 
 **Choices made for a secondary machine are not defaults either.** Some OS
 layers record what the owner picked for a rarely-used machine (§2b: the
-Windows dual-boot slice skipped Rust, agent CLIs and the `~/.claude` sync,
-made Chrome the default, removed a list of Store apps). Reuse those layers'
+Windows dual-boot slice skipped agent CLIs and the `~/.claude` sync, took
+Rust/MSVC only for its release-build role, made Chrome the default, removed
+a list of Store apps). Reuse those layers'
 mechanics and traps, but re-ask every selection: for someone else — or the
 owner on a machine with another job — recommend from the whole manifest and
 the user's own workload, and assume they may think about it completely
