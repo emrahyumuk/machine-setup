@@ -1199,8 +1199,11 @@ comments recorded, nothing more.
   OUTCOME 2026-10-25: booting that hand-made key (F12 → USB HDD) ended in a
   generic red error, nothing flashed. What WORKED: the FAT32 key still
   plugged in, the Windows-side package run again (Vantage → BIOS update →
-  restart) - it staged the capsule on the KEY (`<key>:\EFI\Capsule\`, empty
-  again afterwards) instead of the full ESP, and the restart flashed with no
+  restart) - it staged the capsule on the KEY instead of the full ESP: the
+  key's FAT then held a deleted `EFI\Capsule\BIOS.CAP` of 69,570,640 bytes
+  (= `$0AR2X00.SC1`) written at the click, removed by the firmware after
+  the flash. Nothing of the hand-made key's own files was used, so any
+  FAT32 key with room should do (untested). The restart flashed with no
   boot menu: BIOS R2XET42W (1.22), EC 1.12, System Firmware device OK,
   `LastAttemptStatus` 0. ESP untouched (44.5 MB free), firmware boot order
   unchanged (Fedora first), Secure Boot state unchanged. So on a 100 MB ESP:
