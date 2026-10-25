@@ -1,9 +1,11 @@
+Application Verifier x64 External Package (DesktopEditions)
+Application Verifier x64 External Package (OnecoreUAP)
 Atuin
 bat
-BatteryBar (remove only)
 Bitwarden
 btop4win
 delta
+DiagnosticsHub_CollectionService
 duf
 eza
 fzf
@@ -11,6 +13,7 @@ Git
 GitHub CLI
 Google Chrome
 JetBrainsMono Nerd Font
+Kits Configuration Installer
 lazygit
 Lenovo Service Bridge
 Lenovo System Update
@@ -21,14 +24,23 @@ Microsoft Office LTSC Professional Plus 2024 - tr-tr
 Microsoft OneDrive
 Microsoft Update Health Tools
 Microsoft Visual C++ 2013 x64 Minimum Runtime - 12.0.21005
-Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.42.34438
-Microsoft Visual C++ 2022 X64 Additional Runtime - 14.42.34438
-Microsoft Visual C++ 2022 X64 Minimum Runtime - 14.42.34438
+Microsoft Visual C++ 2022 X64 Additional Runtime - 14.51.36247
+Microsoft Visual C++ 2022 X64 Debug Runtime - 14.44.35211
+Microsoft Visual C++ 2022 X64 Minimum Runtime - 14.51.36247
+Microsoft Visual C++ 2022 X86 Additional Runtime - 14.51.36247
+Microsoft Visual C++ 2022 X86 Debug Runtime - 14.44.35211
+Microsoft Visual C++ 2022 X86 Minimum Runtime - 14.51.36247
+Microsoft Visual C++ v14 Redistributable (x64) - 14.51.36247
+Microsoft Visual C++ v14 Redistributable (x86) - 14.51.36247
 Microsoft Visual Studio Code (User)
+Microsoft Visual Studio Installer
+Microsoft Visual Studio Setup Configuration
+Microsoft Visual Studio Setup WMI Provider
 Microsoft Windows Application Compatibility Fix Database
 Mozilla Maintenance Service
 Mozilla Thunderbird (x64 en-US)
 MPV Player
+MSI Development Tools
 Neovim
 Node.js
 Office 16 Click-to-Run Extensibility Component
@@ -36,7 +48,89 @@ Office 16 Click-to-Run Licensing Component
 pnpm
 PowerToys (Preview)
 PowerToys (Preview) x64
+Rustup: the Rust toolchain installer
+SDK ARM64 Additions
+SDK ARM64 Redistributables
 Spotify
+SQLite
 starship
-WinRAR 7.01 (64 bit)
+Universal CRT Extension SDK
+Universal CRT Headers Libraries and Sources
+Universal CRT Redistributable
+Universal CRT Tools x64
+Universal CRT Tools x86
+Universal General MIDI DLS Extension SDK
+vcpp_crt.redist.clickonce
+Visual Studio Build Tools 2022
+VS Script Debugging Common
+vs_communitymsires
+vs_communitysharedmsi
+vs_communityx64msi
+vs_CoreEditorFonts
+vs_filehandler_amd64
+vs_filehandler_x86
+vs_FileTracker_Singleton
+vs_githubprotocolhandlermsi
+vs_minshellinteropmsi
+vs_minshellinteropsharedmsi
+vs_minshellmsi
+vs_minshellmsires
+vs_minshellsharedmsi
+vs_vswebprotocolselectormsi
+WinAppDeploy
+Windows App Certification Kit Native Components
+Windows App Certification Kit SupportedApiList x86
+Windows App Certification Kit x64
+Windows App Certification Kit x64 (OnecoreUAP)
+Windows Desktop Extension SDK
+Windows Desktop Extension SDK Contracts
+Windows IoT Extension SDK
+Windows IoT Extension SDK Contracts
+Windows Mobile Extension SDK
+Windows Mobile Extension SDK Contracts
+Windows SDK
+Windows SDK AddOn
+Windows SDK ARM64 Desktop Tools
+Windows SDK Desktop Headers arm64
+Windows SDK Desktop Headers x64
+Windows SDK Desktop Headers x86
+Windows SDK Desktop Libs arm64
+Windows SDK Desktop Libs x64
+Windows SDK Desktop Libs x86
+Windows SDK Desktop Tools arm64
+Windows SDK Desktop Tools x64
+Windows SDK Desktop Tools x86
+Windows SDK DirectX x64 Remote
+Windows SDK DirectX x86 Remote
+Windows SDK EULA
+Windows SDK Facade Windows WinMD Versioned
+Windows SDK for Windows Store Apps
+Windows SDK for Windows Store Apps Contracts
+Windows SDK for Windows Store Apps DirectX x86 Remote
+Windows SDK for Windows Store Apps Headers
+Windows SDK for Windows Store Apps Headers OnecoreUap
+Windows SDK for Windows Store Apps Libs
+Windows SDK for Windows Store Apps Metadata
+Windows SDK for Windows Store Apps Tools
+Windows SDK for Windows Store Managed Apps Libs
+Windows SDK Modern Non-Versioned Developer Tools
+Windows SDK Modern Versioned Developer Tools
+Windows SDK OnecoreUap Headers arm64
+Windows SDK OnecoreUap Headers x64
+Windows SDK OnecoreUap Headers x86
+Windows SDK Redistributables
+Windows SDK Signing Tools
+Windows Software Development Kit - Windows 10.0.26100.7705
+Windows Team Extension SDK
+Windows Team Extension SDK Contracts
+WinRAR 7.23 (64-bit)
+WinRT Intellisense Desktop - en-us
+WinRT Intellisense Desktop - Other Languages
+WinRT Intellisense IoT - en-us
+WinRT Intellisense IoT - Other Languages
+WinRT Intellisense Mobile - en-us
+WinRT Intellisense PPI - en-us
+WinRT Intellisense PPI - Other Languages
+WinRT Intellisense UAP - en-us
+WinRT Intellisense UAP - Other Languages
 zoxide

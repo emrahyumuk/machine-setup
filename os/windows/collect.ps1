@@ -28,8 +28,13 @@ winget export -o "$inv\winget.json" --accept-source-agreements --disable-interac
 Get-AppxPackage | Where-Object { -not $_.IsFramework -and $_.SignatureKind -ne 'System' } |
   Select-Object -ExpandProperty Name | Sort-Object | Write-Utf8 "$inv\appx.txt"
 $keys = 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*','HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*'
+# names that must not reach the repo (unreleased/private software): one regex
+# per line in a LOCAL file, never committed - the list itself would leak them
+$exf = "$HOME\.config\machine-setup\collect-exclude.txt"
+$ex = if (Test-Path $exf) { Get-Content $exf | Where-Object { $_ -and $_ -notmatch '^#' } } else { @() }
 Get-ItemProperty $keys -ErrorAction SilentlyContinue | Where-Object DisplayName |
-  Select-Object -ExpandProperty DisplayName | Sort-Object -Unique | Write-Utf8 "$inv\programs.txt"
+  Select-Object -ExpandProperty DisplayName | Sort-Object -Unique |
+  Where-Object { $n = $_; -not ($ex | Where-Object { $n -match $_ }) } | Write-Utf8 "$inv\programs.txt"
 
 # browser extensions (Chrome Default profile: id + name)
 $ext = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Extensions"
@@ -44,7 +49,8 @@ if (Test-Path $ext) {
 $prof = & pwsh -NoProfile -Command '$PROFILE'
 if (Test-Path $prof) { Copy-Item $prof "$repo\dotfiles\windows\profile.ps1" -Force }
 Copy-Item "$env:APPDATA\mpv\mpv.conf" "$repo\dotfiles\windows\mpv.conf" -Force -ErrorAction SilentlyContinue
-Copy-Item "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json" "$repo\dotfiles\windows\windows-terminal.json" -Force -ErrorAction SilentlyContinue
+# Windows Terminal is NOT copied back: it rewrites settings.json with generated
+# profiles (VS Developer prompts, Azure) - machine state. Edit the repo copy.
 
 # stamps
 $today = Get-Date -Format yyyy-MM-dd

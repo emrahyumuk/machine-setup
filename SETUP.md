@@ -742,6 +742,11 @@ the whole manifest, not a copy of this slice.
 - Feature update **26H2** was offered the same day and DEFERRED: the
   release rule (wait for .1 / 2-3 weeks, as for Fedora and macOS) and disk
   (~20 GB needed, ~10 GB free). Revisit with disk room and a restore point.
+  CORRECTION 2026-10-25: 26H2 from 25H2 is an enablement package, not a
+  full upgrade - it was already staged as the pending reboot of the 2026-10
+  cumulative and landed on the next restart (26300.9711, no `Windows.old`,
+  no disk change). "Deferring" it means not restarting; the ~20 GB estimate
+  was wrong. Pause updates before a restart you need to stay on 25H2.
 
 ### Rust + MSVC — Windows release builds of Tauri apps (added 2026-10-24)
 - Came in late in the first session, for the owner's Tauri apps (dropped
@@ -1191,7 +1196,15 @@ comments recorded, nothing more.
   `Rfs\Bin\Japan\X64\*.PAT`, and `Rfs\Fw\*` recursively (the 66.3 MB
   `R2XSG22W\$0AR2X00.SC1`); hash-check against the package. Copy the package
   out of Vantage's `session\Repository` cache first - Vantage may purge it.
-  Status 2026-10-25: key prepared, flash pending a reboot window.
+  OUTCOME 2026-10-25: booting that hand-made key (F12 → USB HDD) ended in a
+  generic red error, nothing flashed. What WORKED: the FAT32 key still
+  plugged in, the Windows-side package run again (Vantage → BIOS update →
+  restart) - it staged the capsule on the KEY (`<key>:\EFI\Capsule\`, empty
+  again afterwards) instead of the full ESP, and the restart flashed with no
+  boot menu: BIOS R2XET42W (1.22), EC 1.12, System Firmware device OK,
+  `LastAttemptStatus` 0. ESP untouched (44.5 MB free), firmware boot order
+  unchanged (Fedora first), Secure Boot state unchanged. So on a 100 MB ESP:
+  plug in a FAT32 key with ≥128 MB free, then run the Windows updater.
   Firmware for other devices (fingerprint, dock,
   NVMe…) still goes through fwupd fine — only the system-firmware capsule
   hits the limit. Read the WHOLE chain before skipping one: 0.1.22 alone

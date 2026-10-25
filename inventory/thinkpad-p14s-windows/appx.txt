@@ -48,4 +48,5 @@ MicrosoftCorporationII.QuickAssist
 MicrosoftWindows.CrossDevice
 RealtekSemiconductorCorp.RealtekAudioControl
 SynapticsIncorporated.SynapticsUtilities
+WindowsWorkload.Manager.1
 WinRAR.ShellExtension

@@ -1,6 +1,6 @@
 {
 	"$schema" : "https://aka.ms/winget-packages.schema.2.0.json",
-	"CreationDate" : "2026-10-24T16:55:20.774-00:00",
+	"CreationDate" : "2026-10-25T13:54:00.744-00:00",
 	"Sources" : 
 	[
 		{
@@ -34,16 +34,26 @@
 					"PackageIdentifier" : "GitHub.cli"
 				},
 				{
+					"InitialOverrideArguments" : "--wait --passive --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended",
+					"PackageIdentifier" : "Microsoft.VisualStudio.2022.BuildTools"
+				},
+				{
 					"PackageIdentifier" : "Microsoft.Edge"
 				},
 				{
 					"PackageIdentifier" : "Lenovo.SystemUpdate"
 				},
 				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x64"
+				},
+				{
 					"PackageIdentifier" : "DEVCOM.JetBrainsMonoNerdFont"
 				},
 				{
-					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x64"
+					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x86"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsSDK.10.0.26100"
 				},
 				{
 					"PackageIdentifier" : "Bitwarden.Bitwarden"
@@ -53,6 +63,12 @@
 				},
 				{
 					"PackageIdentifier" : "JesseDuffield.lazygit"
+				},
+				{
+					"PackageIdentifier" : "Rustlang.Rustup"
+				},
+				{
+					"PackageIdentifier" : "SQLite.SQLite"
 				},
 				{
 					"PackageIdentifier" : "Spotify.Spotify"
