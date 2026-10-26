@@ -27,7 +27,8 @@ sudo dnf install -y \
   earlyoom \
   snapper \
   libdnf5-plugin-actions \
-  mpv
+  mpv \
+  audacious
 
 echo "== earlyoom (anti-freeze OOM layer — see SETUP.md for the full story) =="
 # Stock Fedora avoid-list kept whole + ghostty; prefer extended with
@@ -95,6 +96,11 @@ echo "== mpv: config + default video/stream handler =="
 install -Dm644 dotfiles/mpv.conf ~/.config/mpv/mpv.conf
 xdg-mime default mpv.desktop application/vnd.apple.mpegurl application/x-mpegurl \
   audio/x-mpegurl audio/mpegurl video/mp4 video/x-matroska video/webm 2>/dev/null || true
+
+echo "== audacious: default handler for local audio files (APPS.md) =="
+xdg-mime default audacious.desktop audio/mpeg audio/mp3 audio/x-mp3 audio/x-mpeg \
+  audio/flac audio/x-flac audio/ogg audio/x-vorbis+ogg audio/aac audio/mp4 audio/x-m4a \
+  audio/wav audio/x-wav audio/x-ms-wma audio/opus 2>/dev/null || true
 
 echo "== drift check (os/fedora/verify.sh → machine-verify; upall runs it) =="
 mkdir -p ~/.local/bin && ln -sfn "$(readlink -f $OSD/verify.sh)" ~/.local/bin/machine-verify   # symlink, not copy: a copy went stale within weeks (2026-10-11: 36 vs 37 checks)

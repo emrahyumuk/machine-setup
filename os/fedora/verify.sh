@@ -24,6 +24,8 @@ asuser() { if [ $root = 1 ]; then sudo -u "$U" env XDG_RUNTIME_DIR="/run/user/$(
 sec "§1 Personal"
 [ "$(asuser xdg-mime query default application/vnd.apple.mpegurl 2>/dev/null)" = mpv.desktop ] \
   && ok "m3u8 → mpv" || bad "m3u8 → mpv" "xdg-mime default mpv.desktop application/vnd.apple.mpegurl …"
+[ "$(asuser xdg-mime query default audio/mpeg 2>/dev/null)" = audacious.desktop ] \
+  && ok "mp3 → audacious" || bad "mp3 → audacious" "xdg-mime default audacious.desktop audio/mpeg …"
 grep -q '^deinterlace=yes' "$H/.config/mpv/mpv.conf" 2>/dev/null && ok "mpv deinterlace=yes" || bad "mpv.conf deinterlace"
 grep -q '^show_notifications = false' "$H/.config/starship.toml" 2>/dev/null && ok "starship notifications off" || bad "starship show_notifications must be false (agent-PTY storm)"
 [ -n "$(asuser git config --global --get user.email 2>/dev/null)" ] && ok "git identity set" || bad "git user.email unset" "git config --global user.name/user.email"

@@ -39,6 +39,7 @@ Load-bearing consequences (do not "migrate to Flatpak" casually):
 | mpv | RPM Fusion | THE video player (there was none before 2026-08-21 — `.m3u8`/videos fell to the music app). Opens every file/stream/URL, GPU decode via VA-API (the freeworld driver's H.264/HEVC — a Flatpak build would not see it, same rule as browsers), Wayland-native, keyboard-driven. Config in `dotfiles/mpv.conf`: deinterlace always on + `hwdec=vaapi-copy` (see SETUP.md §1). Chosen over VLC for weight and GPU path; VLC stays the fallback if something exotic refuses to open. |
 | Steam | RPM Fusion | Games. |
 | Spotify | Flathub | Music. |
+| Audacious | Fedora | Local music archive player (2026-10-26; GNOME's Decibels plays one file, no playlist or library). Playlist-centric like Winamp/AIMP — AIMP has no native Linux build, only a Wine wrapper — with a Winamp Classic interface and .wsz skins one setting away. Owns the local audio MIME types (mp3/flac/ogg/m4a/wav/wma/opus); streams and `.m3u8` stay on mpv. Archive browsing: the Search Tool plugin (enable it, Qt interface) pointed at `~/Music/Arşiv`, a folder of symlinks to the music folders on the external archive disk — that path is per-machine state, not shipped. VERIFY: `xdg-mime query default audio/mpeg` → `audacious.desktop`. |
 | Discord | Flathub | Chat. |
 | Flatseal | Flathub | Flatpak permission editor. |
 | Extension Manager | Flathub | GNOME extension install/update UI. |
