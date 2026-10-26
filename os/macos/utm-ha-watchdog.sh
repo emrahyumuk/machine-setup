@@ -9,8 +9,8 @@
 # which launches UTM too. `started`, `unknown` (starting, saving, paused,
 # utmctl not answering) and not listed with UTM running (still launching, or
 # the VM renamed — machine-verify FAILs on that) are left to the next run.
-# It touches only this VM — never the Windows VM (rigo's verify harness owns
-# that one), never a stop or a quit.
+# It touches only this VM — never the Windows VM (the owner's private tooling's
+# verify harness owns that one), never a stop or a quit.
 # Quiet while the VM runs; each start is one line in
 # ~/Library/Logs/machine-setup-utm-vm.log (the agent's StandardOutPath).
 #

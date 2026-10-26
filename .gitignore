@@ -1,4 +1,4 @@
 .collect-exclude
 
-# rigo
+# local agent tooling
 .mcp.json
