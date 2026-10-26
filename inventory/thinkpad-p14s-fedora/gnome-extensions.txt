@@ -2,7 +2,6 @@
 appindicatorsupport@rgcjonas.gmail.com
 background-logo@fedorahosted.org
 Battery-Health-Charging@maniacx.github.com
-blur-my-shell@aunetx
 caffeine@patapon.info
 clipboard-indicator@tudmotu.com
 dash-to-dock@micxgx.gmail.com
@@ -10,6 +9,7 @@ gsconnect@andyholmes.github.io
 Vitals@CoreCoding.com
 # installed but disabled
 apps-menu@gnome-shell-extensions.gcampax.github.com
+blur-my-shell@aunetx
 launch-new-instance@gnome-shell-extensions.gcampax.github.com
 places-menu@gnome-shell-extensions.gcampax.github.com
 user-theme@gnome-shell-extensions.gcampax.github.com

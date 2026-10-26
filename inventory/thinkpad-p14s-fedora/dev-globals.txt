@@ -1,6 +1,8 @@
 # npm -g
-codex
+@openai/codex
+@playwright/cli
 corepack
 firebase-tools
 npm
 opencode-ai
+pyright

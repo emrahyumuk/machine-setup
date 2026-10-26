@@ -129,7 +129,7 @@ nvm_bin=$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -V | tail -1
 if [ -n "$nvm_bin" ] && [ -x "$nvm_bin/npm" ]; then
   {
     echo "# npm -g"
-    PATH="$nvm_bin:$PATH" "$nvm_bin/npm" ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | xargs -rn1 basename || true
+    PATH="$nvm_bin:$PATH" "$nvm_bin/npm" ls -g --depth=0 --parseable 2>/dev/null | tail -n+2 | sed 's#.*/node_modules/##' || true   # keeps @scope/ (basename turned @playwright/cli into "cli")
   } > $INV/dev-globals.txt
 else
   echo "  nvm npm not found — keeping the existing inventory list"

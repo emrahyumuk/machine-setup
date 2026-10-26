@@ -30,7 +30,7 @@ off Requestly: Intercept & Modify HTTP Requests | mdnleldcmiljblolnjhpnblkcekpdk
 off Responsive Viewer | inmopeiepgfljkpkidclfgbgbmfcennb
 off Take Webpage Screenshots Entirely - FireShot | mcbpblocgmgfnpjjppndjkmgjaogfceg
 off Tampermonkey | dhdgffkkebhmkfjojejmpbldmpobfkfo
-off Toby: Tab Management Tool | hddnkoipeenegfoeaoibdmnaalmgkpip
+off Toby: Tab Manager & Session Saver | hddnkoipeenegfoeaoibdmnaalmgkpip
 off Vue Telescope | neaebjphlfplgdhedjdhcnpjkndddbpd
 off Vue.js devtools | nhdogjmejiglipccpnnnanhbledajbpd
 off Wappalyzer - Technology profiler | gppongmhjkpfnbhagpmjfkannfbllamg

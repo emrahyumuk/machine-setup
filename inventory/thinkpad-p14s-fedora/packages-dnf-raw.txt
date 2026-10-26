@@ -15,6 +15,7 @@ at-spi2-atk
 at-spi2-core
 attr
 atuin
+audacious
 audit
 authselect
 avahi
@@ -279,8 +280,10 @@ NetworkManager-wifi
 NetworkManager-wwan
 nfs-utils
 nmap-ncat
-nodejs22
-nodejs22-npm
+nodejs24
+nodejs24-bin
+nodejs24-full-i18n
+nodejs24-npm-bin
 nss-mdns
 ntfs-3g
 ntfsprogs
@@ -350,6 +353,7 @@ sane-backends-drivers-scanners
 selinux-policy-targeted
 setup
 shadow-utils
+ShellCheck
 shim-ia32
 shim-x64
 showtime
@@ -400,6 +404,7 @@ vim-minimal
 virtualbox-guest-additions
 vte-profile
 webkit2gtk4.1-devel
+weston
 wget2-wget
 which
 whois
