@@ -11,7 +11,9 @@
 #     machine can't report about itself.
 #  2. Trend log: one line per run (memory pressure, free %, swap, disk free,
 #     Wi-Fi channel/signal, top memory users) → ~/Library/Logs/machine-setup-health.log.
-#  3. Alerts: memory pressure at warn+ for 3 runs in a row (15 min), disk free
+#  3. Alerts: memory pressure at critical for 3 runs in a row (15 min; warn
+#     only lands in the trend log: 10 days of samples showed warn spells of up
+#     to 2.5 h with 37-50 % free and a responsive Mac), disk free
 #     under the floor, a failed weekly maintenance, or a GitHub Actions runner
 #     that is installed but not running (§3b "GitHub Actions runner"), or
 #     brew's tailscaled not Running ("tailnet down": nothing else would say
@@ -35,6 +37,7 @@ STATE="$CFG/health.state"
 RSTATE="$CFG/runner.state"
 MLOG="$HOME/Library/Logs/machine-setup-maintenance.log"
 DISK_FLOOR_GB=${DISK_FLOOR_GB:-30}   # env override = a way to test the alert path
+MEM_ALERT_LEVEL=${MEM_ALERT_LEVEL:-4} # 4 critical; env override, same purpose
 RUNNER_PLIST=/Library/LaunchDaemons/com.machine-setup.github-runner.plist
 mkdir -p "$CFG" "$(dirname "$LOG")"
 
@@ -51,9 +54,9 @@ wifi=$(system_profiler SPAirPortDataType 2>/dev/null \
   | awk -F': ' '/Channel:/{c=$2} /Signal \/ Noise:/{s=$2} END{printf "%s|%s", c, s}' | head -c 60)
 top=$(ps -Ao rss=,comm= | sort -rn | head -3 | awk '{n=$2; sub(".*/","",n); printf "%s:%dM ", n, $1/1024}')
 
-# consecutive runs at warn+ (state survives between runs)
+# consecutive runs at the alert level (state survives between runs)
 hi=$(cat "$STATE" 2>/dev/null || echo 0)
-if [ "${lvl:-0}" -ge 2 ]; then hi=$((hi + 1)); else hi=0; fi
+if [ "${lvl:-0}" -ge "$MEM_ALERT_LEVEL" ]; then hi=$((hi + 1)); else hi=0; fi
 echo "$hi" > "$STATE"
 
 problems=()

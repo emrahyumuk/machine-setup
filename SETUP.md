@@ -1163,14 +1163,17 @@ Mac never FAILs a server check.
 - Same run, trend + alerts: one line per run in
   `~/Library/Logs/machine-setup-health.log` (memory pressure level, free %,
   swap, disk free, Wi-Fi channel/signal, top-3 memory users; rotates at
-  5 MB). Memory pressure at warn+ (`kern.memorystatus_vm_pressure_level` ≥ 2)
-  for 3 runs in a row, disk free < 30 GB, a FAILED weekly maintenance, or
+  5 MB). Memory pressure at critical (`kern.memorystatus_vm_pressure_level`
+  ≥ 4, `MEM_ALERT_LEVEL`) for 3 runs in a row (warn, 2, stays in the log
+  only: 10 days of warn spells of up to 2.5 h left 37-50 % free and the Mac
+  responsive, 2026-10-28), disk free < 30 GB, a FAILED weekly maintenance, or
   brew's `tailscaled` not Running (`tailnet down (<BackendState>)`, asked
   on its socket; the receiver's retry is the debounce: one bad run →
   PENDING, two → DOWN) →
   the ping goes to `/fail` with the reason as body, so the alert says WHY.
   Judge memory by PRESSURE, never by "used" or swap size — the §2 zram rule
-  holds here too. `DISK_FLOOR_GB=1000 health-check` exercises the alert path.
+  holds here too. `DISK_FLOOR_GB=1000 health-check` exercises the alert path;
+  `MEM_ALERT_LEVEL=1`, three runs back to back, the memory one.
   VERIFY: `machine-verify` → daemon installed, URL present, last log line
   < 15 min old with `ping=ok`.
 
