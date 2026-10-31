@@ -10,3 +10,4 @@ last-applied: 2026-10-24
 last-collected: 2026-10-25
 last-verified: never
 notes: The factory Windows 11 Pro (26H2 since 2026-10-25) in the ~95 GB dual-boot slice (hardware/thinkpad-p14s.md). Occasional-use slice + Windows release builds of Tauri apps (Rust/MSVC, Smart App Control OFF) — no agent CLIs, no ~/.claude sync on purpose (SETUP.md §2b "Deliberately not done here"). Chrome is the default browser here.
+pending: Fixes from the 2026-10-25 review were written on Fedora and never run on Windows. At the next Windows session: `git switch main; git pull; git branch -D windows-port`; create a repo-root `.collect-exclude` (empty is valid) or collect.ps1 stops; run verify.ps1 (sets last-verified); in upall, decline the UAC prompt once and run it twice in a row; re-run bootstrap.ps1; confirm `-Debloat` refuses under pwsh; run collect.ps1. Delete this line once they pass.
